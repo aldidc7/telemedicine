@@ -9,7 +9,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
             <h1 class="text-4xl font-black bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              Advanced Analytics
+              Analitik Lanjutan
             </h1>
           </div>
           <div class="flex items-center gap-3">
@@ -49,19 +49,19 @@
               :disabled="updateStatus === 'updating'"
               class="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-bold py-2 px-4 rounded-xl transition"
             >
-              {{ updateStatus === 'updating' ? '⏳' : '🔄' }} Refresh
+              {{ updateStatus === 'updating' ? '⏳' : '🔄' }} Perbarui
             </button>
           </div>
         </div>
         <div class="flex items-center justify-between">
-          <p class="text-gray-600">Real-time insights and performance metrics</p>
+          <p class="text-gray-600">Wawasan real-time dan metrik kinerja</p>
           <!-- Status Indicator -->
           <div v-if="updateStatus === 'error'" class="text-sm text-red-600 font-medium">
-            ⚠️ Last update failed - retrying...
+            ⚠️ Pembaruan terakhir gagal - mencoba ulang...
           </div>
           <div v-else-if="autoRefreshEnabled" class="flex items-center gap-2 text-sm text-gray-500">
             <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-            Live updates enabled
+            Pembaruan otomatis aktif
           </div>
         </div>
       </div>
@@ -74,7 +74,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
             </svg>
           </div>
-          <p class="text-gray-600 font-semibold">Loading analytics...</p>
+          <p class="text-gray-600 font-semibold">Memuat analitik...</p>
         </div>
       </div>
 
@@ -85,29 +85,29 @@
             <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
-            Consultation Metrics
+            Metrik Konsultasi
           </h2>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <KpiCard
-              label="Total Consultations"
+              label="Total Konsultasi"
               :value="consultationMetrics.total"
               icon="🔵"
               color="blue"
             />
             <KpiCard
-              label="Active Sessions"
+              label="Sesi Aktif"
               :value="consultationMetrics.active"
               icon="🟢"
               color="green"
             />
             <KpiCard
-              label="Completed"
+              label="Selesai"
               :value="consultationMetrics.completed"
               icon="✓"
               color="emerald"
             />
             <KpiCard
-              label="Completion Rate"
+              label="Tingkat Penyelesaian"
               :value="`${(consultationMetrics.completion_rate || 0).toFixed(1)}%`"
               icon="📈"
               color="purple"
@@ -121,7 +121,7 @@
             <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M14 10h-3.5A3.5 3.5 0 0 0 7 13.5v.5a3.5 3.5 0 0 0 3.5 3.5h3.5m0-7h3.5A3.5 3.5 0 0 1 21 13.5v.5a3.5 3.5 0 0 1-3.5 3.5h-3.5m0-7v7m0-7H7m0 7h10.5" />
             </svg>
-            Doctor Performance Rankings
+            Peringkat Kinerja Dokter
           </h2>
           <DoctorPerformanceTable :doctors="doctorPerformance" />
         </section>
@@ -132,12 +132,12 @@
             <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
-            Health Trends
+            Tren Kesehatan
           </h2>
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Health Issues -->
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 hover:shadow-lg transition">
-              <h3 class="text-xl font-bold text-gray-900 mb-6">Top Health Issues</h3>
+              <h3 class="text-xl font-bold text-gray-900 mb-6">Masalah Kesehatan Utama</h3>
               <div class="space-y-3">
                 <div v-for="(count, issue) in topHealthIssues" :key="issue" class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
                   <span class="font-medium text-gray-700">{{ issue }}</span>
@@ -148,18 +148,18 @@
 
             <!-- Patient Demographics -->
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 hover:shadow-lg transition">
-              <h3 class="text-xl font-bold text-gray-900 mb-6">Patient Demographics</h3>
+              <h3 class="text-xl font-bold text-gray-900 mb-6">Demografi Pasien</h3>
               <div class="space-y-4">
                 <div class="border-l-4 border-blue-500 pl-4 py-2">
-                  <p class="text-sm text-gray-600">Total Patients</p>
+                  <p class="text-sm text-gray-600">Total Pasien</p>
                   <p class="text-3xl font-bold text-gray-900">{{ healthTrends.total_patients }}</p>
                 </div>
                 <div class="border-l-4 border-green-500 pl-4 py-2">
-                  <p class="text-sm text-gray-600">New This Month</p>
+                  <p class="text-sm text-gray-600">Baru Bulan Ini</p>
                   <p class="text-3xl font-bold text-gray-900">{{ healthTrends.new_patients_this_month }}</p>
                 </div>
                 <div class="border-l-4 border-purple-500 pl-4 py-2">
-                  <p class="text-sm text-gray-600">Retention Rate</p>
+                  <p class="text-sm text-gray-600">Tingkat Retensi</p>
                   <p class="text-3xl font-bold text-gray-900">{{ (healthTrends.retention_rate || 0).toFixed(1) }}%</p>
                 </div>
               </div>
@@ -173,23 +173,23 @@
             <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            Revenue Analytics
+            Analitik Pendapatan
           </h2>
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             <KpiCard
-              label="Total Revenue"
+              label="Total Pendapatan"
               :value="`$${((revenueData.total_revenue || 0) / 1000).toFixed(1)}k`"
               icon="💵"
               color="green"
             />
             <KpiCard
-              label="Paid Revenue"
+              label="Pendapatan Dibayar"
               :value="`$${((revenueData.paid_revenue || 0) / 1000).toFixed(1)}k`"
               icon="✓"
               color="emerald"
             />
             <KpiCard
-              label="Payment Rate"
+              label="Tingkat Pembayaran"
               :value="`${(revenueData.payment_completion_rate || 0).toFixed(1)}%`"
               icon="📊"
               color="blue"
@@ -198,15 +198,15 @@
 
           <!-- Revenue by Doctor -->
           <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 hover:shadow-lg transition">
-            <h3 class="text-xl font-bold text-gray-900 mb-6">Top Revenue Generators</h3>
+            <h3 class="text-xl font-bold text-gray-900 mb-6">Dokter dengan Pendapatan Tertinggi</h3>
             <div class="overflow-x-auto">
               <table class="w-full">
                 <thead class="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th class="px-6 py-3 text-left text-sm font-bold text-gray-900">Doctor Name</th>
-                    <th class="px-6 py-3 text-left text-sm font-bold text-gray-900">Consultations</th>
-                    <th class="px-6 py-3 text-left text-sm font-bold text-gray-900">Total Revenue</th>
-                    <th class="px-6 py-3 text-left text-sm font-bold text-gray-900">Avg/Consultation</th>
+                    <th class="px-6 py-3 text-left text-sm font-bold text-gray-900">Nama Dokter</th>
+                    <th class="px-6 py-3 text-left text-sm font-bold text-gray-900">Konsultasi</th>
+                    <th class="px-6 py-3 text-left text-sm font-bold text-gray-900">Total Pendapatan</th>
+                    <th class="px-6 py-3 text-left text-sm font-bold text-gray-900">Rata-rata/Konsultasi</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
@@ -228,12 +228,12 @@
             <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h14M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            Custom Date Range Analytics
+            Analitik Rentang Tanggal Kustom
           </h2>
           <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div>
-                <label class="block text-sm font-bold text-gray-700 mb-2">Start Date</label>
+                <label class="block text-sm font-bold text-gray-700 mb-2">Tanggal Mulai</label>
                 <input 
                   v-model="dateRangeStart" 
                   type="date" 
@@ -241,7 +241,7 @@
                 >
               </div>
               <div>
-                <label class="block text-sm font-bold text-gray-700 mb-2">End Date</label>
+                <label class="block text-sm font-bold text-gray-700 mb-2">Tanggal Akhir</label>
                 <input 
                   v-model="dateRangeEnd" 
                   type="date" 
@@ -253,25 +253,25 @@
                   @click="fetchDateRangeAnalytics"
                   class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition"
                 >
-                  Load Analytics
+                  Muat Analitik
                 </button>
               </div>
             </div>
             <div v-if="dateRangeData" class="space-y-4">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div v-if="dateRangeData.consultations" class="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                  <h4 class="font-bold text-blue-900 mb-3">Consultations</h4>
+                  <h4 class="font-bold text-blue-900 mb-3">Konsultasi</h4>
                   <div class="space-y-2 text-sm text-blue-800">
                     <p v-for="day in dateRangeData.consultations" :key="day.date">
-                      <span class="font-semibold">{{ day.date }}:</span> {{ day.total }} ({{ day.completed }} completed)
+                      <span class="font-semibold">{{ day.date }}:</span> {{ day.total }} ({{ day.completed }} selesai)
                     </p>
                   </div>
                 </div>
                 <div v-if="dateRangeData.revenue" class="bg-green-50 p-4 rounded-lg border border-green-200">
-                  <h4 class="font-bold text-green-900 mb-3">Revenue</h4>
+                  <h4 class="font-bold text-green-900 mb-3">Pendapatan</h4>
                   <div class="space-y-2 text-sm text-green-800">
                     <p v-for="day in dateRangeData.revenue" :key="day.date">
-                      <span class="font-semibold">{{ day.date }}:</span> ${{ (day.total || 0).toFixed(2) }} ({{ day.count }} consultations)
+                      <span class="font-semibold">{{ day.date }}:</span> ${{ (day.total || 0).toFixed(2) }} ({{ day.count }} konsultasi)
                     </p>
                   </div>
                 </div>
