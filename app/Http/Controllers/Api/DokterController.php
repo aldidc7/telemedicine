@@ -7,6 +7,7 @@ use App\Http\Requests\DokterRequest;
 use App\Models\Dokter;
 use App\Models\Pasien;
 use App\Services\DokterService;
+use App\Services\DoctorSearchService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -451,25 +452,95 @@ class DokterController extends Controller
      */
     public function verifiedDoctors(Request $request)
     {
-        $query = Dokter::terverifikasi()
-            ->with('user', 'ratings')
-            ->when($request->get('tersedia'), function ($q) {
-                return $q->where('is_available', true);
-            })
-            ->when($request->get('spesialisasi'), function ($q) use ($request) {
-                return $q->where('specialization', $request->get('spesialisasi'));
-            })
-            ->when($request->get('search'), function ($q) use ($request) {
-                return $q->whereHas('user', function ($subQ) use ($request) {
-                    $subQ->where('name', 'like', '%' . $request->get('search') . '%');
-                });
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate($request->get('per_page', 15));
+        // Use advanced search service
+        $doctors = DoctorSearchService::search($request->all());
 
         return $this->paginatedResponse(
-            $query,
-            'Daftar dokter terverifikasi berhasil diambil'
+            $doctors,
+            'Daftar dokter berhasil diambil',
+            [
+                'available_count' => DoctorSearchService::getAvailableCount(),
+                'specializations' => DoctorSearchService::getSpecializations(),
+                'stats' => DoctorSearchService::getSpecializationStats(),
+            ]
         );
+    }
+
+    /**
+     * Search doctors dengan advanced filters
+     * 
+     * GET /api/v1/dokter/search/advanced
+     * 
+     * Query Parameters:
+     * - q: search keyword (name, specialization)
+     * - specialization: filter by specialization
+     * - available: filter by availability (true/false)
+     * - min_rating: filter by minimum rating
+     * - verified_only: hanya dokter verified (true/false)
+     * - page: pagination page
+     * - per_page: items per page
+     * - sort: sort by field (name, rating, availability)
+     * - order: asc or desc
+     */
+    public function search(Request $request)
+    {
+        $doctors = DoctorSearchService::search($request->all());
+
+        return $this->paginatedResponse(
+            $doctors,
+            'Pencarian dokter berhasil',
+            [
+                'available_count' => DoctorSearchService::getAvailableCount(),
+                'specializations' => DoctorSearchService::getSpecializations(),
+            ]
+        );
+    }
+
+    /**
+     * Get doctor detail dengan ratings
+     * 
+     * GET /api/v1/dokter/{id}/detail
+     */
+    public function detail($id)
+    {
+        $doctor = DoctorSearchService::getDoctorDetail((int) $id);
+
+        if (!$doctor) {
+            return $this->notFoundResponse('Dokter tidak ditemukan atau belum terverifikasi');
+        }
+
+        return $this->successResponse($doctor, 'Detail dokter berhasil diambil');
+    }
+
+    /**
+     * Get top-rated doctors
+     * 
+     * GET /api/v1/dokter/top-rated
+     */
+    public function topRated(Request $request)
+    {
+        $limit = min((int) ($request->get('limit') ?? 10), 50);
+        $doctors = DoctorSearchService::getTopRated($limit);
+
+        return $this->successResponse([
+            'doctors' => $doctors,
+            'total' => count($doctors),
+        ], 'Dokter dengan rating tertinggi berhasil diambil');
+    }
+
+    /**
+     * Get doctor specializations
+     * 
+     * GET /api/v1/dokter/specializations
+     */
+    public function specializations()
+    {
+        $specializations = DoctorSearchService::getSpecializations();
+        $stats = DoctorSearchService::getSpecializationStats();
+
+        return $this->successResponse([
+            'specializations' => $specializations,
+            'stats' => $stats,
+        ], 'Daftar spesialisasi dokter berhasil diambil');
     }
 }

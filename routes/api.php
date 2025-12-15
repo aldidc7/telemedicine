@@ -75,11 +75,22 @@ Route::prefix('v1')->group(function () {
          * PUT /api/v1/dokter/{id} - Update dokter (Self or Admin)
          * DELETE /api/v1/dokter/{id} - Delete dokter (Admin only)
          * PUT /api/v1/dokter/{id}/ketersediaan - Update availability (Self)
+         * GET /api/v1/dokter/search/advanced - Advanced search dokter
+         * GET /api/v1/dokter/top-rated - Dokter dengan rating tertinggi
+         * GET /api/v1/dokter/specializations - Daftar spesialisasi
          */
         Route::get('/dokter', [DokterController::class, 'index']);
         Route::post('/dokter', [DokterController::class, 'store']);
+        
+        // Search & Filter endpoints (before specific routes to avoid conflicts)
+        Route::get('/dokter/search/advanced', [DokterController::class, 'search']);
+        Route::get('/dokter/top-rated', [DokterController::class, 'topRated']);
+        Route::get('/dokter/specializations/list', [DokterController::class, 'specializations']);
+        
+        // Other routes
         Route::get('/dokter/public/terverifikasi', [DokterController::class, 'verifiedDoctors']);
         Route::get('/dokter/user/{user_id}', [DokterController::class, 'getByUserId']);
+        Route::get('/dokter/{id}/detail', [DokterController::class, 'detail']);
         Route::get('/dokter/{id}', [DokterController::class, 'show']);
         Route::put('/dokter/{id}', [DokterController::class, 'update']);
         Route::delete('/dokter/{id}', [DokterController::class, 'destroy']);
