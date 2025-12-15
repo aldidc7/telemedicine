@@ -262,6 +262,14 @@ class AuthService
             'email_verification_expires_at' => null,
         ]);
 
+        // Create notification
+        try {
+            $notificationService = app(NotificationService::class);
+            $notificationService->notifyEmailVerified($user->id);
+        } catch (\Exception $e) {
+            \Log::warning('Failed to create notification: ' . $e->getMessage());
+        }
+
         return true;
     }
 

@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\DokterController;
 use App\Http\Controllers\Api\KonsultasiController;
 use App\Http\Controllers\Api\PesanChatController;
 use App\Http\Controllers\Api\MessageController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\RatingController;
 use App\Http\Controllers\Api\DoctorVerificationController;
@@ -243,6 +244,33 @@ Route::prefix('v1')->group(function () {
             Route::post('/conversations/{id}/read', [MessageController::class, 'markAsRead']);
             Route::delete('/conversations/{id}', [MessageController::class, 'deleteConversation']);
             Route::get('/unread-count', [MessageController::class, 'getUnreadCount']);
+        });
+
+        // ========== NOTIFICATION ENDPOINTS ==========
+        /**
+         * Notification Routes - In-app notifications untuk users
+         * GET /api/v1/notifications - Get user notifications (paginated)
+         * GET /api/v1/notifications/unread - Get unread notifications
+         * GET /api/v1/notifications/count - Get unread count
+         * GET /api/v1/notifications/stats - Get notification statistics
+         * POST /api/v1/notifications/{id}/read - Mark single as read
+         * POST /api/v1/notifications/read-multiple - Mark multiple as read
+         * POST /api/v1/notifications/read-all - Mark all as read
+         * DELETE /api/v1/notifications/{id} - Delete notification
+         * DELETE /api/v1/notifications/delete-multiple - Delete multiple
+         * DELETE /api/v1/notifications/clear - Clear all notifications
+         */
+        Route::prefix('/notifications')->group(function () {
+            Route::get('/', [NotificationController::class, 'index']);
+            Route::get('/unread', [NotificationController::class, 'getUnread']);
+            Route::get('/count', [NotificationController::class, 'getUnreadCount']);
+            Route::get('/stats', [NotificationController::class, 'getStats']);
+            Route::post('/{id}/read', [NotificationController::class, 'markAsRead']);
+            Route::post('/read-multiple', [NotificationController::class, 'markMultipleAsRead']);
+            Route::post('/read-all', [NotificationController::class, 'markAllAsRead']);
+            Route::delete('/{id}', [NotificationController::class, 'destroy']);
+            Route::delete('/delete-multiple', [NotificationController::class, 'deleteMultiple']);
+            Route::delete('/clear', [NotificationController::class, 'clearAll']);
         });
 
         // ========== ANALYTICS ENDPOINTS (Admin Only) ==========

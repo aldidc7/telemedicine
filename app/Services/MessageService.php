@@ -53,6 +53,24 @@ class MessageService
             'last_message_preview' => substr($content, 0, 50),
         ]);
 
+        // Send notification to recipient
+        try {
+            $sender = \App\Models\User::findOrFail($senderId);
+            $recipientId = $sender->id === $conversation->user_1_id 
+                ? $conversation->user_2_id 
+                : $conversation->user_1_id;
+            
+            $notificationService = app(NotificationService::class);
+            $notificationService->notifyNewMessage(
+                $recipientId,
+                $sender->name,
+                substr($content, 0, 50),
+                $conversationId
+            );
+        } catch (\Exception $e) {
+            \Log::warning('Failed to create message notification: ' . $e->getMessage());
+        }
+
         return $message->load('sender');
     }
 
