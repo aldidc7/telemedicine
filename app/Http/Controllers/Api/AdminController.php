@@ -122,7 +122,7 @@ class AdminController extends Controller
                 });
 
             // ===== RECENT CONSULTATIONS =====
-            $konsultasiTerbaru = Konsultasi::with('patient.user', 'doctor.user')
+            $konsultasiTerbaru = Konsultasi::with('pasien.user', 'dokter.user')
                 ->orderBy('created_at', 'desc')
                 ->limit(5)
                 ->get();
@@ -200,8 +200,8 @@ class AdminController extends Controller
                     'recent_consultations' => $konsultasiTerbaru->map(function ($k) {
                         return [
                             'id' => $k->id,
-                            'pasien' => $k->patient?->user?->name ?? 'N/A',
-                            'dokter' => $k->doctor?->user?->name ?? 'Belum ditugaskan',
+                            'pasien' => $k->pasien?->user?->name ?? 'N/A',
+                            'dokter' => $k->dokter?->user?->name ?? 'Belum ditugaskan',
                             'jenis_keluhan' => $k->jenis_keluhan,
                             'status' => $k->status,
                             'created_at' => $k->created_at->toIso8601String(),
