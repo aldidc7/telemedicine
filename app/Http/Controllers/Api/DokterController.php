@@ -431,4 +431,45 @@ class DokterController extends Controller
             'Status ketersediaan berhasil diupdate'
         );
     }
+
+    /**
+     * GET - List dokter terverifikasi untuk pasien
+     * 
+     * Hanya menampilkan dokter yang sudah diverifikasi oleh admin
+     * Digunakan untuk pasien mencari dan memilih dokter untuk konsultasi
+     * 
+     * GET /api/v1/dokter/public/terverifikasi
+     * 
+     * Query Parameters:
+     * - tersedia: Filter dokter yang tersedia (true/false)
+     * - spesialisasi: Filter by specialty
+     * - search: Cari berdasarkan nama
+     * - per_page: Jumlah data per halaman (default: 15)
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function verifiedDoctors(Request $request)
+    {
+        $query = Dokter::terverifikasi()
+            ->with('user', 'ratings')
+            ->when($request->get('tersedia'), function ($q) {
+                return $q->where('is_available', true);
+            })
+            ->when($request->get('spesialisasi'), function ($q) use ($request) {
+                return $q->where('specialization', $request->get('spesialisasi'));
+            })
+            ->when($request->get('search'), function ($q) use ($request) {
+                return $q->whereHas('user', function ($subQ) use ($request) {
+                    $subQ->where('name', 'like', '%' . $request->get('search') . '%');
+                });
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate($request->get('per_page', 15));
+
+        return $this->paginatedResponse(
+            $query,
+            'Daftar dokter terverifikasi berhasil diambil'
+        );
+    }
 }

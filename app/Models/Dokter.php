@@ -63,7 +63,11 @@ class Dokter extends Model
         'license_number',
         'phone_number',
         'is_available',
+        'is_verified',
         'max_concurrent_consultations',
+        'verification_notes',
+        'verified_at',
+        'verified_by_admin_id',
         'profile_photo',
         'address',
         'place_of_birth',
@@ -83,6 +87,8 @@ class Dokter extends Model
      */
     protected $casts = [
         'is_available' => 'boolean',
+        'is_verified' => 'boolean',
+        'verified_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -149,6 +155,37 @@ class Dokter extends Model
     public function scopeTersedia($query)
     {
         return $query->where('is_available', true);
+    }
+
+    /**
+     * Filter dokter berdasarkan status verifikasi admin
+     * Hanya dokter yang sudah diverifikasi bisa tampil di list dan terima konsultasi
+     * 
+     * Gunakan:
+     * Dokter::terverifikasi()->get()  // Semua dokter terverifikasi
+     * Dokter::terverifikasi()->count()  // Hitung dokter terverifikasi
+     * 
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeTerverifikasi($query)
+    {
+        return $query->where('is_verified', true);
+    }
+
+    /**
+     * Filter dokter yang belum diverifikasi (pending)
+     * Digunakan untuk admin melihat dokter yang perlu di-approve
+     * 
+     * Gunakan:
+     * Dokter::pending()->get()  // Dokter menunggu verifikasi
+     * 
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopePending($query)
+    {
+        return $query->where('is_verified', false);
     }
 
     /**

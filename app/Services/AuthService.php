@@ -55,6 +55,7 @@ class AuthService
                     'license_number' => $data['no_lisensi'] ?? '',
                     'phone_number' => $data['phone'] ?? null,
                     'is_available' => true,
+                    'is_verified' => false,  // Dokter baru belum terverifikasi
                     'max_concurrent_consultations' => 5,
                 ]);
             }

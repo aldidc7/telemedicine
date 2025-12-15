@@ -9,8 +9,7 @@ use App\Http\Controllers\Api\KonsultasiController;
 use App\Http\Controllers\Api\PesanChatController;
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\RatingController;
-use App\Http\Controllers\Api\AnalyticsController;
-use App\Http\Controllers\SimrsApi\SimrsController;
+use App\Http\Controllers\Api\DoctorVerificationController;
 use App\Http\Controllers\SimrsApi\SimrsPasienController;
 use App\Http\Controllers\SimrsApi\SimrsDokterController;
 use App\Http\Controllers\SimrsApi\SimrsRekamMedisController;
@@ -79,6 +78,7 @@ Route::prefix('v1')->group(function () {
          */
         Route::get('/dokter', [DokterController::class, 'index']);
         Route::post('/dokter', [DokterController::class, 'store']);
+        Route::get('/dokter/public/terverifikasi', [DokterController::class, 'verifiedDoctors']);
         Route::get('/dokter/user/{user_id}', [DokterController::class, 'getByUserId']);
         Route::get('/dokter/{id}', [DokterController::class, 'show']);
         Route::put('/dokter/{id}', [DokterController::class, 'update']);
@@ -144,6 +144,19 @@ Route::prefix('v1')->group(function () {
         Route::delete('/admin/pengguna/{id}', [AdminController::class, 'hapusPengguna']);
         Route::get('/admin/log-aktivitas', [AdminController::class, 'logAktivitas']);
         Route::get('/admin/statistik', [AdminController::class, 'statistik']);
+
+        // ========== DOCTOR VERIFICATION ROUTES (Admin only) ==========
+        /**
+         * Doctor Verification Management
+         * GET /api/v1/admin/doctors/pending - List dokter pending verifikasi
+         * POST /api/v1/admin/doctors/{id}/approve - Approve dokter
+         * POST /api/v1/admin/doctors/{id}/reject - Reject dokter
+         * GET /api/v1/admin/doctors/{id}/status - Get doctor verification status
+         */
+        Route::get('/admin/doctors/pending', [DoctorVerificationController::class, 'pendingDoctors']);
+        Route::post('/admin/doctors/{id}/approve', [DoctorVerificationController::class, 'approvDoctor']);
+        Route::post('/admin/doctors/{id}/reject', [DoctorVerificationController::class, 'rejectDoctor']);
+        Route::get('/admin/doctors/{id}/status', [DoctorVerificationController::class, 'getDoctorStatus']);
     });
 
     // ============ SIMRS API ROUTES (Token-based, Separated) ============
