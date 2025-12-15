@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Notification;
 use App\Models\User;
+use App\Events\NotificationCreated;
 use Illuminate\Database\Eloquent\Model;
 
 class NotificationService
@@ -55,6 +56,13 @@ class NotificationService
             'notifiable_type' => $notifiable ? get_class($notifiable) : null,
             'notifiable_id' => $notifiable ? $notifiable->id : null,
         ]);
+
+        // Broadcast notification via WebSocket
+        try {
+            broadcast(new NotificationCreated($notification));
+        } catch (\Exception $e) {
+            \Log::warning('Failed to broadcast notification: ' . $e->getMessage());
+        }
 
         return $notification;
     }

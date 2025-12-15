@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Appointment;
 use App\Models\User;
+use App\Events\AppointmentUpdated;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\Paginator;
 use Carbon\Carbon;
@@ -128,6 +129,14 @@ class AppointmentService
 
         $appointment->confirm();
 
+        // Broadcast appointment update via WebSocket
+        try {
+            $appointment->load(['doctor', 'patient']);
+            broadcast(new AppointmentUpdated($appointment));
+        } catch (\Exception $e) {
+            \Log::warning('Failed to broadcast appointment update: ' . $e->getMessage());
+        }
+
         // Send notification ke patient
         (new NotificationService())->notifyAppointmentConfirmed(
             $appointment->patient_id,
@@ -228,6 +237,14 @@ class AppointmentService
         $oldScheduledAt = $appointment->scheduled_at;
         $appointment->update(['scheduled_at' => $newScheduledAt, 'status' => 'pending']);
 
+        // Broadcast appointment update via WebSocket
+        try {
+            $appointment->load(['doctor', 'patient']);
+            broadcast(new AppointmentUpdated($appointment));
+        } catch (\Exception $e) {
+            \Log::warning('Failed to broadcast appointment update: ' . $e->getMessage());
+        }
+
         // Send notification ke doctor
         (new NotificationService())->notifyAppointmentRescheduled(
             $appointment->doctor_id,
@@ -255,6 +272,14 @@ class AppointmentService
         }
 
         $appointment->start();
+
+        // Broadcast appointment update via WebSocket
+        try {
+            $appointment->load(['doctor', 'patient']);
+            broadcast(new AppointmentUpdated($appointment));
+        } catch (\Exception $e) {
+            \Log::warning('Failed to broadcast appointment update: ' . $e->getMessage());
+        }
 
         // Send notification ke patient
         (new NotificationService())->notifyAppointmentStarted(
@@ -285,6 +310,14 @@ class AppointmentService
 
         if ($notes) {
             $appointment->update(['notes' => $notes]);
+        }
+
+        // Broadcast appointment update via WebSocket
+        try {
+            $appointment->load(['doctor', 'patient']);
+            broadcast(new AppointmentUpdated($appointment));
+        } catch (\Exception $e) {
+            \Log::warning('Failed to broadcast appointment update: ' . $e->getMessage());
         }
 
         // Send notification ke patient

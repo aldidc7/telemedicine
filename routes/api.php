@@ -14,7 +14,7 @@ use App\Http\Controllers\Api\RatingController;
 use App\Http\Controllers\Api\DoctorVerificationController;
 use App\Http\Controllers\Api\AppointmentController;
 use App\Http\Controllers\Api\PrescriptionController;
-use App\Http\Controllers\Api\AnalyticsController;
+use App\Http\Controllers\Api\BroadcastingController;
 use App\Http\Controllers\SimrsApi\SimrsPasienController;
 use App\Http\Controllers\SimrsApi\SimrsDokterController;
 use App\Http\Controllers\SimrsApi\SimrsRekamMedisController;
@@ -380,5 +380,14 @@ Route::prefix('v1')->group(function () {
             Route::get('/growth', [AnalyticsController::class, 'getGrowthMetrics']);
             Route::get('/retention', [AnalyticsController::class, 'getUserRetention']);
         });
+
+        // ========== WEBSOCKET/BROADCASTING ROUTES ==========
+        /**
+         * Real-time Broadcasting & WebSocket
+         * POST /api/v1/broadcasting/auth - Authenticate WebSocket channels
+         * GET /api/v1/broadcasting/config - Get Pusher configuration
+         */
+        Route::post('/broadcasting/auth', [BroadcastingController::class, 'authenticate']);
+        Route::get('/broadcasting/config', [BroadcastingController::class, 'getConfig']);
     });
 });

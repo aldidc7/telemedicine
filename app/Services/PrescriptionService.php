@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Prescription;
 use App\Models\Appointment;
 use App\Models\User;
+use App\Events\PrescriptionCreated;
 use Illuminate\Database\Eloquent\Collection;
 
 class PrescriptionService
@@ -49,6 +50,14 @@ class PrescriptionService
             'issued_at' => now(),
             'status' => 'active',
         ]);
+
+        // Broadcast prescription created via WebSocket
+        try {
+            $prescription->load(['doctor', 'patient']);
+            broadcast(new PrescriptionCreated($prescription));
+        } catch (\Exception $e) {
+            \Log::warning('Failed to broadcast prescription: ' . $e->getMessage());
+        }
 
         // Send notification ke patient
         (new NotificationService())->notifyPrescriptionCreated(

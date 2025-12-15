@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
+use App\Events\MessageSent;
 use Illuminate\Support\Facades\DB;
 
 class MessageService
@@ -53,6 +54,16 @@ class MessageService
             'last_message_preview' => substr($content, 0, 50),
         ]);
 
+        // Load sender for event broadcasting
+        $message->load('sender');
+
+        // Broadcast message to conversation members via WebSocket
+        try {
+            broadcast(new MessageSent($message));
+        } catch (\Exception $e) {
+            \Log::warning('Failed to broadcast message: ' . $e->getMessage());
+        }
+
         // Send notification to recipient
         try {
             $sender = \App\Models\User::findOrFail($senderId);
@@ -71,7 +82,7 @@ class MessageService
             \Log::warning('Failed to create message notification: ' . $e->getMessage());
         }
 
-        return $message->load('sender');
+        return $message;
     }
 
     /**
