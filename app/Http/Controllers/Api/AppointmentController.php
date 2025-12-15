@@ -230,6 +230,11 @@ class AppointmentController extends Controller
     public function cancel($id, Request $request)
     {
         try {
+            $appointment = $this->appointmentService->getAppointmentDetail($id);
+            
+            // Authorize using policy
+            $this->authorize('cancel', $appointment);
+
             $validated = $request->validate([
                 'reason' => 'required|string|max:500',
             ]);
@@ -256,6 +261,11 @@ class AppointmentController extends Controller
     public function reschedule($id, Request $request)
     {
         try {
+            $appointment = $this->appointmentService->getAppointmentDetail($id);
+            
+            // Authorize using policy
+            $this->authorize('reschedule', $appointment);
+
             $validated = $request->validate([
                 'scheduled_at' => 'required|date|after:now',
             ]);

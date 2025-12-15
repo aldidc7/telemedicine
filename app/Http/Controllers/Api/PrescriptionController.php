@@ -231,6 +231,11 @@ class PrescriptionController extends Controller
     public function update(Request $request, $id)
     {
         try {
+            $prescription = $this->prescriptionService->getPrescriptionDetail($id);
+            
+            // Authorize using policy
+            $this->authorize('update', $prescription);
+
             $validated = $request->validate([
                 'medications' => 'nullable|array|min:1',
                 'medications.*.name' => 'required_with:medications|string|max:100',
@@ -244,10 +249,6 @@ class PrescriptionController extends Controller
             ]);
 
             $user = auth()->user();
-
-            if ($user->role !== 'dokter') {
-                return response()->json(['error' => 'Hanya dokter yang dapat update resep'], 403);
-            }
 
             $prescription = $this->prescriptionService->updatePrescription(
                 $id,
@@ -297,13 +298,12 @@ class PrescriptionController extends Controller
     public function destroy($id)
     {
         try {
-            $user = auth()->user();
+            $prescription = $this->prescriptionService->getPrescriptionDetail($id);
+            
+            // Authorize using policy
+            $this->authorize('delete', $prescription);
 
-            if ($user->role !== 'dokter') {
-                return response()->json(['error' => 'Hanya dokter yang dapat delete resep'], 403);
-            }
-
-            $this->prescriptionService->deletePrescription($id, $user->id);
+            $this->prescriptionService->deletePrescription($id, auth()->user()->id);
 
             return response()->json([
                 'message' => 'Resep berhasil dihapus',
