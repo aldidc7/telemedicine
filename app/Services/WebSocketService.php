@@ -231,10 +231,16 @@ class WebSocketService
 
             // Use presence auth for presence channels, socket auth for private channels
             if (strpos($channelName, 'presence-') === 0) {
-                // For presence channels, use socket_auth
+                // For presence channels, build auth manually
+                $authKey = env('PUSHER_APP_KEY');
+                $authSecret = env('PUSHER_APP_SECRET');
+                $channelData = json_encode($userData);
+                $stringToSign = "$socketId:$channelName:$channelData";
+                $auth = hash_hmac('sha256', $stringToSign, $authSecret);
+                
                 return json_encode([
-                    'channel_data' => json_encode($userData),
-                    'auth' => $this->pusher->socket_auth($channelName, $socketId)
+                    'auth' => "$authKey:$auth",
+                    'channel_data' => $channelData
                 ]);
             } else {
                 // For private channels, use the modern approach

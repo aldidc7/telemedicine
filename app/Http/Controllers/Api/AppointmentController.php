@@ -58,14 +58,14 @@ class AppointmentController extends Controller
         } catch (\Throwable $e) {
             // Handle database deadlock
             if ($e instanceof \PDOException) {
-                $message = $e->getMessage();
-                if (strpos($message ?? '', 'Deadlock') !== false) {
+                $message = (string) ($e->getMessage() ?? '');
+                if (strpos($message, 'Deadlock') !== false) {
                     return response()->json([
                         'error' => 'Terjadi konflik akses, silahkan coba lagi',
                         'code' => 'DEADLOCK_DETECTED'
                     ], 409);
                 }
-                return response()->json(['error' => 'Kesalahan database: ' . ($message ?? 'Unknown error')], 500);
+                return response()->json(['error' => 'Kesalahan database: ' . $message], 500);
             }
 
             // Handle other exceptions (doctor inactive, slot booked, etc)
