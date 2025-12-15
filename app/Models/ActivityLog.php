@@ -55,13 +55,9 @@ class ActivityLog extends Model
      */
     protected $fillable = [
         'user_id',
-        'aksi',
-        'tipe_model',
-        'id_model',
-        'nilai_lama',
-        'nilai_baru',
-        'deskripsi',
-        'alamat_ip',
+        'action',
+        'description',
+        'ip_address',
         'user_agent',
     ];
 
@@ -245,8 +241,8 @@ class ActivityLog extends Model
     {
         return self::create([
             'user_id' => $userId,
-            'aksi' => $action,
-            'deskripsi' => $description,
+            'action' => $action,
+            'description' => $description,
         ]);
     }
 }
