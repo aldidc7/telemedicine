@@ -42,7 +42,7 @@ class AppointmentController extends Controller
                 return response()->json(['error' => 'Hanya pasien dapat membuat appointment'], 403);
             }
 
-            // Book appointment
+            // Book appointment dengan concurrent access control
             $appointment = $this->appointmentService->bookAppointment(
                 Auth::user()->id,
                 $validated['doctor_id'],
@@ -56,8 +56,32 @@ class AppointmentController extends Controller
                 'message' => 'Appointment berhasil dibuat',
                 'data' => $appointment,
             ], 201);
+        } catch (\PDOException $e) {
+            // Handle database deadlock
+            if (strpos($e->getMessage(), 'Deadlock') !== false) {
+                return response()->json([
+                    'error' => 'Terjadi konflik akses, silahkan coba lagi',
+                    'code' => 'DEADLOCK_DETECTED'
+                ], 409);
+            }
+            return response()->json(['error' => 'Kesalahan database: ' . $e->getMessage()], 500);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 422);
+            // Handle other exceptions (doctor inactive, slot booked, etc)
+            $statusCode = 422;
+            
+            // Check specific error messages from ConcurrentAccessService
+            if (strpos($e->getMessage(), 'tidak aktif') !== false) {
+                $statusCode = 409;
+            } elseif (strpos($e->getMessage(), 'sudah memiliki appointment') !== false) {
+                $statusCode = 409;
+            } elseif (strpos($e->getMessage(), 'belum dibayar') !== false) {
+                $statusCode = 402;
+            }
+            
+            return response()->json([
+                'error' => $e->getMessage(),
+                'code' => 'BOOKING_FAILED'
+            ], $statusCode);
         }
     }
 

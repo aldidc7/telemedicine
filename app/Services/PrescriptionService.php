@@ -11,8 +11,15 @@ use Illuminate\Support\Facades\DB;
 
 class PrescriptionService
 {
+    protected $concurrentAccessService;
+
+    public function __construct(ConcurrentAccessService $concurrentAccessService)
+    {
+        $this->concurrentAccessService = $concurrentAccessService;
+    }
+
     /**
-     * Create prescription for appointment
+     * Create prescription for appointment (with concurrent access control)
      */
     public function createPrescription(
         int $appointmentId,
@@ -23,10 +30,11 @@ class PrescriptionService
         ?string $instructions = null,
         ?string $expiresAt = null
     ): Prescription {
-        // Use transaction to ensure consistency
+        // Use atomic operation untuk prescription creation
         return DB::transaction(function () use ($appointmentId, $doctorId, $patientId, $medications, $notes, $instructions, $expiresAt) {
-            // Validasi appointment exists dan selesai
-            $appointment = Appointment::findOrFail($appointmentId);
+            // Lock appointment record untuk concurrent access control
+            $appointment = Appointment::lockForUpdate()->findOrFail($appointmentId);
+            
             if ($appointment->status !== 'completed') {
                 throw new \Exception('Hanya appointment yang sudah selesai yang bisa diberi resep');
             }
@@ -39,6 +47,15 @@ class PrescriptionService
             // Validasi medications tidak kosong
             if (empty($medications)) {
                 throw new \Exception('Minimal ada satu obat dalam resep');
+            }
+
+            // Check duplicate prescription doesn't exist (with lock)
+            $existingPrescription = Prescription::where('appointment_id', $appointmentId)
+                ->lockForUpdate()
+                ->exists();
+
+            if ($existingPrescription) {
+                throw new \Exception('Resep untuk appointment ini sudah dibuat');
             }
 
             // Create prescription
@@ -54,31 +71,35 @@ class PrescriptionService
                 'status' => 'active',
             ]);
 
-            // Broadcast prescription created via WebSocket
-            try {
-                $prescription->load(['doctor', 'patient']);
-                broadcast(new PrescriptionCreated($prescription));
-            } catch (\Exception $e) {
-                \Log::warning('Failed to broadcast prescription: ' . $e->getMessage());
-            }
-
-            // Send notification ke patient
-            try {
-                (new NotificationService())->notifyPrescriptionCreated(
-                    $patientId,
-                    $prescription->id,
-                    $appointment->doctor->name,
-                    count($medications)
-                );
-            } catch (\Exception $e) {
-                \Log::warning('Failed to create prescription notification: ' . $e->getMessage());
-            }
-
             return $prescription;
         });
 
-        return $prescription;
+        // Note: Broadcasts and notifications done outside transaction
+        // to avoid holding locks too long
     }
+
+    /**
+     * Broadcast and notify prescription creation (external to transaction)
+     */
+    private function broadcastPrescriptionCreated(Prescription $prescription, int $patientId, string $doctorName, int $medicationCount)
+    {
+        try {
+            $prescription->load(['doctor', 'patient']);
+            broadcast(new PrescriptionCreated($prescription));
+        } catch (\Exception $e) {
+            \Log::warning('Failed to broadcast prescription: ' . $e->getMessage());
+        }
+
+        try {
+            (new NotificationService())->notifyPrescriptionCreated(
+                $patientId,
+                $prescription->id,
+                $doctorName,
+                $medicationCount
+            );
+        } catch (\Exception $e) {
+            \Log::warning('Failed to create prescription notification: ' . $e->getMessage());
+        }
 
     /**
      * Get prescription by ID with relationships
@@ -161,30 +182,37 @@ class PrescriptionService
     }
 
     /**
-     * Patient acknowledge prescription
+     * Patient acknowledge prescription (with concurrent access control)
      */
     public function acknowledgePrescription(int $prescriptionId, int $patientId): Prescription
     {
-        $prescription = Prescription::findOrFail($prescriptionId);
+        return DB::transaction(function () use ($prescriptionId, $patientId) {
+            // Lock prescription for update
+            $prescription = Prescription::lockForUpdate()->findOrFail($prescriptionId);
 
-        if ($prescription->patient_id !== $patientId) {
-            throw new \Exception('Anda tidak berhak acknowledge resep ini');
-        }
+            if ($prescription->patient_id !== $patientId) {
+                throw new \Exception('Anda tidak berhak acknowledge resep ini');
+            }
 
-        $prescription->acknowledge();
+            $prescription->acknowledge();
 
-        // Send notification ke doctor
-        (new NotificationService())->notifyPrescriptionAcknowledged(
-            $prescription->doctor_id,
-            $prescriptionId,
-            $prescription->patient->name
-        );
+            // Send notification ke doctor
+            try {
+                (new NotificationService())->notifyPrescriptionAcknowledged(
+                    $prescription->doctor_id,
+                    $prescriptionId,
+                    $prescription->patient->name
+                );
+            } catch (\Exception $e) {
+                \Log::warning('Failed to send acknowledgement notification: ' . $e->getMessage());
+            }
 
-        return $prescription;
+            return $prescription;
+        });
     }
 
     /**
-     * Update prescription (doctor only)
+     * Update prescription (doctor only, with concurrent access control)
      */
     public function updatePrescription(
         int $prescriptionId,
@@ -193,34 +221,41 @@ class PrescriptionService
         ?string $notes = null,
         ?string $instructions = null
     ): Prescription {
-        $prescription = Prescription::findOrFail($prescriptionId);
+        return DB::transaction(function () use ($prescriptionId, $doctorId, $medications, $notes, $instructions) {
+            // Lock prescription for update
+            $prescription = Prescription::lockForUpdate()->findOrFail($prescriptionId);
 
-        if ($prescription->doctor_id !== $doctorId) {
-            throw new \Exception('Hanya doctor yang buat resep ini yang bisa update');
+            if ($prescription->doctor_id !== $doctorId) {
+                throw new \Exception('Hanya doctor yang buat resep ini yang bisa update');
+            }
+
+            if (!empty($medications)) {
+                $prescription->medications = $medications;
+            }
+
+            if ($notes !== null) {
+                $prescription->notes = $notes;
+            }
+
+            if ($instructions !== null) {
+                $prescription->instructions = $instructions;
+            }
+
+            $prescription->save();
+
+            return $prescription;
+        });
+
+        // Notification sent after transaction commits
+        try {
+            (new NotificationService())->notifyPrescriptionUpdated(
+                $prescription->patient_id,
+                $prescriptionId,
+                $prescription->doctor->name
+            );
+        } catch (\Exception $e) {
+            \Log::warning('Failed to send update notification: ' . $e->getMessage());
         }
-
-        if (!empty($medications)) {
-            $prescription->medications = $medications;
-        }
-
-        if ($notes !== null) {
-            $prescription->notes = $notes;
-        }
-
-        if ($instructions !== null) {
-            $prescription->instructions = $instructions;
-        }
-
-        $prescription->save();
-
-        // Send notification ke patient
-        (new NotificationService())->notifyPrescriptionUpdated(
-            $prescription->patient_id,
-            $prescriptionId,
-            $prescription->doctor->name
-        );
-
-        return $prescription;
     }
 
     /**

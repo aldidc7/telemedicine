@@ -26,7 +26,7 @@ class AnalyticsController extends BaseApiController
      *     security={{"sanctum":{}}},
      *     @OA\Response(
      *         response=200,
-     *         description="Analytics overview retrieved successfully",
+     *         description="Analytics overview retrieved successfully"
      *         @OA\JsonContent(
      *             type="object",
      *             properties={

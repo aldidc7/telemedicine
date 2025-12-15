@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 class RatingService
 {
     /**
-     * Create new rating
+     * Create new rating (with concurrent access control)
      * 
      * @param int $konsultasiId
      * @param array $data
@@ -21,17 +21,26 @@ class RatingService
     public function createRating(int $konsultasiId, array $data)
     {
         return DB::transaction(function () use ($konsultasiId, $data) {
+            // Lock konsultasi untuk concurrent access control
+            $konsultasi = Konsultasi::lockForUpdate()->findOrFail($konsultasiId);
+            
+            // Check duplicate rating doesn't exist
+            $existingRating = Rating::where('konsultasi_id', $konsultasiId)
+                ->lockForUpdate()
+                ->exists();
+            
+            if ($existingRating) {
+                throw new \Exception('Rating untuk konsultasi ini sudah dibuat');
+            }
+
             $rating = Rating::create([
                 'konsultasi_id' => $konsultasiId,
                 'rating' => $data['rating'],
                 'komentar' => $data['komentar'] ?? null,
             ]);
 
-            // Update consultation rating
-            $konsultasi = Konsultasi::find($konsultasiId);
-            if ($konsultasi) {
-                $konsultasi->update(['rating' => $data['rating']]);
-            }
+            // Update consultation rating atomically
+            $konsultasi->update(['rating' => $data['rating']]);
 
             return $rating->load('konsultasi');
         });
@@ -49,7 +58,7 @@ class RatingService
     }
 
     /**
-     * Update rating
+     * Update rating (with concurrent access control)
      * 
      * @param Rating $rating
      * @param array $data
@@ -58,6 +67,8 @@ class RatingService
     public function updateRating(Rating $rating, array $data)
     {
         return DB::transaction(function () use ($rating, $data) {
+            // Lock rating for update
+            $rating = Rating::lockForUpdate()->findOrFail($rating->id);
             $oldRating = $rating->rating;
 
             $rating->update([
@@ -67,7 +78,7 @@ class RatingService
 
             // Update consultation rating if changed
             if (($data['rating'] ?? $oldRating) !== $oldRating) {
-                $konsultasi = $rating->konsultasi;
+                $konsultasi = Konsultasi::lockForUpdate()->find($rating->konsultasi_id);
                 if ($konsultasi) {
                     $konsultasi->update(['rating' => $data['rating']]);
                 }

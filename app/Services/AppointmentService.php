@@ -8,12 +8,20 @@ use App\Events\AppointmentUpdated;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 
 class AppointmentService
 {
+    protected $concurrentAccessService;
+
+    public function __construct(ConcurrentAccessService $concurrentAccessService)
+    {
+        $this->concurrentAccessService = $concurrentAccessService;
+    }
+
     /**
-     * Book new appointment
+     * Book new appointment (with concurrent access control)
      */
     public function bookAppointment(
         int $patientId,
@@ -23,58 +31,31 @@ class AppointmentService
         ?string $reason = null,
         ?float $price = null
     ): Appointment {
-        // Use transaction to ensure data consistency
-        return DB::transaction(function () use ($patientId, $doctorId, $scheduledAt, $type, $reason, $price) {
-            // Validasi doctor exists dan adalah dokter
-            $doctor = User::findOrFail($doctorId);
-            if ($doctor->role !== 'dokter') {
-                throw new \Exception('User harus dokter');
-            }
+        // Use atomic operation dengan pessimistic locking
+        $appointment = $this->concurrentAccessService->bookAppointmentAtomic(
+            $patientId,
+            $doctorId,
+            $scheduledAt,
+            $type,
+            $reason
+        );
 
-            // Validasi patient exists
-            $patient = User::findOrFail($patientId);
-            if ($patient->role !== 'pasien') {
-                throw new \Exception('User harus pasien');
-            }
+        // Send notification ke doctor asynchronously
+        try {
+            $doctor = $appointment->doctor;
+            $patient = $appointment->patient;
+            (new NotificationService())->notifyAppointmentCreated(
+                $doctorId,
+                $appointment->id,
+                $patient->name,
+                $scheduledAt
+            );
+        } catch (\Exception $e) {
+            \Log::warning('Failed to create appointment notification: ' . $e->getMessage());
+            // Continue - appointment created, notification failure is non-critical
+        }
 
-            // Validasi tidak ada appointment konflik (with locking)
-            $existingAppointment = Appointment::where('doctor_id', $doctorId)
-                ->where('scheduled_at', $scheduledAt)
-                ->whereIn('status', ['pending', 'confirmed', 'in_progress'])
-                ->lockForUpdate()
-                ->exists();
-
-            if ($existingAppointment) {
-                throw new \Exception('Doctor sudah memiliki appointment pada waktu tersebut');
-            }
-
-            // Create appointment
-            $appointment = Appointment::create([
-                'patient_id' => $patientId,
-                'doctor_id' => $doctorId,
-                'scheduled_at' => $scheduledAt,
-                'type' => $type,
-                'reason' => $reason,
-                'price' => $price,
-                'status' => 'pending',
-                'payment_status' => 'pending',
-            ]);
-
-            // Send notification ke doctor
-            try {
-                (new NotificationService())->notifyAppointmentCreated(
-                    $doctorId,
-                    $appointment->id,
-                    $patient->name,
-                    $scheduledAt
-                );
-            } catch (\Exception $e) {
-                \Log::warning('Failed to create appointment notification: ' . $e->getMessage());
-                // Continue - appointment created, notification failure is non-critical
-            }
-
-            return $appointment;
-        });
+        return $appointment;
     }
 
     /**
@@ -128,21 +109,17 @@ class AppointmentService
     }
 
     /**
-     * Confirm appointment (by doctor)
+     * Confirm appointment (by doctor) - dengan concurrent access control
      */
     public function confirmAppointment(int $appointmentId, int $doctorId): Appointment
     {
-        $appointment = Appointment::findOrFail($appointmentId);
-
-        if ($appointment->doctor_id !== $doctorId) {
-            throw new \Exception('Hanya doctor dapat confirm appointment');
-        }
-
-        if ($appointment->status !== 'pending') {
-            throw new \Exception('Hanya appointment pending yang dapat di-confirm');
-        }
-
-        $appointment->confirm();
+        // Use atomic operation untuk status update
+        $appointment = $this->concurrentAccessService->updateAppointmentStatusAtomic(
+            $appointmentId,
+            'confirmed',
+            $doctorId,
+            'dokter'
+        );
 
         // Broadcast appointment update via WebSocket
         try {
@@ -153,39 +130,43 @@ class AppointmentService
         }
 
         // Send notification ke patient
-        (new NotificationService())->notifyAppointmentConfirmed(
-            $appointment->patient_id,
-            $appointmentId,
-            $appointment->doctor->name,
-            $appointment->scheduled_at
-        );
+        try {
+            (new NotificationService())->notifyAppointmentConfirmed(
+                $appointment->patient_id,
+                $appointmentId,
+                $appointment->doctor->name,
+                $appointment->scheduled_at
+            );
+        } catch (\Exception $e) {
+            \Log::warning('Failed to send confirmation notification: ' . $e->getMessage());
+        }
 
         return $appointment;
     }
 
     /**
-     * Reject appointment (by doctor)
+     * Reject appointment (by doctor) - dengan concurrent access control
      */
     public function rejectAppointment(int $appointmentId, int $doctorId, string $reason): Appointment
     {
-        $appointment = Appointment::findOrFail($appointmentId);
-
-        if ($appointment->doctor_id !== $doctorId) {
-            throw new \Exception('Hanya doctor dapat reject appointment');
-        }
-
-        if ($appointment->status !== 'pending') {
-            throw new \Exception('Hanya appointment pending yang dapat di-reject');
-        }
-
-        $appointment->reject($reason);
+        // Use atomic operation untuk status update
+        $appointment = $this->concurrentAccessService->updateAppointmentStatusAtomic(
+            $appointmentId,
+            'rejected',
+            $doctorId,
+            'dokter'
+        );
 
         // Send notification ke patient
-        (new NotificationService())->notifyAppointmentRejected(
-            $appointment->patient_id,
-            $appointmentId,
-            $reason
-        );
+        try {
+            (new NotificationService())->notifyAppointmentRejected(
+                $appointment->patient_id,
+                $appointmentId,
+                $reason
+            );
+        } catch (\Exception $e) {
+            \Log::warning('Failed to send rejection notification: ' . $e->getMessage());
+        }
 
         return $appointment;
     }
