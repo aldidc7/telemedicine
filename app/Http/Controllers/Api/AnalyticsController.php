@@ -353,4 +353,139 @@ class AnalyticsController extends BaseApiController
             return $this->apiError('Failed to get real-time metrics', null, 500);
         }
     }
+
+    /**
+     * Get top-rated doctors
+     */
+    public function getTopRatedDoctors(Request $request)
+    {
+        try {
+            $limit = $request->query('limit', 10);
+            $data = $this->analyticsService->getTopRatedDoctors($limit);
+
+            return $this->apiResponse($data, 'Top-rated doctors retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->apiError('Failed to retrieve top-rated doctors', null, 500);
+        }
+    }
+
+    /**
+     * Get most active doctors
+     */
+    public function getMostActiveDoctors(Request $request)
+    {
+        try {
+            $limit = $request->query('limit', 10);
+            $data = $this->analyticsService->getMostActiveDoctors($limit);
+
+            return $this->apiResponse($data, 'Most active doctors retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->apiError('Failed to retrieve most active doctors', null, 500);
+        }
+    }
+
+    /**
+     * Get patient demographics
+     */
+    public function getPatientDemographics()
+    {
+        try {
+            $data = $this->analyticsService->getPatientDemographics();
+
+            return $this->apiResponse($data, 'Patient demographics retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->apiError('Failed to retrieve patient demographics', null, 500);
+        }
+    }
+
+    /**
+     * Get engagement metrics
+     */
+    public function getEngagementMetrics(Request $request)
+    {
+        try {
+            $period = $request->query('period', 'month');
+            $data = $this->analyticsService->getEngagementMetrics($period);
+
+            return $this->apiResponse($data, 'Engagement metrics retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->apiError('Failed to retrieve engagement metrics', null, 500);
+        }
+    }
+
+    /**
+     * Get specialization distribution
+     */
+    public function getSpecializationDistribution()
+    {
+        try {
+            $data = $this->analyticsService->getSpecializationDistribution();
+
+            return $this->apiResponse($data, 'Specialization distribution retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->apiError('Failed to retrieve specialization distribution', null, 500);
+        }
+    }
+
+    /**
+     * Get consultation trends
+     */
+    public function getConsultationTrends(Request $request)
+    {
+        try {
+            $startDate = $request->query('start_date', Carbon::now()->subDays(30)->toDateString());
+            $endDate = $request->query('end_date', now()->toDateString());
+            
+            $data = $this->analyticsService->getConsultationTrendsByDate($startDate, $endDate);
+
+            return $this->apiResponse($data, 'Consultation trends retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->apiError('Failed to retrieve consultation trends', null, 500);
+        }
+    }
+
+    /**
+     * Get user registration trends
+     */
+    public function getUserTrends(Request $request)
+    {
+        try {
+            $startDate = $request->query('start_date', Carbon::now()->subDays(30)->toDateString());
+            $endDate = $request->query('end_date', now()->toDateString());
+            
+            $data = $this->analyticsService->getUserTrendsByDate($startDate, $endDate);
+
+            return $this->apiResponse($data, 'User registration trends retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->apiError('Failed to retrieve user trends', null, 500);
+        }
+    }
+
+    /**
+     * Get growth metrics
+     */
+    public function getGrowthMetrics()
+    {
+        try {
+            $data = $this->analyticsService->getGrowthMetrics();
+
+            return $this->apiResponse($data, 'Growth metrics retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->apiError('Failed to retrieve growth metrics', null, 500);
+        }
+    }
+
+    /**
+     * Get user retention metrics
+     */
+    public function getUserRetention()
+    {
+        try {
+            $data = $this->analyticsService->getUserRetention();
+
+            return $this->apiResponse($data, 'User retention metrics retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->apiError('Failed to retrieve user retention metrics', null, 500);
+        }
+    }
 }

@@ -331,5 +331,191 @@ class AnalyticsService
             'timestamp' => now(),
         ];
     }
+
+    /**
+     * Get top-rated doctors
+     */
+    public function getTopRatedDoctors($limit = 10)
+    {
+        return Cache::remember("analytics:top-rated:{$limit}", 3600, function () use ($limit) {
+            return User::where('role', 'dokter')
+                ->with('dokter')
+                ->get()
+                ->map(function ($doctor) {
+                    $avgRating = Rating::where('doctor_id', $doctor->id)->avg('rating') ?? 0;
+                    $totalRatings = Rating::where('doctor_id', $doctor->id)->count();
+
+                    return [
+                        'id' => $doctor->id,
+                        'name' => $doctor->name,
+                        'specialization' => $doctor->dokter->specialization,
+                        'average_rating' => round($avgRating, 2),
+                        'total_ratings' => $totalRatings,
+                        'is_verified' => $doctor->dokter->is_verified,
+                    ];
+                })
+                ->sortByDesc('average_rating')
+                ->take($limit)
+                ->values()
+                ->toArray();
+        });
+    }
+
+    /**
+     * Get most active doctors (by consultations)
+     */
+    public function getMostActiveDoctors($limit = 10)
+    {
+        return Cache::remember("analytics:most-active:{$limit}", 3600, function () use ($limit) {
+            return User::where('role', 'dokter')
+                ->with('dokter')
+                ->get()
+                ->map(function ($doctor) {
+                    $consultations = Konsultasi::where('dokter_id', $doctor->dokter->id)->count();
+                    $avgRating = Rating::where('doctor_id', $doctor->id)->avg('rating') ?? 0;
+
+                    return [
+                        'id' => $doctor->id,
+                        'name' => $doctor->name,
+                        'specialization' => $doctor->dokter->specialization,
+                        'consultations_count' => $consultations,
+                        'average_rating' => round($avgRating, 2),
+                        'is_available' => $doctor->dokter->is_available,
+                    ];
+                })
+                ->sortByDesc('consultations_count')
+                ->take($limit)
+                ->values()
+                ->toArray();
+        });
+    }
+
+    /**
+     * Get patient demographics
+     */
+    public function getPatientDemographics()
+    {
+        return Cache::remember('analytics:demographics', 3600, function () {
+            $patients = User::where('role', 'pasien')->with('pasien')->get();
+
+            $byGender = $patients->groupBy(function ($patient) {
+                return $patient->pasien->gender ?? 'unknown';
+            })->map->count()->toArray();
+
+            $total = $patients->count();
+            $verified = User::where('role', 'pasien')
+                ->whereNotNull('email_verified_at')
+                ->count();
+
+            return [
+                'total_patients' => $total,
+                'verified_email' => $verified,
+                'verification_rate' => $total > 0 ? round(($verified / $total) * 100, 2) : 0,
+                'by_gender' => $byGender,
+            ];
+        });
+    }
+
+    /**
+     * Get engagement metrics
+     */
+    public function getEngagementMetrics($period = 'month')
+    {
+        $startDate = match ($period) {
+            'week' => Carbon::now()->subDays(7),
+            'year' => Carbon::now()->subYear(),
+            default => Carbon::now()->subDays(30),
+        };
+
+        return [
+            'messages_sent' => Message::whereBetween('created_at', [$startDate, now()])->count(),
+            'consultations_completed' => Konsultasi::whereBetween('created_at', [$startDate, now()])
+                ->where('status', 'completed')->count(),
+            'ratings_given' => Rating::whereBetween('created_at', [$startDate, now()])->count(),
+            'period' => $period,
+        ];
+    }
+
+    /**
+     * Get specialization distribution
+     */
+    public function getSpecializationDistribution()
+    {
+        return Cache::remember('analytics:specializations', 3600, function () {
+            return \App\Models\Dokter::groupBy('specialization')
+                ->selectRaw('specialization, count(*) as count')
+                ->pluck('count', 'specialization')
+                ->toArray();
+        });
+    }
+
+    /**
+     * Get consultation trends by date
+     */
+    public function getConsultationTrendsByDate($startDate, $endDate)
+    {
+        return Konsultasi::whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->selectRaw('DATE(created_at) as date, count(*) as count')
+            ->orderBy('date', 'asc')
+            ->pluck('count', 'date')
+            ->toArray();
+    }
+
+    /**
+     * Get user registration trends
+     */
+    public function getUserTrendsByDate($startDate, $endDate)
+    {
+        return User::whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->selectRaw('DATE(created_at) as date, count(*) as count')
+            ->orderBy('date', 'asc')
+            ->pluck('count', 'date')
+            ->toArray();
+    }
+
+    /**
+     * Get growth metrics
+     */
+    public function getGrowthMetrics()
+    {
+        $today = Carbon::today();
+        $yesterday = $today->copy()->subDay();
+        $thisWeek = $today->copy()->startOfWeek();
+        $lastWeek = $thisWeek->copy()->subWeek();
+
+        return [
+            'users_today' => User::whereDate('created_at', $today)->count(),
+            'users_yesterday' => User::whereDate('created_at', $yesterday)->count(),
+            'users_this_week' => User::whereBetween('created_at', [$thisWeek, $today])->count(),
+            'users_last_week' => User::whereBetween('created_at', [$lastWeek, $thisWeek])->count(),
+            'consultations_today' => Konsultasi::whereDate('created_at', $today)->count(),
+            'consultations_this_week' => Konsultasi::whereBetween('created_at', [$thisWeek, $today])->count(),
+        ];
+    }
+
+    /**
+     * Get user retention metrics
+     */
+    public function getUserRetention()
+    {
+        $oneMonthAgo = Carbon::now()->subDays(30);
+        $threeMonthsAgo = Carbon::now()->subDays(90);
+        $sixMonthsAgo = Carbon::now()->subDays(180);
+
+        $newThisMonth = User::where('created_at', '>=', $oneMonthAgo)->count();
+        $active30days = User::where('last_login_at', '>=', $oneMonthAgo)->count();
+        $active90days = User::where('last_login_at', '>=', $threeMonthsAgo)->count();
+        $active180days = User::where('last_login_at', '>=', $sixMonthsAgo)->count();
+
+        return [
+            'new_users_30days' => $newThisMonth,
+            'active_users_30days' => $active30days,
+            'active_users_90days' => $active90days,
+            'active_users_180days' => $active180days,
+            'retention_rate_30days' => $newThisMonth > 0 ? round(($active30days / $newThisMonth) * 100, 2) : 0,
+        ];
+    }
 }
 

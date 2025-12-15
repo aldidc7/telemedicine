@@ -299,6 +299,17 @@ Route::prefix('v1')->group(function () {
             
             // Real-time Updates
             Route::get('/realtime', [AnalyticsController::class, 'getRealtimeMetrics']);
+
+            // Enhanced Analytics Endpoints
+            Route::get('/top-doctors', [AnalyticsController::class, 'getTopRatedDoctors']);
+            Route::get('/active-doctors', [AnalyticsController::class, 'getMostActiveDoctors']);
+            Route::get('/patient-demographics', [AnalyticsController::class, 'getPatientDemographics']);
+            Route::get('/engagement', [AnalyticsController::class, 'getEngagementMetrics']);
+            Route::get('/specializations', [AnalyticsController::class, 'getSpecializationDistribution']);
+            Route::get('/consultation-trends', [AnalyticsController::class, 'getConsultationTrends']);
+            Route::get('/user-trends', [AnalyticsController::class, 'getUserTrends']);
+            Route::get('/growth', [AnalyticsController::class, 'getGrowthMetrics']);
+            Route::get('/retention', [AnalyticsController::class, 'getUserRetention']);
         });
     });
 });
