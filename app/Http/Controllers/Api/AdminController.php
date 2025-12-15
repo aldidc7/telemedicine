@@ -200,8 +200,8 @@ class AdminController extends Controller
                     'recent_consultations' => $konsultasiTerbaru->map(function ($k) {
                         return [
                             'id' => $k->id,
-                            'pasien' => $k->pasien->pengguna->name,
-                            'dokter' => $k->dokter?->pengguna->name ?? 'Belum ditugaskan',
+                            'pasien' => $k->patient?->user?->name ?? 'N/A',
+                            'dokter' => $k->doctor?->user?->name ?? 'Belum ditugaskan',
                             'jenis_keluhan' => $k->jenis_keluhan,
                             'status' => $k->status,
                             'created_at' => $k->created_at->toIso8601String(),
@@ -211,7 +211,7 @@ class AdminController extends Controller
                     'recent_activities' => $aktivitasTerbaru->map(function ($a) {
                         return [
                             'id' => $a->id,
-                            'user' => $a->pengguna->name,
+                            'user' => $a->user?->name ?? 'Unknown',
                             'aksi' => $a->aksi,
                             'tipe_model' => $a->tipe_model,
                             'deskripsi' => $a->deskripsi,
