@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\PasienController;
 use App\Http\Controllers\Api\DokterController;
 use App\Http\Controllers\Api\KonsultasiController;
 use App\Http\Controllers\Api\PesanChatController;
+use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\RatingController;
 use App\Http\Controllers\Api\DoctorVerificationController;
@@ -220,6 +221,29 @@ Route::prefix('v1')->group(function () {
         Route::get('/ratings/dokter/{dokter_id}', [RatingController::class, 'getDokterRatings']);
         Route::get('/ratings/konsultasi/{konsultasi_id}', [RatingController::class, 'getKonsultasiRating']);
         Route::apiResource('/ratings', RatingController::class, ['only' => ['store', 'update', 'destroy']]);
+
+        // ========== MESSAGING ENDPOINTS (Chat/Conversations) ==========
+        /**
+         * Messaging Routes - Komunikasi antara Pasien dan Dokter
+         * GET /api/v1/messages/conversations - List semua conversations
+         * POST /api/v1/messages/conversations - Create/get conversation dengan user lain
+         * GET /api/v1/messages/conversations/{id} - Get conversation detail
+         * GET /api/v1/messages/conversations/{id}/messages - Get messages dalam conversation
+         * POST /api/v1/messages/conversations/{id}/send - Send message
+         * POST /api/v1/messages/conversations/{id}/read - Mark conversation as read
+         * DELETE /api/v1/messages/conversations/{id} - Delete conversation
+         * GET /api/v1/messages/unread-count - Get total unread message count
+         */
+        Route::prefix('/messages')->group(function () {
+            Route::get('/conversations', [MessageController::class, 'getConversations']);
+            Route::get('/conversations/{id}', [MessageController::class, 'getConversationDetail']);
+            Route::post('/conversations', [MessageController::class, 'createConversation']);
+            Route::get('/conversations/{id}/messages', [MessageController::class, 'getMessages']);
+            Route::post('/conversations/{id}/send', [MessageController::class, 'sendMessage']);
+            Route::post('/conversations/{id}/read', [MessageController::class, 'markAsRead']);
+            Route::delete('/conversations/{id}', [MessageController::class, 'deleteConversation']);
+            Route::get('/unread-count', [MessageController::class, 'getUnreadCount']);
+        });
 
         // ========== ANALYTICS ENDPOINTS (Admin Only) ==========
         /**

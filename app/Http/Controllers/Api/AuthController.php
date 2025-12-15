@@ -44,53 +44,6 @@ class AuthController extends Controller
 
     /**
      * Register user baru (Pasien atau Dokter)
-     * 
-     * Fungsi ini membuat akun baru untuk pasien atau dokter.
-     * Untuk pasien: Buat user + data pasien di tabel patients
-     * Untuk dokter: Buat user + data dokter di tabel doctors
-     * 
-     * POST /api/v1/auth/register
-     * 
-     * Body Parameters:
-     * {
-     *   "name": "Ahmad Zaki",
-     *   "email": "ahmad@mail.com",
-     *   "password": "Password123!",
-     *   "role": "pasien",
-     *   
-     *   // Jika role = pasien:
-     *   "nik": "3215001234567890",
-     *   "tgl_lahir": "2015-06-15",
-     *   "jenis_kelamin": "Laki-laki",
-     *   "alamat": "Jl. Raya Pasuruan No. 123",
-     *   "no_telepon": "081234567890",
-     *   "golongan_darah": "O",
-     *   "nama_kontak_darurat": "Budi Zaki",
-     *   "no_kontak_darurat": "082345678901",
-     *   
-     *   // Jika role = dokter:
-     *   "spesialisasi": "Dokter Anak",
-     *   "no_lisensi": "SIP-JE-2020-000001",
-     *   "no_telepon": "081999888777"
-     * }
-     * 
-     * Password Requirements:
-     * - Minimal 8 karakter
-     * - Minimal 1 huruf besar
-     * - Minimal 1 huruf kecil
-     * - Minimal 1 angka
-     * - Minimal 1 simbol (@$!%*?&)
-     * 
-     * @param Request $request - HTTP request dengan data registrasi
-     * @return \Illuminate\Http\JsonResponse
-     */
-    /**
-     * Register user baru (Pasien atau Dokter)
-     * 
-     * Menggunakan FormRequest untuk validasi otomatis
-     * dan AuthService untuk business logic.
-     * 
-     * POST /api/v1/auth/register
      */
     public function register(RegisterRequest $request)
     {
@@ -118,28 +71,6 @@ class AuthController extends Controller
 
     /**
      * Login user dengan email dan password
-     * 
-     * Fungsi ini mengautentikasi user dan mengembalikan JWT token.
-     * User harus aktif (is_active = true) untuk bisa login.
-     * 
-     * POST /api/v1/auth/login
-     * 
-     * Body Parameters:
-     * {
-     *   "email": "ahmad@mail.com",
-     *   "password": "Password123!"
-     * }
-     * 
-     * @param Request $request - Email dan password
-     * @return \Illuminate\Http\JsonResponse
-     */
-    /**
-     * Login user dengan email/NIK dan password
-     * 
-     * Menggunakan LoginRequest untuk validasi
-     * dan AuthService untuk business logic.
-     * 
-     * POST /api/v1/auth/login
      */
     public function login(LoginRequest $request)
     {
@@ -199,9 +130,7 @@ class AuthController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     /**
-     * Ambil profil user yang sedang login
-     * 
-     * GET /api/v1/auth/me
+     * Get current user profile
      */
     public function me(Request $request)
     {
