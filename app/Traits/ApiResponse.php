@@ -20,7 +20,7 @@ trait ApiResponse
      * @param int $statusCode
      * @return JsonResponse
      */
-    public function successResponse($data = null, $message = 'Success', $statusCode = 200): JsonResponse
+    public function successResponse($data = null, $message = 'Sukses', $statusCode = 200): JsonResponse
     {
         return response()->json([
             'success' => true,
@@ -37,7 +37,7 @@ trait ApiResponse
      * @param array $data
      * @return JsonResponse
      */
-    public function errorResponse($message = 'Error', $statusCode = 400, $data = []): JsonResponse
+    public function errorResponse($message = 'Terjadi kesalahan', $statusCode = 400, $data = []): JsonResponse
     {
         return response()->json([
             'success' => false,
@@ -53,7 +53,7 @@ trait ApiResponse
      * @param string $message
      * @return JsonResponse
      */
-    public function createdResponse($data = null, $message = 'Resource created'): JsonResponse
+    public function createdResponse($data = null, $message = 'Resource berhasil dibuat'): JsonResponse
     {
         return $this->successResponse($data, $message, 201);
     }
@@ -64,7 +64,7 @@ trait ApiResponse
      * @param string $message
      * @return JsonResponse
      */
-    public function unauthorizedResponse($message = 'Unauthorized'): JsonResponse
+    public function unauthorizedResponse($message = 'Tidak diizinkan'): JsonResponse
     {
         return $this->errorResponse($message, 401);
     }
@@ -75,7 +75,7 @@ trait ApiResponse
      * @param string $message
      * @return JsonResponse
      */
-    public function forbiddenResponse($message = 'Forbidden'): JsonResponse
+    public function forbiddenResponse($message = 'Akses ditolak'): JsonResponse
     {
         return $this->errorResponse($message, 403);
     }
@@ -86,7 +86,7 @@ trait ApiResponse
      * @param string $message
      * @return JsonResponse
      */
-    public function notFoundResponse($message = 'Resource not found'): JsonResponse
+    public function notFoundResponse($message = 'Resource tidak ditemukan'): JsonResponse
     {
         return $this->errorResponse($message, 404);
     }
@@ -98,7 +98,7 @@ trait ApiResponse
      * @param array $data
      * @return JsonResponse
      */
-    public function badRequestResponse($message = 'Bad Request', $data = []): JsonResponse
+    public function badRequestResponse($message = 'Permintaan tidak valid', $data = []): JsonResponse
     {
         return response()->json([
             'success' => false,
@@ -114,7 +114,7 @@ trait ApiResponse
      * @param string $message
      * @return JsonResponse
      */
-    public function validationErrorResponse($errors, $message = 'Validation error'): JsonResponse
+    public function validationErrorResponse($errors, $message = 'Validasi gagal'): JsonResponse
     {
         return response()->json([
             'success' => false,
@@ -130,7 +130,7 @@ trait ApiResponse
      * @param string $message
      * @return JsonResponse
      */
-    public function paginatedResponse($paginator, $message = 'Success'): JsonResponse
+    public function paginatedResponse($paginator, $message = 'Sukses'): JsonResponse
     {
         return response()->json([
             'success' => true,

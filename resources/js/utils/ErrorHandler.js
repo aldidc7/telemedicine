@@ -32,7 +32,7 @@ class ErrorHandler {
       return {
         success: false,
         status: 0,
-        message: 'No response from server. Please check your connection.',
+        message: 'Tidak ada respons dari server. Silakan periksa koneksi Anda.',
         errors: {},
       }
     } else {
@@ -40,7 +40,7 @@ class ErrorHandler {
       return {
         success: false,
         status: 0,
-        message: error.message || 'An unexpected error occurred',
+        message: error.message || 'Terjadi kesalahan yang tidak terduga',
         errors: {},
       }
     }
@@ -55,25 +55,25 @@ class ErrorHandler {
   }
 
   /**
-   * Get user-friendly error message
+   * Get user-friendly error message (Pesan error yang ramah ke pengguna)
    */
   static getUserMessage(error) {
     const { status, message } = this.handle(error)
 
     const messages = {
-      400: 'Invalid request. Please check your input.',
-      401: 'Your session has expired. Please login again.',
-      403: 'You do not have permission to perform this action.',
-      404: 'Resource not found.',
-      409: 'This resource already exists.',
-      422: 'Please check your input and try again.',
-      429: 'Too many requests. Please wait a moment and try again.',
-      500: 'Server error. Please try again later.',
-      502: 'Service temporarily unavailable. Please try again later.',
-      503: 'Service is under maintenance. Please try again later.',
+      400: 'Permintaan tidak valid. Silakan periksa input Anda.',
+      401: 'Sesi Anda telah berakhir. Silakan login kembali.',
+      403: 'Anda tidak memiliki izin untuk melakukan tindakan ini.',
+      404: 'Resource tidak ditemukan.',
+      409: 'Resource ini sudah ada.',
+      422: 'Silakan periksa input Anda dan coba lagi.',
+      429: 'Terlalu banyak permintaan. Tunggu sebentar dan coba lagi.',
+      500: 'Error server. Silakan coba lagi nanti.',
+      502: 'Layanan tidak tersedia sementara. Silakan coba lagi nanti.',
+      503: 'Layanan sedang dalam pemeliharaan. Silakan coba lagi nanti.',
     }
 
-    return messages[status] || message || 'An error occurred. Please try again.'
+    return messages[status] || message || 'Terjadi kesalahan. Silakan coba lagi.'
   }
 }
 

@@ -137,7 +137,7 @@ class BaseApiController extends Controller
      *      description="Admin dashboard endpoints"
      * )
      */
-    protected function apiResponse($data = null, $message = 'Success', $statusCode = 200)
+    protected function apiResponse($data = null, $message = 'Sukses', $statusCode = 200)
     {
         return response()->json([
             'success' => true,
