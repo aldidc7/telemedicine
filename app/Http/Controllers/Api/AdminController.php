@@ -212,9 +212,9 @@ class AdminController extends Controller
                         return [
                             'id' => $a->id,
                             'user' => $a->user?->name ?? 'Unknown',
-                            'aksi' => $a->aksi,
-                            'tipe_model' => $a->tipe_model,
-                            'deskripsi' => $a->deskripsi,
+                            'action' => $a->action,
+                            'description' => $a->description,
+                            'ip_address' => $a->ip_address,
                             'created_at' => $a->created_at->toIso8601String(),
                         ];
                     }),
@@ -522,13 +522,9 @@ class AdminController extends Controller
                 // Log activity
                 ActivityLog::create([
                     'user_id' => $user->id,
-                    'aksi' => 'nonaktifkan_user',
-                    'tipe_model' => 'User',
-                    'id_model' => $pengguna->id,
-                    'nilai_lama' => json_encode(['is_active' => true]),
-                    'nilai_baru' => json_encode(['is_active' => false]),
-                    'deskripsi' => 'Admin ' . $user->name . ' menonaktifkan akun ' . $pengguna->name,
-                    'alamat_ip' => $request->ip(),
+                    'action' => 'nonaktifkan_user',
+                    'description' => 'Admin ' . $user->name . ' menonaktifkan akun ' . $pengguna->name,
+                    'ip_address' => $request->ip(),
                 ]);
             });
 
@@ -587,13 +583,9 @@ class AdminController extends Controller
                 // Log activity
                 ActivityLog::create([
                     'user_id' => $user->id,
-                    'aksi' => 'aktifkan_user',
-                    'tipe_model' => 'User',
-                    'id_model' => $pengguna->id,
-                    'nilai_lama' => json_encode(['is_active' => false]),
-                    'nilai_baru' => json_encode(['is_active' => true]),
-                    'deskripsi' => 'Admin ' . $user->name . ' mengaktifkan kembali akun ' . $pengguna->name,
-                    'alamat_ip' => $request->ip(),
+                    'action' => 'aktifkan_user',
+                    'description' => 'Admin ' . $user->name . ' mengaktifkan kembali akun ' . $pengguna->name,
+                    'ip_address' => $request->ip(),
                 ]);
             });
 
@@ -698,11 +690,9 @@ class AdminController extends Controller
             // Log activity
             ActivityLog::create([
                 'user_id' => $user->id,
-                'aksi' => 'delete_user',
-                'tipe_model' => 'User',
-                'id_model' => $id,
-                'deskripsi' => 'Admin ' . $user->name . ' menghapus akun ' . $nama,
-                'alamat_ip' => $request->ip(),
+                'action' => 'delete_user',
+                'description' => 'Admin ' . $user->name . ' menghapus akun ' . $nama,
+                'ip_address' => $request->ip(),
             ]);
 
             return response()->json([
@@ -774,11 +764,11 @@ class AdminController extends Controller
             }
 
             if ($aksi) {
-                $query->where('aksi', $aksi);
+                $query->where('action', $aksi);
             }
 
             if ($tipeModel) {
-                $query->where('tipe_model', $tipeModel);
+                // Note: tipe_model filtering removed - column not in schema
             }
 
             // Date filter
