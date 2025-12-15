@@ -119,7 +119,7 @@
         <p class="text-base md:text-lg text-white text-opacity-90 mb-8">Bergabunglah dengan ribuan pasien yang telah mempercayai kami</p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <router-link
-            to="/register/pasien"
+            to="/register"
             class="px-8 py-3 bg-white text-indigo-600 rounded-xl hover:shadow-lg transition font-bold"
           >
             Daftar Sekarang
