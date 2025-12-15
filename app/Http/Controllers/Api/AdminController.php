@@ -861,4 +861,239 @@ class AdminController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * DOCTOR APPROVAL - Get pending doctors untuk diverifikasi
+     * 
+     * GET /api/v1/admin/dokter/pending
+     */
+    public function getPendingDoctors()
+    {
+        try {
+            $user = $this->getAuthUser();
+
+            // Check if admin
+            if (!$user->isAdmin()) {
+                return response()->json([
+                    'success' => false,
+                    'pesan' => 'Anda bukan admin',
+                ], 403);
+            }
+
+            $pendingDoctors = Dokter::with('user')
+                ->where('is_verified', false)
+                ->orderBy('created_at', 'asc')
+                ->get()
+                ->map(function ($doctor) {
+                    return [
+                        'id' => $doctor->id,
+                        'name' => $doctor->user->name,
+                        'email' => $doctor->user->email,
+                        'specialization' => $doctor->specialization,
+                        'license_number' => $doctor->license_number,
+                        'phone_number' => $doctor->phone_number,
+                        'created_at' => $doctor->created_at,
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'pesan' => 'Data dokter pending berhasil diambil',
+                'data' => $pendingDoctors,
+                'count' => $pendingDoctors->count(),
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'pesan' => 'Error mengambil data dokter pending',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * DOCTOR APPROVAL - Get approved doctors
+     * 
+     * GET /api/v1/admin/dokter/approved
+     */
+    public function getApprovedDoctors()
+    {
+        try {
+            $user = $this->getAuthUser();
+
+            // Check if admin
+            if (!$user->isAdmin()) {
+                return response()->json([
+                    'success' => false,
+                    'pesan' => 'Anda bukan admin',
+                ], 403);
+            }
+
+            $approvedDoctors = Dokter::with('user')
+                ->where('is_verified', true)
+                ->orderBy('verified_at', 'desc')
+                ->get()
+                ->map(function ($doctor) {
+                    return [
+                        'id' => $doctor->id,
+                        'name' => $doctor->user->name,
+                        'email' => $doctor->user->email,
+                        'specialization' => $doctor->specialization,
+                        'license_number' => $doctor->license_number,
+                        'phone_number' => $doctor->phone_number,
+                        'verified_at' => $doctor->verified_at,
+                        'is_available' => $doctor->is_available,
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'pesan' => 'Data dokter approved berhasil diambil',
+                'data' => $approvedDoctors,
+                'count' => $approvedDoctors->count(),
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'pesan' => 'Error mengambil data dokter approved',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * DOCTOR APPROVAL - Approve a doctor
+     * 
+     * POST /api/v1/admin/dokter/{id}/approve
+     * 
+     * Request body:
+     * {
+     *   "notes": "Lisensi sudah diverifikasi" (optional)
+     * }
+     */
+    public function approveDoctor($id, Request $request)
+    {
+        try {
+            $user = $this->getAuthUser();
+
+            // Check if admin
+            if (!$user->isAdmin()) {
+                return response()->json([
+                    'success' => false,
+                    'pesan' => 'Anda bukan admin',
+                ], 403);
+            }
+
+            $request->validate([
+                'notes' => 'nullable|string|max:500',
+            ]);
+
+            $doctor = Dokter::with('user')->findOrFail($id);
+
+            if ($doctor->is_verified) {
+                return response()->json([
+                    'success' => false,
+                    'pesan' => 'Dokter sudah diverifikasi sebelumnya',
+                ], 400);
+            }
+
+            // Update doctor status
+            $doctor->update([
+                'is_verified' => true,
+                'verified_at' => now(),
+                'verified_by_admin_id' => $user->id,
+                'verification_notes' => $request->notes ?? '',
+            ]);
+
+            // Send approval email
+            try {
+                \Illuminate\Support\Facades\Mail::to($doctor->user->email)->send(new \App\Mail\DoctorApprovedMail($doctor));
+            } catch (\Exception $e) {
+                \Log::error('Failed to send doctor approval email: ' . $e->getMessage());
+            }
+
+            return response()->json([
+                'success' => true,
+                'pesan' => 'Dokter berhasil diverifikasi',
+                'data' => [
+                    'id' => $doctor->id,
+                    'name' => $doctor->user->name,
+                    'specialization' => $doctor->specialization,
+                    'verified_at' => $doctor->verified_at,
+                ],
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'pesan' => 'Error saat verifikasi dokter',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * DOCTOR APPROVAL - Reject a doctor
+     * 
+     * POST /api/v1/admin/dokter/{id}/reject
+     * 
+     * Request body:
+     * {
+     *   "reason": "Lisensi tidak valid"
+     * }
+     */
+    public function rejectDoctor($id, Request $request)
+    {
+        try {
+            $user = $this->getAuthUser();
+
+            // Check if admin
+            if (!$user->isAdmin()) {
+                return response()->json([
+                    'success' => false,
+                    'pesan' => 'Anda bukan admin',
+                ], 403);
+            }
+
+            $request->validate([
+                'reason' => 'required|string|max:500',
+            ]);
+
+            $doctor = Dokter::with('user')->findOrFail($id);
+
+            if ($doctor->is_verified) {
+                return response()->json([
+                    'success' => false,
+                    'pesan' => 'Tidak dapat menolak dokter yang sudah diverifikasi',
+                ], 400);
+            }
+
+            // Store rejection reason
+            $doctor->update([
+                'verification_notes' => 'REJECTED: ' . $request->reason,
+            ]);
+
+            // Send rejection email
+            try {
+                \Illuminate\Support\Facades\Mail::to($doctor->user->email)->send(new \App\Mail\DoctorRejectedMail($doctor, $request->reason));
+            } catch (\Exception $e) {
+                \Log::error('Failed to send doctor rejection email: ' . $e->getMessage());
+            }
+
+            return response()->json([
+                'success' => true,
+                'pesan' => 'Pendaftaran dokter ditolak',
+                'data' => [
+                    'id' => $doctor->id,
+                    'name' => $doctor->user->name,
+                    'reason' => $request->reason,
+                ],
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'pesan' => 'Error saat menolak dokter',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

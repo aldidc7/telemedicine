@@ -142,11 +142,23 @@ Route::prefix('v1')->group(function () {
         // ========== DOCTOR VERIFICATION ROUTES (Admin only) ==========
         /**
          * Doctor Verification Management
+         * GET /api/v1/admin/dokter/pending - List dokter pending verifikasi
+         * GET /api/v1/admin/dokter/approved - List dokter yang sudah disetujui
+         * POST /api/v1/admin/dokter/{id}/approve - Approve dokter
+         * POST /api/v1/admin/dokter/{id}/reject - Reject dokter
+         * Legacy routes:
          * GET /api/v1/admin/doctors/pending - List dokter pending verifikasi
          * POST /api/v1/admin/doctors/{id}/approve - Approve dokter
          * POST /api/v1/admin/doctors/{id}/reject - Reject dokter
          * GET /api/v1/admin/doctors/{id}/status - Get doctor verification status
          */
+        // New AdminController routes
+        Route::get('/admin/dokter/pending', [AdminController::class, 'getPendingDoctors']);
+        Route::get('/admin/dokter/approved', [AdminController::class, 'getApprovedDoctors']);
+        Route::post('/admin/dokter/{id}/approve', [AdminController::class, 'approveDoctor']);
+        Route::post('/admin/dokter/{id}/reject', [AdminController::class, 'rejectDoctor']);
+        
+        // Legacy DoctorVerificationController routes (for backward compatibility)
         Route::get('/admin/doctors/pending', [DoctorVerificationController::class, 'pendingDoctors']);
         Route::post('/admin/doctors/{id}/approve', [DoctorVerificationController::class, 'approvDoctor']);
         Route::post('/admin/doctors/{id}/reject', [DoctorVerificationController::class, 'rejectDoctor']);
