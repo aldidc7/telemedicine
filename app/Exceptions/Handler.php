@@ -70,7 +70,7 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $exception): JsonResponse
     {
-        // API request - return JSON
+        // API request - return JSON dengan format konsisten
         if ($request->is('api/*')) {
             return $this->handleApiException($exception);
         }
@@ -79,115 +79,60 @@ class Handler extends ExceptionHandler
     }
 
     /**
-     * Handle API exceptions dengan response format konsisten
+     * Handle API exceptions dengan response format konsisten menggunakan ApiResponse
      * 
      * @param Throwable $exception
      * @return JsonResponse
      */
     protected function handleApiException(Throwable $exception): JsonResponse
     {
-        $statusCode = $this->getStatusCode($exception);
-        $message = $this->getMessage($exception);
-        $data = [];
+        // Import ApiResponse
+        $apiResponse = \App\Http\Responses\ApiResponse::class;
 
-        // Include validation errors jika ada
-        if (method_exists($exception, 'errors')) {
-            $data['errors'] = $exception->errors();
-        }
-
-        // Include detailed error info di development
-        if (config('app.debug')) {
-            $data['debug'] = [
-                'exception' => class_basename($exception),
-                'file' => $exception->getFile(),
-                'line' => $exception->getLine(),
-                'trace' => $exception->getTrace(),
-            ];
-        }
-
-        return response()->json([
-            'success' => false,
-            'pesan' => $message,
-            'data' => $data,
-        ], $statusCode);
-    }
-
-    /**
-     * Get HTTP status code dari exception
-     * 
-     * @param Throwable $exception
-     * @return int
-     */
-    protected function getStatusCode(Throwable $exception): int
-    {
         // Validation exception
         if ($exception instanceof \Illuminate\Validation\ValidationException) {
-            return 422;
+            return $apiResponse::fromValidationException($exception);
         }
 
         // Authentication exception
         if ($exception instanceof \Illuminate\Auth\AuthenticationException) {
-            return 401;
+            return $apiResponse::unauthorized('Unauthenticated. Please login first.');
         }
 
         // Authorization exception
         if ($exception instanceof \Illuminate\Auth\Access\AuthorizationException) {
-            return 403;
+            return $apiResponse::forbidden('You do not have permission to access this resource.');
         }
 
         // Not found exception
         if ($exception instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
-            return 404;
+            return $apiResponse::notFound('The requested resource was not found.');
         }
 
         // Method not allowed
         if ($exception instanceof \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException) {
-            return 405;
+            return $apiResponse::error('Method not allowed', 405, null, 'METHOD_NOT_ALLOWED');
         }
 
-        // Conflict
+        // Unique constraint violation
         if ($exception instanceof \Illuminate\Database\UniqueConstraintViolationException) {
-            return 409;
+            return $apiResponse::conflict('This record already exists.');
         }
 
-        // Get status code dari exception jika ada
-        if (method_exists($exception, 'getStatusCode')) {
-            return $exception->getStatusCode();
+        // Throttle exception (from rate limiting)
+        if ($exception instanceof \Illuminate\Http\Exceptions\ThrottleRequestsException) {
+            return $apiResponse::tooManyRequests(
+                'Too many requests. Please try again later.',
+                $exception->getHeaders()['Retry-After'] ?? null
+            );
         }
 
-        // Default 500
-        return 500;
+        // Generic exceptions
+        if (config('app.debug')) {
+            return $apiResponse::fromException($exception, true);
+        }
+
+        return $apiResponse::serverError('An error occurred. Please try again later.');
     }
 
-    /**
-     * Get user-friendly error message
-     * 
-     * @param Throwable $exception
-     * @return string
-     */
-    protected function getMessage(Throwable $exception): string
-    {
-        // Validation error
-        if ($exception instanceof \Illuminate\Validation\ValidationException) {
-            return 'Validation error';
-        }
-
-        // Authentication error
-        if ($exception instanceof \Illuminate\Auth\AuthenticationException) {
-            return 'Unauthenticated';
-        }
-
-        // Authorization error
-        if ($exception instanceof \Illuminate\Auth\Access\AuthorizationException) {
-            return 'Unauthorized';
-        }
-
-        // Not found
-        if ($exception instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
-            return 'Resource not found';
-        }
-
-        // Return exception message or generic error
-        return $exception->getMessage() ?: 'Server error';
-    }
 }
