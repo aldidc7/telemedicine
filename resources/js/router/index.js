@@ -201,27 +201,29 @@ router.beforeEach(async (to, from, next) => {
         await authStore.initializeAuth()
       }
     } catch (error) {
-      console.error('Auth initialization error:', error)
-      // Continue anyway, user can retry
+      // Silent error, just mark as initialized
       authStore.initialized = true
     }
   } else {
-    // Pastikan sudah initialized sebelum check auth
-    let waitCount = 0
-    while (!authStore.initialized && waitCount < 80) {
-      await new Promise(resolve => setTimeout(resolve, 100))
-      waitCount++
+    // Jika masih belum initialized dan route butuh auth, tunggu dengan timeout
+    if ((to.meta.requiresAuth || to.meta.requiresRole) && !authStore.initialized) {
+      let waitCount = 0
+      while (!authStore.initialized && waitCount < 50) {
+        await new Promise(resolve => setTimeout(resolve, 100))
+        waitCount++
+      }
     }
   }
 
+  // Check authorization
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next('/login')
+    return next('/login')
   } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
-    next('/dashboard')
+    return next('/dashboard')
   } else if (to.meta.requiresRole && authStore.userRole !== to.meta.requiresRole) {
-    next('/dashboard')
+    return next('/dashboard')
   } else {
-    next()
+    return next()
   }
 })
 
