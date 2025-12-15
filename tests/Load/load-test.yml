@@ -1,0 +1,114 @@
+config:
+  target: "{{ $processEnvironment.API_URL | 'http://localhost:8000' }}"
+  phases:
+    - duration: 30
+      arrivalRate: 5
+      name: "Warm up"
+    - duration: 60
+      arrivalRate: 10
+      name: "Ramp up"
+    - duration: 120
+      arrivalRate: 20
+      name: "Sustained load"
+    - duration: 30
+      arrivalRate: 5
+      name: "Cool down"
+  
+  processor: "./tests/Load/processor.js"
+  variables:
+    emails:
+      fromFile: "./tests/Load/test-users.csv"
+    doctors:
+      fromFile: "./tests/Load/test-doctors.csv"
+
+scenarios:
+  - name: "Get Available Slots"
+    flow:
+      - get:
+          url: "/api/appointments/available-slots?doctor_id={{ doctors.0 }}&date=2024-12-20"
+          capture:
+            json: "$.data"
+            as: "slots"
+
+  - name: "User Login and Book Appointment"
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ emails.0 }}"
+            password: "password123"
+          capture:
+            json: "$.access_token"
+            as: "token"
+      
+      - get:
+          url: "/api/appointments/available-slots?doctor_id={{ doctors.0 }}&date=2024-12-20"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          capture:
+            json: "$.data[0]"
+            as: "slot"
+      
+      - post:
+          url: "/api/appointments"
+          json:
+            doctor_id: "{{ doctors.0 }}"
+            scheduled_at: "2024-12-20 {{ slot }}"
+            type: "online"
+            notes: "Load test appointment"
+          headers:
+            Authorization: "Bearer {{ token }}"
+
+  - name: "Retrieve Appointments"
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ emails.0 }}"
+            password: "password123"
+          capture:
+            json: "$.access_token"
+            as: "token"
+      
+      - get:
+          url: "/api/appointments?page=1&per_page=15"
+          headers:
+            Authorization: "Bearer {{ token }}"
+
+  - name: "Get Dashboard Stats"
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ emails.1 }}"
+            password: "password123"
+          capture:
+            json: "$.access_token"
+            as: "token"
+      
+      - get:
+          url: "/api/doctor/dashboard"
+          headers:
+            Authorization: "Bearer {{ token }}"
+
+  - name: "Concurrent Appointments"
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ emails.0 }}"
+            password: "password123"
+          capture:
+            json: "$.access_token"
+            as: "token"
+      
+      - loop:
+          - post:
+              url: "/api/appointments"
+              json:
+                doctor_id: "{{ doctors.0 }}"
+                scheduled_at: "2024-12-20T10:00:00Z"
+                type: "online"
+              headers:
+                Authorization: "Bearer {{ token }}"
+        count: 5
