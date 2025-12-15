@@ -21,13 +21,6 @@ Route::get('/v1/health', function () {
 
 Route::prefix('v1')->group(function () {
     // ============ PUBLIC ROUTES (No Auth) ============
-    /**
-     * SIMRS Health Check
-     * GET /api/v1/simrs/health - Cek status API
-     * GET /api/v1/simrs/status - Cek jumlah data
-     */
-    Route::get('/simrs/health', [SimrsController::class, 'health']);
-    Route::get('/simrs/status', [SimrsController::class, 'status']);
 
     // ============ AUTHENTICATION ROUTES ============
     /**

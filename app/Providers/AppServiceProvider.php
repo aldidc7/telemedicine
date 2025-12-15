@@ -78,5 +78,10 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('is-pasien', function (User $user) {
             return $user->role === 'pasien';
         });
+
+        // Analytics gates (Admin only)
+        Gate::define('view-analytics', function (User $user) {
+            return $user->role === 'admin';
+        });
     }
 }
