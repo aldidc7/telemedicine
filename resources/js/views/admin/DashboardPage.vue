@@ -213,36 +213,9 @@
               <p class="text-gray-600 text-sm">Real-time metrics, doctor performance & revenue insights</p>
             </router-link>
           </div>
-              class="group p-6 rounded-2xl border-2 border-gray-200 hover:border-purple-500 hover:bg-purple-50 transition cursor-pointer"
-            >
-              <div class="flex items-start justify-between mb-4">
-                <div class="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition">
-                  <svg class="w-7 h-7 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/>
-                  </svg>
-                </div>
-                <svg class="w-5 h-5 text-gray-400 group-hover:text-purple-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                </svg>
-              </div>
-              <h3 class="text-xl font-bold text-gray-900 mb-2">Statistik</h3>
-              <p class="text-gray-600 text-sm">Analisis mendalam data sistem</p>
-            </router-link>
-          </div>
-        </div>
 
-        <!-- System Health -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
-          <div class="mb-6 pb-6 border-b border-gray-200">
-            <h3 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
-              <svg class="w-7 h-7 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
-              </svg>
-              System Health
-            </h3>
-          </div>
-
-          <div class="space-y-4">
+          <!-- System Health Tab -->
+          <div v-else-if="activeTab === 'system-health'" class="space-y-4">
             <!-- API Status -->
             <div class="flex items-center justify-between p-6 bg-linear-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl">
               <div class="flex items-center gap-4">
@@ -291,7 +264,7 @@
               <span class="px-4 py-2 bg-green-200 text-green-800 rounded-full text-sm font-semibold">Active</span>
             </div>
 
-            <!-- Authentication Status -->
+            <!-- Cache Status -->
             <div class="flex items-center justify-between p-6 bg-linear-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl">
               <div class="flex items-center gap-4">
                 <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center">
@@ -300,7 +273,7 @@
                   </svg>
                 </div>
                 <div>
-                  <h4 class="font-bold text-gray-900">Authentication</h4>
+                  <h4 class="font-bold text-gray-900">Cache System</h4>
                   <p class="text-sm text-gray-600">System running</p>
                 </div>
               </div>

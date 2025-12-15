@@ -172,6 +172,7 @@
         <h3 class="text-xl font-semibold text-gray-900 mb-2">Tidak Ada Dokter</h3>
         <p class="text-gray-600">Belum ada data dokter dalam sistem</p>
       </div>
+    </div>
     </LoadingSkeleton>
 
     <!-- Pagination -->

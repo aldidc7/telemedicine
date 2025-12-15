@@ -27,11 +27,11 @@ class PasienService
         $sort = $filters['sort'] ?? 'created_at';
         $order = $filters['order'] ?? 'desc';
 
-        $query = Pasien::with('pengguna', 'konsultasi', 'rekamMedis');
+        $query = Pasien::with('user', 'konsultasi', 'rekamMedis');
 
         // Search filter
         if ($search) {
-            $query->whereHas('pengguna', function ($q) use ($search) {
+            $query->whereHas('user', function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%");
             })->orWhere('nik', 'like', "%{$search}%");
@@ -52,7 +52,7 @@ class PasienService
      */
     public function getPasienById(int $id)
     {
-        return Pasien::with('pengguna', 'konsultasi', 'rekamMedis')->find($id);
+        return Pasien::with('user', 'konsultasi', 'rekamMedis')->find($id);
     }
 
     /**

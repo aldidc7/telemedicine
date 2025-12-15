@@ -27,11 +27,11 @@ class DokterService
         $sort = $filters['sort'] ?? 'created_at';
         $order = $filters['order'] ?? 'desc';
 
-        $query = Dokter::with('pengguna', 'konsultasi');
+        $query = Dokter::with('user', 'konsultasi');
 
         // Search filter
         if ($search) {
-            $query->whereHas('pengguna', function ($q) use ($search) {
+            $query->whereHas('user', function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%");
             })->orWhere('nip', 'like', "%{$search}%");
@@ -44,7 +44,7 @@ class DokterService
 
         // Filter by status
         if ($status) {
-            $query->whereHas('pengguna', function ($q) use ($status) {
+            $query->whereHas('user', function ($q) use ($status) {
                 $q->where('is_active', $status === 'aktif');
             });
         }
@@ -64,7 +64,7 @@ class DokterService
      */
     public function getDokterById(int $id)
     {
-        return Dokter::with('pengguna', 'konsultasi')->find($id);
+        return Dokter::with('user', 'konsultasi')->find($id);
     }
 
     /**
@@ -75,7 +75,7 @@ class DokterService
      */
     public function getDokterByUserId(int $userId)
     {
-        return Dokter::where('user_id', $userId)->with('pengguna', 'konsultasi')->first();
+        return Dokter::where('user_id', $userId)->with('user', 'konsultasi')->first();
     }
 
     /**
