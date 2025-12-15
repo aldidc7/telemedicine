@@ -147,8 +147,17 @@
               <!-- User Info Header -->
               <div class="px-4 py-3 border-b border-gray-100 bg-linear-to-r from-indigo-50 to-purple-50">
                 <p class="text-sm font-bold text-gray-900">{{ authStore.user?.name }}</p>
-                <p class="text-xs text-gray-600 mt-1">
-                  {{ authStore.isPasien ? '👤 Pasien' : authStore.isDokter ? '👨‍⚕️ Dokter' : '👨‍💼 Admin' }}
+                <p class="text-xs text-gray-600 mt-1 flex items-center gap-1.5">
+                  <svg v-if="authStore.isPasien" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 12a4 4 0 110-8 4 4 0 010 8z"/><path d="M12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                  </svg>
+                  <svg v-else-if="authStore.isDokter" class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                  </svg>
+                  <svg v-else class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                  </svg>
+                  <span>{{ authStore.isPasien ? 'Pasien' : authStore.isDokter ? 'Dokter' : 'Admin' }}</span>
                 </p>
               </div>
 
@@ -287,38 +296,42 @@
     </nav>
 
     <!-- Logout Confirmation Modal -->
-    <div v-if="showLogoutModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-3xl p-8 max-w-sm shadow-2xl">
-        <!-- Icon -->
-        <div class="flex justify-center mb-6">
-          <div class="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center">
-            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+    <Transition name="modal-fade">
+      <div v-if="showLogoutModal" class="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50">
+        <Transition name="modal-scale">
+          <div class="bg-white rounded-3xl p-8 max-w-sm shadow-2xl">
+            <!-- Icon -->
+            <div class="flex justify-center mb-6">
+              <div class="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center">
+                <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+              </div>
+            </div>
+
+            <!-- Title & Message -->
+            <h3 class="text-2xl font-black text-gray-900 text-center mb-3">Yakin ingin logout?</h3>
+            <p class="text-gray-600 text-center mb-8">Anda akan kembali ke halaman login dan session akan dihapus.</p>
+
+            <!-- Buttons -->
+            <div class="flex gap-4">
+              <button
+                @click="showLogoutModal = false"
+                class="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold rounded-xl transition"
+              >
+                Batal
+              </button>
+              <button
+                @click="handleLogout"
+                :disabled="isLoggingOut"
+                class="flex-1 px-4 py-3 bg-linear-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 disabled:opacity-50 text-white font-bold rounded-xl transition flex items-center justify-center gap-2"
+              >
+                <svg v-if="isLoggingOut" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <span>{{ isLoggingOut ? 'Logging out...' : 'Logout' }}</span>
+              </button>
+            </div>
           </div>
-        </div>
-
-        <!-- Title & Message -->
-        <h3 class="text-2xl font-black text-gray-900 text-center mb-3">Yakin ingin logout?</h3>
-        <p class="text-gray-600 text-center mb-8">Anda akan kembali ke halaman login dan session akan dihapus.</p>
-
-        <!-- Buttons -->
-        <div class="flex gap-4">
-          <button
-            @click="showLogoutModal = false"
-            class="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold rounded-xl transition"
-          >
-            Batal
-          </button>
-          <button
-            @click="handleLogout"
-            :disabled="isLoggingOut"
-            class="flex-1 px-4 py-3 bg-linear-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 disabled:opacity-50 text-white font-bold rounded-xl transition flex items-center justify-center gap-2"
-          >
-            <svg v-if="isLoggingOut" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            <span>{{ isLoggingOut ? 'Logging out...' : 'Logout' }}</span>
-          </button>
-        </div>
+        </Transition>
       </div>
-    </div>
+    </Transition>
   </div>
 </template>
 
@@ -421,3 +434,27 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 </script>
+<style scoped>
+/* Modal Fade Transitions */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+/* Modal Scale Transitions */
+.modal-scale-enter-active,
+.modal-scale-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-scale-enter-from,
+.modal-scale-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
+}
+</style>

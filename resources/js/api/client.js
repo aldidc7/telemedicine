@@ -29,14 +29,7 @@ client.interceptors.request.use(
 // Response interceptor
 client.interceptors.response.use(
   response => {
-    // Log successful response
-    const duration = performance.now() - response.config.metadata?.startTime
-    if (import.meta.env.DEV) {
-      console.log(`[${response.config.method.toUpperCase()}] ${response.config.url}`, {
-        status: response.status,
-        duration: `${duration.toFixed(2)}ms`,
-      })
-    }
+    // Response logging sudah ditangani oleh RequestLogger
     return response
   },
   error => {

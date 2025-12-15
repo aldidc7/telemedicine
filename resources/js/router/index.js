@@ -196,23 +196,22 @@ router.beforeEach(async (to, from, next) => {
   if (!authInitialized) {
     authInitialized = true
     try {
-      // Add timeout untuk prevent infinite loading
-      const initPromise = authStore.initializeAuth()
-      const timeoutPromise = new Promise((resolve) => {
-        setTimeout(() => {
-          console.warn('Auth initialization timeout - forcing completion')
-          resolve(false)
-        }, 3000) // 3 second timeout
-      })
-      
-      await Promise.race([initPromise, timeoutPromise])
+      // Tunggu auth store initialization selesai
+      if (!authStore.initialized) {
+        await authStore.initializeAuth()
+      }
     } catch (error) {
       console.error('Auth initialization error:', error)
       // Continue anyway, user can retry
+      authStore.initialized = true
     }
-    
-    // Force set initialized to true
-    authStore.initialized = true
+  } else {
+    // Pastikan sudah initialized sebelum check auth
+    let waitCount = 0
+    while (!authStore.initialized && waitCount < 80) {
+      await new Promise(resolve => setTimeout(resolve, 100))
+      waitCount++
+    }
   }
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {

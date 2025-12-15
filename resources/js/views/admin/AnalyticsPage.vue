@@ -5,8 +5,8 @@
       <div class="mb-10">
         <div class="flex items-center justify-between gap-3 mb-2">
           <div class="flex items-center gap-3">
-            <svg class="w-11 h-11 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/>
+            <svg class="w-11 h-11 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
             <h1 class="text-4xl font-black bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
               Advanced Analytics
@@ -82,31 +82,34 @@
         <!-- Consultation Metrics KPI -->
         <section>
           <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <span>📊</span> Consultation Metrics
+            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            Consultation Metrics
           </h2>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <KpiCard
               label="Total Consultations"
               :value="consultationMetrics.total"
-              icon="🔵"
+              icon="M12 3a9 9 0 110 18 9 9 0 010-18z"
               color="blue"
             />
             <KpiCard
               label="Active Sessions"
               :value="consultationMetrics.active"
-              icon="🟢"
+              icon="M13 10V3L4 14h7v7l9-11h-7z"
               color="green"
             />
             <KpiCard
               label="Completed"
               :value="consultationMetrics.completed"
-              icon="✓"
+              icon="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z"
               color="emerald"
             />
             <KpiCard
               label="Completion Rate"
-              :value="`${consultationMetrics.completion_rate.toFixed(1)}%`"
-              icon="📈"
+              :value="`${(consultationMetrics.completion_rate || 0).toFixed(1)}%`"
+              icon="M13 7H7v10h6V7zm0-2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V7m6 0h6a2 2 0 012 2v10a2 2 0 01-2 2h-6V5z"
               color="purple"
             />
           </div>
@@ -115,7 +118,10 @@
         <!-- Doctor Performance -->
         <section>
           <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <span>👨‍⚕️</span> Doctor Performance Rankings
+            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M14 10h-3.5A3.5 3.5 0 0 0 7 13.5v.5a3.5 3.5 0 0 0 3.5 3.5h3.5m0-7h3.5A3.5 3.5 0 0 1 21 13.5v.5a3.5 3.5 0 0 1-3.5 3.5h-3.5m0-7v7m0-7H7m0 7h10.5" />
+            </svg>
+            Doctor Performance Rankings
           </h2>
           <DoctorPerformanceTable :doctors="doctorPerformance" />
         </section>
@@ -123,7 +129,10 @@
         <!-- Health Trends -->
         <section>
           <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <span>🏥</span> Patient Health Trends
+            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            Health Trends
           </h2>
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Health Issues -->
@@ -151,7 +160,7 @@
                 </div>
                 <div class="border-l-4 border-purple-500 pl-4 py-2">
                   <p class="text-sm text-gray-600">Retention Rate</p>
-                  <p class="text-3xl font-bold text-gray-900">{{ healthTrends.retention_rate.toFixed(1) }}%</p>
+                  <p class="text-3xl font-bold text-gray-900">{{ (healthTrends.retention_rate || 0).toFixed(1) }}%</p>
                 </div>
               </div>
             </div>
@@ -161,25 +170,28 @@
         <!-- Revenue Analytics -->
         <section>
           <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <span>💰</span> Revenue Analytics
+            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Revenue Analytics
           </h2>
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             <KpiCard
               label="Total Revenue"
-              :value="`$${(revenueData.total_revenue / 1000).toFixed(1)}k`"
-              icon="💵"
+              :value="`$${((revenueData.total_revenue || 0) / 1000).toFixed(1)}k`"
+              icon="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               color="green"
             />
             <KpiCard
               label="Paid Revenue"
-              :value="`$${(revenueData.paid_revenue / 1000).toFixed(1)}k`"
-              icon="✓"
+              :value="`$${((revenueData.paid_revenue || 0) / 1000).toFixed(1)}k`"
+              icon="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z"
               color="emerald"
             />
             <KpiCard
               label="Payment Rate"
-              :value="`${revenueData.payment_completion_rate.toFixed(1)}%`"
-              icon="📊"
+              :value="`${(revenueData.payment_completion_rate || 0).toFixed(1)}%`"
+              icon="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
               color="blue"
             />
           </div>
@@ -201,8 +213,8 @@
                   <tr v-for="doctor in revenueByDoctor" :key="doctor.doctor_id" class="hover:bg-gray-50 transition">
                     <td class="px-6 py-4 font-medium text-gray-900">{{ doctor.doctor_name }}</td>
                     <td class="px-6 py-4 text-gray-600">{{ doctor.consultations }}</td>
-                    <td class="px-6 py-4 font-bold text-green-600">${{ doctor.total_revenue.toFixed(2) }}</td>
-                    <td class="px-6 py-4 text-gray-600">${{ doctor.avg_per_consultation.toFixed(2) }}</td>
+                    <td class="px-6 py-4 font-bold text-green-600">${{ (doctor.total_revenue || 0).toFixed(2) }}</td>
+                    <td class="px-6 py-4 text-gray-600">${{ (doctor.avg_per_consultation || 0).toFixed(2) }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -213,7 +225,10 @@
         <!-- Date Range Analytics -->
         <section>
           <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <span>📅</span> Custom Date Range Analytics
+            <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h14M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            Custom Date Range Analytics
           </h2>
           <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -256,7 +271,7 @@
                   <h4 class="font-bold text-green-900 mb-3">Revenue</h4>
                   <div class="space-y-2 text-sm text-green-800">
                     <p v-for="day in dateRangeData.revenue" :key="day.date">
-                      <span class="font-semibold">{{ day.date }}:</span> ${{ day.total.toFixed(2) }} ({{ day.count }} consultations)
+                      <span class="font-semibold">{{ day.date }}:</span> ${{ (day.total || 0).toFixed(2) }} ({{ day.count }} consultations)
                     </p>
                   </div>
                 </div>
@@ -278,7 +293,12 @@ import client from '@/api/client'
 
 const authStore = useAuthStore()
 const loading = ref(true)
-const consultationMetrics = ref({})
+const consultationMetrics = ref({
+  total: 0,
+  active: 0,
+  completed: 0,
+  completion_rate: 0
+})
 const doctorPerformance = ref([])
 const healthTrends = ref({})
 const revenueData = ref({})
@@ -287,6 +307,9 @@ const dateRangeStart = ref('')
 const dateRangeEnd = ref('')
 const dateRangeData = ref(null)
 const topHealthIssues = ref({})
+
+// Component lifecycle tracking
+let isMounted = false
 
 // Real-time update settings
 const autoRefreshEnabled = ref(true)
@@ -306,45 +329,60 @@ const formattedLastUpdated = computed(() => {
 })
 
 onMounted(() => {
+  isMounted = true
   fetchAnalytics()
   initializeAutoRefresh()
 })
 
 onUnmounted(() => {
+  isMounted = false
   stopAutoRefresh()
 })
 
 const fetchAnalytics = async () => {
   try {
+    if (!isMounted) return
+    
     updateStatus.value = 'updating'
     const response = await client.get('/analytics/overview')
     
-    const data = response.data.data
-    consultationMetrics.value = data.consultation_metrics
-    doctorPerformance.value = data.doctor_performance
-    healthTrends.value = data.health_trends
-    revenueData.value = data.revenue
-    revenueByDoctor.value = data.revenue.revenue_by_doctor
-    topHealthIssues.value = data.health_trends.top_health_issues
+    if (!isMounted) return
+    
+    const data = response.data?.data || response.data || {}
+    
+    // Safely assign with defaults
+    consultationMetrics.value = {
+      ...consultationMetrics.value,
+      ...(data.consultation_metrics || {})
+    }
+    doctorPerformance.value = data.doctor_performance || []
+    healthTrends.value = data.health_trends || {}
+    revenueData.value = data.revenue || {}
+    revenueByDoctor.value = data.revenue?.revenue_by_doctor || []
+    topHealthIssues.value = data.health_trends?.top_health_issues || {}
     
     lastUpdated.value = new Date()
     updateStatus.value = 'idle'
-    
-    if (!loading.value) {
-      // Silent update - data refreshed without showing loading state
-    }
   } catch (error) {
+    if (!isMounted) return
+    
     console.error('Failed to fetch analytics:', error)
     updateStatus.value = 'error'
-    setTimeout(() => { updateStatus.value = 'idle' }, 3000)
+    
+    setTimeout(() => { 
+      if (isMounted) {
+        updateStatus.value = 'idle'
+      }
+    }, 3000)
   } finally {
-    loading.value = false
+    if (isMounted) {
+      loading.value = false
+    }
   }
 }
 
 const refreshAnalytics = async () => {
   try {
-    await client.post('/analytics/refresh')
     await fetchAnalytics()
   } catch (error) {
     console.error('Failed to refresh analytics:', error)

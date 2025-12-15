@@ -49,17 +49,19 @@ class RequestLogger {
    * Log request
    */
   logRequest(timestamp, method, url, data) {
+    const cleanUrl = url ? url.replace(import.meta.env.VITE_API_URL, '') : url
     const log = {
       type: 'REQUEST',
       timestamp,
       method,
-      url: url.replace(import.meta.env.VITE_API_URL, ''),
+      url: cleanUrl,
       data: this.sanitizeData(data),
     }
     this.logs.push(log)
     
     if (import.meta.env.DEV) {
-      console.log(`[${method}] ${log.url}`, log.data)
+      const dataStr = data ? ` ${JSON.stringify(data)}` : ''
+      console.log(`[${method}] ${cleanUrl}${dataStr}`)
     }
   }
 
@@ -67,17 +69,18 @@ class RequestLogger {
    * Log response
    */
   logResponse(url, status, duration) {
+    const cleanUrl = url ? url.replace(import.meta.env.VITE_API_URL, '') : url
     const log = {
       type: 'RESPONSE',
       timestamp: new Date().toISOString(),
-      url: url.replace(import.meta.env.VITE_API_URL, ''),
+      url: cleanUrl,
       status,
-      duration: `${duration.toFixed(2)}ms`,
+      duration: `${Number(duration).toFixed(2)}ms`,
     }
     this.logs.push(log)
     
     if (import.meta.env.DEV && status >= 400) {
-      console.warn(`[${status}] ${log.url}`)
+      console.warn(`[${status}] ${cleanUrl}`)
     }
   }
 
@@ -85,18 +88,19 @@ class RequestLogger {
    * Log error
    */
   logError(url, status, duration, error) {
+    const cleanUrl = url ? url.replace(import.meta.env.VITE_API_URL, '') : url
     const log = {
       type: 'ERROR',
       timestamp: new Date().toISOString(),
-      url: url.replace(import.meta.env.VITE_API_URL, ''),
+      url: cleanUrl,
       status: status || 'Network Error',
-      duration: `${duration.toFixed(2)}ms`,
+      duration: `${Number(duration).toFixed(2)}ms`,
       message: error.message,
     }
     this.logs.push(log)
     
     if (import.meta.env.DEV) {
-      console.error(`[ERROR] ${log.url}`, error)
+      console.error(`[ERROR] ${cleanUrl}`, error)
     }
   }
 

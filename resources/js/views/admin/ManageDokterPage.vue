@@ -42,7 +42,7 @@
         />
         <select
           v-model="filterSpesialisasi"
-          class="px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-indigo-500 transition text-gray-700"
+          class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-indigo-500 transition text-gray-700"
         >
           <option value="">Semua Spesialisasi</option>
           <option value="Umum">Dokter Umum</option>
@@ -56,7 +56,7 @@
         </select>
         <button
           @click="loadData"
-          class="px-4 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition font-semibold flex items-center gap-2 whitespace-nowrap"
+          class="px-8 py-3 bg-linear-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition font-semibold flex items-center gap-2"
         >
           <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
             <path d="M15.5 1h-8C6.12 1 5 2.12 5 3.5v17C5 21.88 6.12 23 7.5 23h8c1.38 0 2.5-1.12 2.5-2.5v-17C18 2.12 16.88 1 15.5 1zm-4 21c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4.5-4H7V4h9v14z"/>

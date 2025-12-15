@@ -97,21 +97,20 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const initializeAuth = async () => {
+    initialized.value = false
     try {
       // Jika ada token di localStorage, coba load user data dengan timeout
       if (token.value) {
         const timeoutPromise = new Promise((resolve, reject) => {
           setTimeout(() => {
             reject(new Error('Profile fetch timeout'))
-          }, 2000) // 2 second timeout untuk getProfile
+          }, 8000) // 8 second timeout untuk getProfile
         })
         
         const { data } = await Promise.race([authApi.getProfile(), timeoutPromise])
         user.value = data.data
-        initialized.value = true
         return true
       }
-      initialized.value = true
       return false
     } catch (err) {
       // Token invalid atau timeout, clear localStorage dan continue
@@ -119,8 +118,9 @@ export const useAuthStore = defineStore('auth', () => {
       token.value = null
       user.value = null
       localStorage.removeItem('token')
-      initialized.value = true
       return false
+    } finally {
+      initialized.value = true
     }
   }
 

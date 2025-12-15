@@ -14,17 +14,17 @@
 
     <!-- Filter -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8 hover:shadow-lg transition">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="flex flex-col md:flex-row gap-4">
         <input
           v-model="filterUser"
           type="text"
-          placeholder="Cari pengguna..."
-          class="px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-indigo-500 transition text-gray-700"
+          placeholder="Cari nama pengguna atau aksi..."
+          class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-indigo-500 transition text-gray-700"
           @keyup.enter="loadLogs"
         />
         <select
           v-model="filterAction"
-          class="px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-indigo-500 transition text-gray-700"
+          class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-indigo-500 transition text-gray-700"
         >
           <option value="">Semua Aksi</option>
           <option value="login">Login</option>
@@ -35,10 +35,10 @@
         </select>
         <button
           @click="loadLogs"
-          class="px-4 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition font-semibold flex items-center gap-2 whitespace-nowrap"
+          class="px-8 py-3 bg-linear-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition font-semibold flex items-center gap-2"
         >
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 9h-4v4h4v-4zm0-5h-4v4h4V7z"/>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
           </svg>
           Filter
         </button>
@@ -107,17 +107,11 @@
               {{ log.user?.name || 'Unknown User' }}
             </p>
           </div>
-          <span class="text-sm text-gray-500 bg-gray-100 px-4 py-2 rounded-lg whitespace-nowrap flex items-center gap-2">
+          <span v-if="log.created_at" class="text-sm text-gray-500 bg-gray-100 px-4 py-2 rounded-lg whitespace-nowrap flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 1.5m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            {{ new Date(log.created_at).toLocaleDateString('id-ID', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            }) }}
+            {{ formatDate(log.created_at) }}
           </span>
         </div>
 
@@ -147,6 +141,21 @@ const loading = ref(false)
 const filterUser = ref('')
 const filterAction = ref('')
 const logs = ref([])
+
+const formatDate = (dateString) => {
+  if (!dateString) return '-'
+  try {
+    return new Date(dateString).toLocaleDateString('id-ID', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  } catch (error) {
+    return '-'
+  }
+}
 
 onMounted(() => {
   loadLogs()
