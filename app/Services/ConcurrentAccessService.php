@@ -5,6 +5,7 @@ namespace App\Services;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
+use App\Helpers\ValidationHelper;
 
 /**
  * Concurrent Access Control Service
@@ -216,7 +217,10 @@ class ConcurrentAccessService
                     ]);
                     
                     if ($attempts < $maxAttempts) {
-                        usleep(random_int(100000, 500000)); // 100-500ms backoff
+                        // Use backoff delay dari config (100-500ms)
+                        $minBackoff = config('appointment.DEADLOCK_BACKOFF_MIN', 100000);
+                        $maxBackoff = config('appointment.DEADLOCK_BACKOFF_MAX', 500000);
+                        usleep(random_int($minBackoff, $maxBackoff));
                         continue;
                     }
                 } else {

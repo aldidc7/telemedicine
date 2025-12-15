@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Pasien;
 use App\Models\Dokter;
 use App\Models\Konsultasi;
+use App\Helpers\DateHelper;
 
 /**
  * ============================================
@@ -18,11 +19,6 @@ use App\Models\Konsultasi;
  */
 class DashboardCacheService
 {
-    // Cache TTL (Time To Live) dalam detik
-    const CACHE_TTL_SHORT = 300;      // 5 minutes untuk data real-time
-    const CACHE_TTL_MEDIUM = 900;     // 15 minutes untuk stats
-    const CACHE_TTL_LONG = 3600;      // 1 hour untuk trends
-
     // Cache keys
     const KEY_USER_STATS = 'dashboard_user_stats';
     const KEY_CONSULTATION_STATS = 'dashboard_consultation_stats';
@@ -31,13 +27,21 @@ class DashboardCacheService
     const KEY_TRENDS = 'dashboard_trends';
 
     /**
+     * Get cache TTL values dari config
+     */
+    private static function getCacheTTL(string $type = 'short'): int
+    {
+        return config('appointment.CACHE_TTL')[$type] ?? 300;
+    }
+
+    /**
      * Get atau compute user statistics dengan caching
      * 
      * @return array
      */
     public static function getUserStats()
     {
-        return Cache::remember(self::KEY_USER_STATS, self::CACHE_TTL_MEDIUM, function () {
+        return Cache::remember(self::KEY_USER_STATS, self::getCacheTTL('medium'), function () {
             $totalUsers = User::count();
             $userAktif = User::where('is_active', true)->count();
             
@@ -56,7 +60,7 @@ class DashboardCacheService
      */
     public static function getConsultationStats()
     {
-        return Cache::remember(self::KEY_CONSULTATION_STATS, self::CACHE_TTL_MEDIUM, function () {
+        return Cache::remember(self::KEY_CONSULTATION_STATS, self::getCacheTTL('medium'), function () {
             $totalKonsultasi = Konsultasi::count();
             $konsultasiByStatus = [
                 'pending' => Konsultasi::where('status', 'pending')->count(),
@@ -79,7 +83,7 @@ class DashboardCacheService
      */
     public static function getDoctorStats()
     {
-        return Cache::remember(self::KEY_DOCTOR_STATS, self::CACHE_TTL_MEDIUM, function () {
+        return Cache::remember(self::KEY_DOCTOR_STATS, self::getCacheTTL('medium'), function () {
             $totalDokter = Dokter::count();
             $dokterTersedia = Dokter::where('is_available', true)->count();
             $dokterBySpesialisasi = Dokter::selectRaw('spesialisasi, COUNT(*) as count')
@@ -103,7 +107,7 @@ class DashboardCacheService
      */
     public static function getPatientStats()
     {
-        return Cache::remember(self::KEY_PATIENT_STATS, self::CACHE_TTL_MEDIUM, function () {
+        return Cache::remember(self::KEY_PATIENT_STATS, self::getCacheTTL('medium'), function () {
             $totalPasien = Pasien::count();
             $pasienAktif = User::where('role', 'pasien')
                 ->where('is_active', true)
@@ -120,7 +124,7 @@ class DashboardCacheService
                     now()->subYears(60)->startOfYear(),
                     now()->subYears(18)->endOfYear()
                 ])->count(),
-                'lansia' => Pasien::where('tgl_lahir', '<', now()->subYears(60))->count(),
+                'lansia' => Pasien::where('tgl_lahir', '<', now()->subYears(config('application.LANSIA_AGE_THRESHOLD', 60)))->count(),
             ];
 
             return [
@@ -139,7 +143,7 @@ class DashboardCacheService
      */
     public static function getTrends()
     {
-        return Cache::remember(self::KEY_TRENDS, self::CACHE_TTL_LONG, function () {
+        return Cache::remember(self::KEY_TRENDS, self::getCacheTTL('long'), function () {
             $konsultasiPerBulan = Konsultasi::selectRaw('strftime("%Y-%m", created_at) as bulan, COUNT(*) as count')
                 ->where('created_at', '>=', now()->subMonths(12))
                 ->groupBy('bulan')

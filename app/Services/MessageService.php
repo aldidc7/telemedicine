@@ -7,6 +7,7 @@ use App\Models\Message;
 use App\Models\User;
 use App\Events\MessageSent;
 use Illuminate\Support\Facades\DB;
+use App\Helpers\FormatHelper;
 
 class MessageService
 {
@@ -53,7 +54,7 @@ class MessageService
             // Update conversation's last message
             $conversation->update([
                 'last_message_at' => now(),
-                'last_message_preview' => substr($content, 0, 50),
+                'last_message_preview' => FormatHelper::getMessagePreview($content),
             ]);
 
             // Load sender for event broadcasting
@@ -77,7 +78,7 @@ class MessageService
                 $notificationService->notifyNewMessage(
                     $recipientId,
                     $sender->name,
-                    substr($content, 0, 50),
+                    FormatHelper::getMessagePreview($content),
                     $conversationId
                 );
             } catch (\Exception $e) {

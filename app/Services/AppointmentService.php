@@ -10,6 +10,8 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
+use App\Helpers\DateHelper;
+use App\Helpers\ValidationHelper;
 
 class AppointmentService
 {
@@ -61,31 +63,35 @@ class AppointmentService
     /**
      * Get available slots untuk doctor di tanggal tertentu (with caching)
      */
-    public function getAvailableSlots(int $doctorId, string $date, int $slotDurationMinutes = 30): array
+    public function getAvailableSlots(int $doctorId, string $date, int $slotDurationMinutes = null): array
     {
-        // Use cache with 15 minute TTL
+        // Use default slot duration dari config jika tidak provided
+        $slotDurationMinutes = $slotDurationMinutes ?? config('appointment.SLOT_DURATION_MINUTES', 30);
+        
+        // Use cache dengan TTL dari config
+        $cacheTTL = config('appointment.SLOT_CACHE_TTL', 900);
         $cacheKey = "appointments:slots:{$doctorId}:" . Carbon::parse($date)->format('Y-m-d');
         
-        return Cache::remember($cacheKey, 900, function () use ($doctorId, $date, $slotDurationMinutes) {
-            $date = Carbon::parse($date)->startOfDay();
+        return Cache::remember($cacheKey, $cacheTTL, function () use ($doctorId, $date, $slotDurationMinutes) {
+            $dateObj = Carbon::parse($date)->startOfDay();
 
-            // Get working hours (9 AM - 5 PM default)
-            $workStart = $date->clone()->setHour(9);
-            $workEnd = $date->clone()->setHour(17);
+            // Get working hours dari DateHelper (9 AM - 5 PM default)
+            $workStart = DateHelper::getWorkingDayStart($dateObj);
+            $workEnd = DateHelper::getWorkingDayEnd($dateObj);
 
             // Get booked appointments
             $bookedAppointments = Appointment::where('doctor_id', $doctorId)
-                ->whereDate('scheduled_at', $date)
-                ->whereIn('status', ['pending', 'confirmed', 'in_progress'])
+                ->whereDate('scheduled_at', $dateObj)
+                ->whereIn('status', config('appointment.VALID_STATUSES'))
                 ->pluck('scheduled_at')
                 ->toArray();
 
-            // Generate available slots
+            // Generate available slots menggunakan DateHelper
             $slots = [];
             $currentTime = $workStart;
 
             while ($currentTime->isBefore($workEnd)) {
-                $slotEnd = $currentTime->clone()->addMinutes($slotDurationMinutes);
+                $slotEnd = DateHelper::getSlotEndTime($currentTime, $slotDurationMinutes);
 
                 // Check if slot is free
                 $isFree = true;
@@ -328,8 +334,10 @@ class AppointmentService
     /**
      * Get patient appointments
      */
-    public function getPatientAppointments(int $patientId, ?string $status = null, int $page = 1, int $perPage = 15)
+    public function getPatientAppointments(int $patientId, ?string $status = null, int $page = 1, ?int $perPage = null)
     {
+        $perPage = $perPage ?? config('appointment.PER_PAGE', 15);
+        
         $query = Appointment::forPatient($patientId)->with(['doctor', 'patient']);
 
         if ($status) {
@@ -342,8 +350,10 @@ class AppointmentService
     /**
      * Get doctor appointments
      */
-    public function getDoctorAppointments(int $doctorId, ?string $status = null, int $page = 1, int $perPage = 15)
+    public function getDoctorAppointments(int $doctorId, ?string $status = null, int $page = 1, ?int $perPage = null)
     {
+        $perPage = $perPage ?? config('appointment.PER_PAGE', 15);
+        
         $query = Appointment::forDoctor($doctorId)->with(['doctor', 'patient']);
 
         if ($status) {
