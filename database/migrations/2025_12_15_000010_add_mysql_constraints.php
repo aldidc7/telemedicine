@@ -12,6 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip this migration for SQLite - MySQL specific constraints
+        if (\Illuminate\Support\Facades\DB::connection()->getDriverName() === 'sqlite') {
+            return;
+        }
+        
         // 1. USERS TABLE - Add constraints
         if (Schema::hasTable('users')) {
             if (!$this->constraintExists('users', 'UQ_users_email')) {
@@ -266,6 +271,11 @@ return new class extends Migration
 
     public function down(): void
     {
+        // Skip for SQLite
+        if (\Illuminate\Support\Facades\DB::connection()->getDriverName() === 'sqlite') {
+            return;
+        }
+        
         // Drop foreign keys
         Schema::table('appointments', function (Blueprint $table) {
             $table->dropForeignKey('FK_appointments_patient');
