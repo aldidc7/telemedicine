@@ -297,7 +297,7 @@
 
     <!-- Logout Confirmation Modal -->
     <Transition name="modal-fade">
-      <div v-if="showLogoutModal" class="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50">
+      <div v-if="showLogoutModal" class="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50">
         <Transition name="modal-scale">
           <div class="bg-white rounded-3xl p-8 max-w-sm shadow-2xl">
             <!-- Icon -->

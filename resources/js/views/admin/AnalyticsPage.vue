@@ -468,7 +468,4 @@ const fetchDateRangeAnalytics = async () => {
     console.error('Failed to fetch date range analytics:', error)
   }
 }
-    console.error('Failed to fetch date range analytics:', error)
-  }
-}
 </script>
