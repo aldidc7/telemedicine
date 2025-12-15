@@ -231,12 +231,11 @@ class WebSocketService
 
             // Use presence auth for presence channels, socket auth for private channels
             if (strpos($channelName, 'presence-') === 0) {
-                return $this->pusher->presence_auth(
-                    $channelName,
-                    $socketId,
-                    $user->id,
-                    json_encode($userData)
-                );
+                // For presence channels, use socket_auth
+                return json_encode([
+                    'channel_data' => json_encode($userData),
+                    'auth' => $this->pusher->socket_auth($channelName, $socketId)
+                ]);
             } else {
                 // For private channels, use the modern approach
                 return json_encode([

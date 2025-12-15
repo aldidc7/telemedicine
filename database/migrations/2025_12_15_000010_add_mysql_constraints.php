@@ -63,7 +63,7 @@ return new class extends Migration
             // Add check constraints for status
             if (!$this->constraintExists('appointments', 'CHK_appointments_status')) {
                 Schema::table('appointments', function (Blueprint $table) {
-                    $table->comment = 'Appointments table with status validation';
+                    $table->comment('Appointments table with status validation');
                 });
                 
                 // Note: Check constraints added via raw SQL

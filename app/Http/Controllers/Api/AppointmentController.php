@@ -18,7 +18,6 @@ class AppointmentController extends Controller
     public function __construct(AppointmentService $appointmentService)
     {
         $this->appointmentService = $appointmentService;
-        $this->middleware('auth:sanctum')->except(['getAvailableSlots']);
     }
 
     /**
@@ -56,23 +55,27 @@ class AppointmentController extends Controller
                 'message' => 'Appointment berhasil dibuat',
                 'data' => $appointment,
             ], 201);
-        } catch (\PDOException $e) {
+        } catch (\Throwable $e) {
             // Handle database deadlock
-            if (strpos($e->getMessage(), 'Deadlock') !== false) {
-                return response()->json([
-                    'error' => 'Terjadi konflik akses, silahkan coba lagi',
-                    'code' => 'DEADLOCK_DETECTED'
-                ], 409);
+            if ($e instanceof \PDOException) {
+                $message = $e->getMessage();
+                if (strpos($message ?? '', 'Deadlock') !== false) {
+                    return response()->json([
+                        'error' => 'Terjadi konflik akses, silahkan coba lagi',
+                        'code' => 'DEADLOCK_DETECTED'
+                    ], 409);
+                }
+                return response()->json(['error' => 'Kesalahan database: ' . ($message ?? 'Unknown error')], 500);
             }
-            return response()->json(['error' => 'Kesalahan database: ' . $e->getMessage()], 500);
-        } catch (\Exception $e) {
+
             // Handle other exceptions (doctor inactive, slot booked, etc)
             $statusCode = 422;
             
             // Check specific error messages from ConcurrentAccessService
-            if (strpos($e->getMessage(), 'tidak aktif') !== false) {
+            $message = $e->getMessage() ?? '';
+            if (strpos($message, 'tidak aktif') !== false) {
                 $statusCode = 409;
-            } elseif (strpos($e->getMessage(), 'sudah memiliki appointment') !== false) {
+            } elseif (strpos($message, 'sudah memiliki appointment') !== false) {
                 $statusCode = 409;
             } elseif (strpos($e->getMessage(), 'belum dibayar') !== false) {
                 $statusCode = 402;

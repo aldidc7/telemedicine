@@ -100,6 +100,7 @@ class PrescriptionService
         } catch (\Exception $e) {
             \Log::warning('Failed to create prescription notification: ' . $e->getMessage());
         }
+    }
 
     /**
      * Get prescription by ID with relationships

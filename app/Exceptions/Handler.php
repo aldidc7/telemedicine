@@ -65,10 +65,10 @@ class Handler extends ExceptionHandler
      * Render an exception into a response.
      * 
      * @param Request $request
-     * @param Throwable $exception
+     * @param \Throwable $exception
      * @return JsonResponse
      */
-    public function render($request, Throwable $exception): JsonResponse
+    public function render($request, \Throwable $exception): JsonResponse
     {
         // API request - return JSON dengan format konsisten
         if ($request->is('api/*')) {
@@ -81,10 +81,10 @@ class Handler extends ExceptionHandler
     /**
      * Handle API exceptions dengan response format konsisten menggunakan ApiResponse
      * 
-     * @param Throwable $exception
+     * @param \Throwable $exception
      * @return JsonResponse
      */
-    protected function handleApiException(Throwable $exception): JsonResponse
+    protected function handleApiException(\Throwable $exception): JsonResponse
     {
         // Import ApiResponse
         $apiResponse = \App\Http\Responses\ApiResponse::class;
@@ -129,7 +129,8 @@ class Handler extends ExceptionHandler
 
         // Generic exceptions
         if (config('app.debug')) {
-            return $apiResponse::fromException($exception, true);
+            // Cast Throwable to Exception if needed
+            return $apiResponse::fromException($exception instanceof \Exception ? $exception : new \Exception($exception->getMessage()), true);
         }
 
         return $apiResponse::serverError('An error occurred. Please try again later.');

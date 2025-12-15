@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class ValidateFileUpload
@@ -49,7 +50,8 @@ class ValidateFileUpload
 
                 // Validate file exists
                 if (!$file || !$file->isValid()) {
-                    throw new \Illuminate\Validation\ValidationException(\Illuminate\Validation\Validator::validate(
+                    throw new \Illuminate\Validation\ValidationException(new \Illuminate\Validation\Validator(
+                        app('translator'),
                         [],
                         [$inputName => 'required|file'],
                         [$inputName => 'Upload harus berupa file yang valid']
@@ -58,7 +60,8 @@ class ValidateFileUpload
 
                 // Validate file size
                 if ($file->getSize() > self::MAX_FILE_SIZE) {
-                    throw new \Illuminate\Validation\ValidationException(\Illuminate\Validation\Validator::validate(
+                    throw new \Illuminate\Validation\ValidationException(new \Illuminate\Validation\Validator(
+                        app('translator'),
                         [],
                         [$inputName => 'max:5120'],
                         [$inputName => 'File tidak boleh lebih dari 5MB']
@@ -68,7 +71,8 @@ class ValidateFileUpload
                 // Validate MIME type
                 $mimeType = $file->getMimeType();
                 if (!$this->isAllowedMimeType($mimeType)) {
-                    throw new \Illuminate\Validation\ValidationException(\Illuminate\Validation\Validator::validate(
+                    throw new \Illuminate\Validation\ValidationException(new \Illuminate\Validation\Validator(
+                        app('translator'),
                         [],
                         [$inputName => 'mimes'],
                         [$inputName => 'Tipe file tidak diperbolehkan. Gunakan: jpg, png, pdf, doc, docx']
@@ -78,7 +82,8 @@ class ValidateFileUpload
                 // Validate extension
                 $extension = strtolower($file->getClientOriginalExtension());
                 if (in_array($extension, self::DANGEROUS_EXTENSIONS)) {
-                    throw new \Illuminate\Validation\ValidationException(\Illuminate\Validation\Validator::validate(
+                    throw new \Illuminate\Validation\ValidationException(new \Illuminate\Validation\Validator(
+                        app('translator'),
                         [],
                         [$inputName => 'required'],
                         [$inputName => 'Ekstensi file tidak diperbolehkan untuk keamanan']
@@ -87,7 +92,8 @@ class ValidateFileUpload
 
                 // Validate real file content (magic number check)
                 if (!$this->isRealFile($file)) {
-                    throw new \Illuminate\Validation\ValidationException(\Illuminate\Validation\Validator::validate(
+                    throw new \Illuminate\Validation\ValidationException(new \Illuminate\Validation\Validator(
+                        app('translator'),
                         [],
                         [$inputName => 'required'],
                         [$inputName => 'File tidak valid atau mungkin telah dimanipulasi']
@@ -95,8 +101,9 @@ class ValidateFileUpload
                 }
 
                 // Log upload attempt
+                $userId = Auth::check() ? Auth::id() : 'guest';
                 \Log::info('File upload validated', [
-                    'user_id' => auth()->id(),
+                    'user_id' => $userId,
                     'filename' => $file->getClientOriginalName(),
                     'mime_type' => $mimeType,
                     'size' => $file->getSize(),
