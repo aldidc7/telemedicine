@@ -15,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register rate limiting middleware globally for API
         $middleware->api(append: [
             \App\Http\Middleware\ApiRateLimiter::class,
+            \App\Http\Middleware\ValidateFileUpload::class,
+            \App\Http\Middleware\AddSecurityHeaders::class,
         ]);
 
         // Register custom middleware untuk role-based access
@@ -24,6 +26,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'pasien' => \App\Http\Middleware\EnsurePasienRole::class,
             'role' => \App\Http\Middleware\EnsureRoleInList::class,
             'throttle' => \App\Http\Middleware\ApiRateLimiter::class,
+            'validate-upload' => \App\Http\Middleware\ValidateFileUpload::class,
+            'security-headers' => \App\Http\Middleware\AddSecurityHeaders::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
