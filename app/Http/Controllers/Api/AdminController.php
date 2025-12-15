@@ -104,7 +104,10 @@ class AdminController extends Controller
                 ->whereNotNull('waktu_selesai')
                 ->get()
                 ->avg(function ($k) {
-                    return $k->waktu_mulai->diffInMinutes($k->waktu_selesai);
+                    if ($k->waktu_mulai && $k->waktu_selesai) {
+                        return $k->waktu_mulai->diffInMinutes($k->waktu_selesai);
+                    }
+                    return 0;
                 });
 
             // ===== CONSULTATION BY SPECIALTY =====
