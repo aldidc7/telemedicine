@@ -181,13 +181,22 @@ class DashboardCacheService
      */
     public static function getAllStats()
     {
-        return [
-            'generated_at' => now(),
-            'user_stats' => self::getUserStats(),
-            'consultation_stats' => self::getConsultationStats(),
-            'doctor_stats' => self::getDoctorStats(),
-            'patient_stats' => self::getPatientStats(),
-            'trends' => self::getTrends(),
-        ];
+        try {
+            return [
+                'generated_at' => now(),
+                'user_stats' => self::getUserStats(),
+                'consultation_stats' => self::getConsultationStats(),
+                'doctor_stats' => self::getDoctorStats(),
+                'patient_stats' => self::getPatientStats(),
+                'trends' => self::getTrends(),
+            ];
+        } catch (\Exception $e) {
+            // Log error and return empty stats
+            \Log::error('DashboardCacheService error: ' . $e->getMessage());
+            return [
+                'generated_at' => now(),
+                'error' => $e->getMessage(),
+            ];
+        }
     }
 }
