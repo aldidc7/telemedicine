@@ -6,7 +6,7 @@ export const authApi = {
   },
 
   login(identifier, password) {
-    return client.post('/auth/login', { identifier, password })
+    return client.post('/auth/login', { email: identifier, password })
   },
 
   getProfile() {
