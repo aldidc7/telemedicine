@@ -133,12 +133,12 @@ class AuthController extends Controller
         $data = $request->validated();
         
         $result = $this->authService->login(
-            $data['identifier'] ?? $data['email'],
+            $data['email'],
             $data['password']
         );
         
         if (!$result) {
-            return $this->unauthorizedResponse('Email/NIK atau password salah');
+            return $this->unauthorizedResponse('Email atau password salah');
         }
         
         return $this->successResponse(

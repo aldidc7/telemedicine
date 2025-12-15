@@ -74,20 +74,15 @@ class AuthService
     }
 
     /**
-     * Login user dengan email, username, atau NIK
+     * Login user dengan email dan password
      *
-     * @param string $identifier (Email, username, atau NIK)
+     * @param string $email
      * @param string $password
      * @return array|null
      */
-    public function login(string $identifier, string $password): ?array
+    public function login(string $email, string $password): ?array
     {
-        $user = User::where('email', $identifier)
-            ->orWhere('email', 'like', $identifier)  // Support username login
-            ->orWhereHas('pasien', function ($query) use ($identifier) {
-                $query->where('nik', $identifier);
-            })
-            ->first();
+        $user = User::where('email', $email)->first();
 
         if (!$user || !Hash::check($password, $user->password)) {
             return null;
