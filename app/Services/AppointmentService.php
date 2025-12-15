@@ -381,6 +381,7 @@ class AppointmentService
     public function getUpcomingAppointments(int $doctorId, int $days = 7): Collection
     {
         return Appointment::forDoctor($doctorId)
+            ->with(['patient', 'doctor'])  // Eager load to prevent N+1 queries
             ->upcoming()
             ->where('scheduled_at', '<=', now()->addDays($days))
             ->get();

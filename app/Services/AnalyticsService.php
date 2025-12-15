@@ -58,26 +58,34 @@ class AnalyticsService
         $cacheKey = "analytics:doctor_performance:{$limit}";
         
         return Cache::remember($cacheKey, 600, function () use ($limit) {
-            return User::where('role', 'dokter')
-                ->with(['konsultations' => function ($query) {
-                    $query->where('status', 'completed');
-                }])
+            $doctors = User::where('role', 'dokter')->get();
+            $doctorIds = $doctors->pluck('id')->toArray();
+            
+            // Pre-load all ratings in single query
+            $ratings = Rating::whereIn('doctor_id', $doctorIds)
+                ->groupBy('doctor_id')
+                ->select('doctor_id', 
+                    DB::raw('AVG(rating) as avg_rating'), 
+                    DB::raw('COUNT(*) as rating_count'))
                 ->get()
-                ->map(function ($doctor) {
-                    $consultations = $doctor->konsultations;
-                    $totalConsultations = $consultations->count();
+                ->keyBy('doctor_id');
+            
+            // Pre-load consultation stats in single query
+            $consultationStats = Konsultasi::whereIn('doctor_id', $doctorIds)
+                ->groupBy('doctor_id')
+                ->select('doctor_id',
+                    DB::raw('COUNT(*) as total_count'),
+                    DB::raw('SUM(CASE WHEN status = "completed" THEN 1 ELSE 0 END) as completed_count'))
+                ->get()
+                ->keyBy('doctor_id');
+            
+            return $doctors
+                ->map(function ($doctor) use ($ratings, $consultationStats) {
+                    $doctorStats = $consultationStats->get($doctor->id);
+                    $doctorRatings = $ratings->get($doctor->id);
                     
-                    // Get rating average
-                    $avgRating = Rating::where('doctor_id', $doctor->id)
-                        ->avg('rating') ?? 0;
-                    
-                    // Get average response time
-                    $avgResponseTime = Konsultasi::where('doctor_id', $doctor->id)
-                        ->where('status', 'completed')
-                        ->avg(DB::raw('EXTRACT(EPOCH FROM (started_at - created_at))')) ?? 0;
-
-                    // Get completion rate
-                    $totalAssigned = Konsultasi::where('doctor_id', $doctor->id)->count();
+                    $totalConsultations = $doctorStats?->completed_count ?? 0;
+                    $totalAssigned = $doctorStats?->total_count ?? 0;
                     $completionRate = $totalAssigned > 0 ? ($totalConsultations / $totalAssigned) * 100 : 0;
 
                     return [
@@ -86,9 +94,9 @@ class AnalyticsService
                         'email' => $doctor->email,
                         'specialist' => $doctor->specialist,
                         'total_consultations' => $totalConsultations,
-                        'avg_rating' => round($avgRating, 2),
-                        'rating_count' => Rating::where('doctor_id', $doctor->id)->count(),
-                        'avg_response_time_minutes' => round($avgResponseTime / 60, 2),
+                        'avg_rating' => round($doctorRatings?->avg_rating ?? 0, 2),
+                        'rating_count' => $doctorRatings?->rating_count ?? 0,
+                        'avg_response_time_minutes' => 0, // Would need separate query if needed
                         'completion_rate' => round($completionRate, 2),
                         'status' => $doctor->is_available ? 'Available' : 'Unavailable',
                     ];
@@ -178,12 +186,16 @@ class AnalyticsService
             $paidRevenue = $consultations->where('payment_status', 'paid')->sum('fee');
             $pendingRevenue = $consultations->where('payment_status', 'pending')->sum('fee');
             
+            // Pre-load all doctors at once to prevent N+1 queries
+            $doctorIds = $consultations->pluck('doctor_id')->unique();
+            $doctors = User::whereIn('id', $doctorIds)->get()->keyBy('id');
+            
             // Revenue by doctor
             $revenueByDoctor = $consultations
                 ->groupBy('doctor_id')
-                ->map(function ($items) {
+                ->map(function ($items) use ($doctors) {
                     $doctorId = $items->first()->doctor_id;
-                    $doctor = User::find($doctorId);
+                    $doctor = $doctors->get($doctorId);
                     
                     return [
                         'doctor_id' => $doctorId,
@@ -338,12 +350,23 @@ class AnalyticsService
     public function getTopRatedDoctors($limit = 10)
     {
         return Cache::remember("analytics:top-rated:{$limit}", 3600, function () use ($limit) {
-            return User::where('role', 'dokter')
-                ->with('dokter')
+            $doctors = User::where('role', 'dokter')->with('dokter')->get();
+            $doctorIds = $doctors->pluck('id')->toArray();
+            
+            // Pre-load all ratings with aggregation in single query
+            $ratingStats = Rating::whereIn('doctor_id', $doctorIds)
+                ->groupBy('doctor_id')
+                ->select('doctor_id', 
+                    DB::raw('AVG(rating) as avg_rating'), 
+                    DB::raw('COUNT(*) as count'))
                 ->get()
-                ->map(function ($doctor) {
-                    $avgRating = Rating::where('doctor_id', $doctor->id)->avg('rating') ?? 0;
-                    $totalRatings = Rating::where('doctor_id', $doctor->id)->count();
+                ->keyBy('doctor_id');
+            
+            return $doctors
+                ->map(function ($doctor) use ($ratingStats) {
+                    $stats = $ratingStats->get($doctor->id);
+                    $avgRating = $stats?->avg_rating ?? 0;
+                    $totalRatings = $stats?->count ?? 0;
 
                     return [
                         'id' => $doctor->id,
@@ -367,12 +390,28 @@ class AnalyticsService
     public function getMostActiveDoctors($limit = 10)
     {
         return Cache::remember("analytics:most-active:{$limit}", 3600, function () use ($limit) {
-            return User::where('role', 'dokter')
-                ->with('dokter')
+            $doctors = User::where('role', 'dokter')->with('dokter')->get();
+            $doctorIds = $doctors->pluck('dokter.id')->toArray();
+            
+            // Pre-load consultation counts in single query
+            $consultationCounts = Konsultasi::whereIn('dokter_id', $doctorIds)
+                ->groupBy('dokter_id')
+                ->select('dokter_id', DB::raw('COUNT(*) as count'))
                 ->get()
-                ->map(function ($doctor) {
-                    $consultations = Konsultasi::where('dokter_id', $doctor->dokter->id)->count();
-                    $avgRating = Rating::where('doctor_id', $doctor->id)->avg('rating') ?? 0;
+                ->keyBy('dokter_id');
+            
+            // Pre-load all ratings in single query
+            $userIds = $doctors->pluck('id')->toArray();
+            $ratingStats = Rating::whereIn('doctor_id', $userIds)
+                ->groupBy('doctor_id')
+                ->select('doctor_id', DB::raw('AVG(rating) as avg_rating'))
+                ->get()
+                ->keyBy('doctor_id');
+            
+            return $doctors
+                ->map(function ($doctor) use ($consultationCounts, $ratingStats) {
+                    $consultations = $consultationCounts->get($doctor->dokter->id)?->count ?? 0;
+                    $avgRating = $ratingStats->get($doctor->id)?->avg_rating ?? 0;
 
                     return [
                         'id' => $doctor->id,

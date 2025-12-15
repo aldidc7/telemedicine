@@ -109,7 +109,7 @@ class MessageService
         $conversation->markAsRead($userId);
 
         $messages = Message::where('conversation_id', $conversationId)
-            ->with('sender')
+            ->with(['sender', 'conversation'])  // Eager load relationships to prevent N+1
             ->orderBy('created_at', 'desc')
             ->paginate($perPage, ['*'], 'page', $page);
 

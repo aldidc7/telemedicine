@@ -113,12 +113,13 @@ class NotificationService
     }
 
     /**
-     * Get unread notifications
+     * Get unread notifications with eager loading
      */
     public function getUnreadNotifications($userId, $limit = 10)
     {
         return Notification::forUser($userId)
             ->unread()
+            ->with(['user', 'related_model'])  // Eager load relationships
             ->recent()
             ->limit($limit)
             ->get();
