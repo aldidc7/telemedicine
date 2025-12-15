@@ -1,0 +1,31 @@
+import client from './client'
+
+export const pasienAPI = {
+  getList(params = {}) {
+    return client.get('/pasien', { params })
+  },
+
+  create(data) {
+    return client.post('/pasien', data)
+  },
+
+  getDetail(id) {
+    return client.get(`/pasien/${id}`)
+  },
+
+  update(id, data) {
+    return client.put(`/pasien/${id}`, data)
+  },
+
+  delete(id) {
+    return client.delete(`/pasien/${id}`)
+  },
+
+  getRekamMedis(id, params = {}) {
+    return client.get(`/pasien/${id}/rekam-medis`, { params })
+  },
+
+  getKonsultasi(id, params = {}) {
+    return client.get(`/pasien/${id}/konsultasi`, { params })
+  }
+}

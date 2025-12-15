@@ -1,0 +1,750 @@
+{
+  "info": {
+    "name": "Telemedicine RSUD API",
+    "description": "API Collection untuk Testing Sistem Telemedicine RSUD dr. R. Soedarsono Pasuruan",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "item": [
+        {
+          "name": "Register Pasien",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('token', jsonData.data.token);",
+                  "    pm.environment.set('user_id', jsonData.data.user.id);",
+                  "    pm.test('Token disimpan', function() {",
+                  "        pm.expect(pm.environment.get('token')).to.be.truthy;",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama_lengkap\": \"Budi Santoso\",\n  \"email\": \"budi@example.com\",\n  \"password\": \"Password123!\",\n  \"password_confirmation\": \"Password123!\",\n  \"no_identitas\": \"3510011234567890\",\n  \"jenis_kelamin\": \"laki-laki\",\n  \"tanggal_lahir\": \"2015-03-15\",\n  \"alamat\": \"Jl. Merdeka No. 10\",\n  \"no_hp\": \"081234567890\",\n  \"nama_orang_tua\": \"Santoso\",\n  \"pekerjaan_orang_tua\": \"Wiraswasta\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Register Dokter",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama_lengkap\": \"Dr. Siti Nuraini\",\n  \"email\": \"siti@example.com\",\n  \"password\": \"Password123!\",\n  \"password_confirmation\": \"Password123!\",\n  \"no_identitas\": \"3510021234567890\",\n  \"jenis_kelamin\": \"perempuan\",\n  \"tanggal_lahir\": \"1990-07-20\",\n  \"alamat\": \"Jl. Kesehatan No. 5\",\n  \"no_hp\": \"082345678901\",\n  \"nip\": \"1990072012345678\",\n  \"spesialisasi\": \"Pediatri\",\n  \"pendidikan_terakhir\": \"S2 Kedokteran Anak\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('token', jsonData.data.token);",
+                  "    pm.environment.set('user_id', jsonData.data.user.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"budi@example.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('token', jsonData.data.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "refresh"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👨‍👧 Pasien",
+      "item": [
+        {
+          "name": "List Pasien",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/pasien?page=1&per_page=10",
+              "host": ["{{base_url}}"],
+              "path": ["pasien"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "per_page", "value": "10"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Pasien",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": 2,\n  \"no_identitas\": \"3510031234567890\",\n  \"tanggal_lahir\": \"2016-05-20\",\n  \"jenis_kelamin\": \"perempuan\",\n  \"alamat\": \"Jl. Ahmad Yani No. 15\",\n  \"no_hp\": \"081234567891\",\n  \"nama_orang_tua\": \"Suharto\",\n  \"pekerjaan_orang_tua\": \"PNS\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/pasien",
+              "host": ["{{base_url}}"],
+              "path": ["pasien"]
+            }
+          }
+        },
+        {
+          "name": "Get Pasien Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/pasien/1",
+              "host": ["{{base_url}}"],
+              "path": ["pasien", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update Pasien",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"alamat\": \"Jl. Baru No. 99\",\n  \"no_hp\": \"089876543210\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/pasien/1",
+              "host": ["{{base_url}}"],
+              "path": ["pasien", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Pasien",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/pasien/1",
+              "host": ["{{base_url}}"],
+              "path": ["pasien", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get Rekam Medis Pasien",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/pasien/1/rekam-medis",
+              "host": ["{{base_url}}"],
+              "path": ["pasien", "1", "rekam-medis"]
+            }
+          }
+        },
+        {
+          "name": "Get Konsultasi Pasien",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/pasien/1/konsultasi",
+              "host": ["{{base_url}}"],
+              "path": ["pasien", "1", "konsultasi"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👨‍⚕️ Dokter",
+      "item": [
+        {
+          "name": "List Dokter",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/dokter?page=1&per_page=10&tersedia=true",
+              "host": ["{{base_url}}"],
+              "path": ["dokter"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "per_page", "value": "10"},
+                {"key": "tersedia", "value": "true"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Dokter",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": 3,\n  \"nip\": \"1989050112345679\",\n  \"spesialisasi\": \"Mata\",\n  \"pendidikan_terakhir\": \"S2 Oftalmologi\",\n  \"no_identitas\": \"3510041234567890\",\n  \"tanggal_lahir\": \"1989-05-01\",\n  \"jenis_kelamin\": \"laki-laki\",\n  \"alamat\": \"Jl. Dokter No. 20\",\n  \"no_hp\": \"082567890123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/dokter",
+              "host": ["{{base_url}}"],
+              "path": ["dokter"]
+            }
+          }
+        },
+        {
+          "name": "Get Dokter Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/dokter/1",
+              "host": ["{{base_url}}"],
+              "path": ["dokter", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update Dokter",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"spesialisasi\": \"Pediatri Umum\",\n  \"alamat\": \"Jl. Dokter No. 25\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/dokter/1",
+              "host": ["{{base_url}}"],
+              "path": ["dokter", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update Ketersediaan Dokter",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tersedia\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/dokter/1/ketersediaan",
+              "host": ["{{base_url}}"],
+              "path": ["dokter", "1", "ketersediaan"]
+            }
+          }
+        },
+        {
+          "name": "Delete Dokter",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/dokter/1",
+              "host": ["{{base_url}}"],
+              "path": ["dokter", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 Konsultasi",
+      "item": [
+        {
+          "name": "List Konsultasi",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/konsultasi?page=1&per_page=10&status=menunggu",
+              "host": ["{{base_url}}"],
+              "path": ["konsultasi"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "per_page", "value": "10"},
+                {"key": "status", "value": "menunggu"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Konsultasi",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pasien_id\": 1,\n  \"dokter_id\": 1,\n  \"keluhan\": \"Anak saya demam tinggi sejak kemarin sore\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/konsultasi",
+              "host": ["{{base_url}}"],
+              "path": ["konsultasi"]
+            }
+          }
+        },
+        {
+          "name": "Get Konsultasi Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/konsultasi/1",
+              "host": ["{{base_url}}"],
+              "path": ["konsultasi", "1"]
+            }
+          }
+        },
+        {
+          "name": "Terima Konsultasi",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/konsultasi/1/terima",
+              "host": ["{{base_url}}"],
+              "path": ["konsultasi", "1", "terima"]
+            }
+          }
+        },
+        {
+          "name": "Tolak Konsultasi",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"catatan_tolak\": \"Maaf, saya sedang tidak tersedia hari ini\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/konsultasi/1/tolak",
+              "host": ["{{base_url}}"],
+              "path": ["konsultasi", "1", "tolak"]
+            }
+          }
+        },
+        {
+          "name": "Selesaikan Konsultasi",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"diagnosis\": \"Demam akibat infeksi virus ringan\",\n  \"resep\": \"Paracetamol 500mg 3x sehari, Istirahat cukup\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/konsultasi/1/selesaikan",
+              "host": ["{{base_url}}"],
+              "path": ["konsultasi", "1", "selesaikan"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "💬 Pesan Chat",
+      "item": [
+        {
+          "name": "Get Pesan by Konsultasi",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/pesan/1?page=1&per_page=20",
+              "host": ["{{base_url}}"],
+              "path": ["pesan", "1"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "per_page", "value": "20"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Pesan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"konsultasi_id\": 1,\n  \"pesan\": \"Selamat pagi dok, terima kasih sudah membantu\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/pesan",
+              "host": ["{{base_url}}"],
+              "path": ["pesan"]
+            }
+          }
+        },
+        {
+          "name": "Get Unread Count",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/pesan/1/unread-count",
+              "host": ["{{base_url}}"],
+              "path": ["pesan", "1", "unread-count"]
+            }
+          }
+        },
+        {
+          "name": "Mark as Dibaca",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/pesan/1/dibaca",
+              "host": ["{{base_url}}"],
+              "path": ["pesan", "1", "dibaca"]
+            }
+          }
+        },
+        {
+          "name": "Mark All as Read",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/pesan/1/mark-all-read",
+              "host": ["{{base_url}}"],
+              "path": ["pesan", "1", "mark-all-read"]
+            }
+          }
+        },
+        {
+          "name": "Delete Pesan",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/pesan/1",
+              "host": ["{{base_url}}"],
+              "path": ["pesan", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🛡️ Admin",
+      "item": [
+        {
+          "name": "Admin Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "dashboard"]
+            }
+          }
+        },
+        {
+          "name": "List Pengguna",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/pengguna?page=1&per_page=10&role=pasien",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "pengguna"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "per_page", "value": "10"},
+                {"key": "role", "value": "pasien"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Pengguna Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/pengguna/1",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "pengguna", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update Pengguna",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama_lengkap\": \"Budi Santoso Updated\",\n  \"no_hp\": \"081999999999\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/pengguna/1",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "pengguna", "1"]
+            }
+          }
+        },
+        {
+          "name": "Nonaktifkan Pengguna",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/pengguna/1/nonaktif",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "pengguna", "1", "nonaktif"]
+            }
+          }
+        },
+        {
+          "name": "Aktifkan Pengguna",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/pengguna/1/aktif",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "pengguna", "1", "aktif"]
+            }
+          }
+        },
+        {
+          "name": "Delete Pengguna",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/pengguna/1",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "pengguna", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get Log Aktivitas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/log-aktivitas?page=1&per_page=50",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "log-aktivitas"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "per_page", "value": "50"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Statistik",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/statistik",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "statistik"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "// Setup default environment variables jika belum ada",
+          "if (!pm.environment.get('base_url')) {",
+          "    pm.environment.set('base_url', 'http://localhost:8000/api/v1');",
+          "}"
+        ]
+      }
+    }
+  ]
+}

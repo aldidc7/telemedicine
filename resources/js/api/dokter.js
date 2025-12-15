@@ -1,0 +1,35 @@
+import client from './client'
+
+export const dokterAPI = {
+  getList(params = {}) {
+    return client.get('/dokter', { params })
+  },
+
+  create(data) {
+    return client.post('/dokter', data)
+  },
+
+  getDetail(id) {
+    return client.get(`/dokter/${id}`)
+  },
+
+  getByUserId(userId) {
+    return client.get(`/dokter/user/${userId}`)
+  },
+
+  update(id, data) {
+    return client.put(`/dokter/${id}`, data)
+  },
+
+  delete(id) {
+    return client.delete(`/dokter/${id}`)
+  },
+
+  updateKetersediaan(id, data) {
+    return client.put(`/dokter/${id}/ketersediaan`, data)
+  },
+
+  syncToPatient(dokter_id, data) {
+    return client.post(`/dokter/${dokter_id}/sync-patient`, data)
+  }
+}

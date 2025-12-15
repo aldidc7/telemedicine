@@ -1,0 +1,31 @@
+import client from './client'
+
+export const konsultasiAPI = {
+  getList(params = {}) {
+    return client.get('/konsultasi', { params })
+  },
+
+  create(data) {
+    return client.post('/konsultasi', data)
+  },
+
+  getDetail(id) {
+    return client.get(`/konsultasi/${id}`)
+  },
+
+  terima(id) {
+    return client.post(`/konsultasi/${id}/terima`)
+  },
+
+  tolak(id, data = {}) {
+    return client.post(`/konsultasi/${id}/tolak`, data)
+  },
+
+  selesaikan(id, data = {}) {
+    return client.post(`/konsultasi/${id}/selesaikan`, data)
+  },
+
+  cancel(id) {
+    return client.post(`/konsultasi/${id}/cancel`)
+  }
+}

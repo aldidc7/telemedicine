@@ -1,0 +1,39 @@
+import client from './client'
+
+export const adminApi = {
+  getDashboard() {
+    return client.get('/admin/dashboard')
+  },
+
+  getPengguna(params = {}) {
+    return client.get('/admin/pengguna', { params })
+  },
+
+  getPenggunaDetail(id) {
+    return client.get(`/admin/pengguna/${id}`)
+  },
+
+  updatePengguna(id, data) {
+    return client.put(`/admin/pengguna/${id}`, data)
+  },
+
+  nonaktifkanPengguna(id, data = {}) {
+    return client.put(`/admin/pengguna/${id}/nonaktif`, data)
+  },
+
+  aktifkanPengguna(id) {
+    return client.put(`/admin/pengguna/${id}/aktif`)
+  },
+
+  deletePengguna(id) {
+    return client.delete(`/admin/pengguna/${id}`)
+  },
+
+  getLogAktivitas(params = {}) {
+    return client.get('/admin/log-aktivitas', { params })
+  },
+
+  getStatistik() {
+    return client.get('/admin/statistik')
+  }
+}

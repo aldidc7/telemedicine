@@ -1,0 +1,406 @@
+<template>
+  <div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- Header -->
+      <div class="mb-10">
+        <div class="flex items-center justify-between gap-3 mb-2">
+          <div class="flex items-center gap-3">
+            <svg class="w-11 h-11 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/>
+            </svg>
+            <h1 class="text-4xl font-black bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              Advanced Analytics
+            </h1>
+          </div>
+          <div class="flex items-center gap-3">
+            <!-- Auto Refresh Toggle -->
+            <div class="flex items-center gap-2 px-3 py-2 bg-white rounded-xl border border-gray-200">
+              <button
+                @click="toggleAutoRefresh"
+                :class="[
+                  'p-1 rounded-lg transition',
+                  autoRefreshEnabled 
+                    ? 'bg-green-100 text-green-600' 
+                    : 'bg-gray-100 text-gray-600'
+                ]"
+                title="Toggle auto-refresh"
+              >
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+              </button>
+              <select
+                v-model.number="autoRefreshInterval"
+                @change="updateRefreshInterval(autoRefreshInterval)"
+                :disabled="!autoRefreshEnabled"
+                class="bg-transparent border-0 text-sm font-medium outline-none cursor-pointer disabled:opacity-50"
+              >
+                <option :value="15">15s</option>
+                <option :value="30">30s</option>
+                <option :value="60">1m</option>
+                <option :value="300">5m</option>
+              </select>
+              <span class="text-xs text-gray-500">{{ formattedLastUpdated }}</span>
+            </div>
+            
+            <!-- Refresh Button -->
+            <button
+              @click="refreshAnalytics"
+              :disabled="updateStatus === 'updating'"
+              class="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-bold py-2 px-4 rounded-xl transition"
+            >
+              {{ updateStatus === 'updating' ? '⏳' : '🔄' }} Refresh
+            </button>
+          </div>
+        </div>
+        <div class="flex items-center justify-between">
+          <p class="text-gray-600">Real-time insights and performance metrics</p>
+          <!-- Status Indicator -->
+          <div v-if="updateStatus === 'error'" class="text-sm text-red-600 font-medium">
+            ⚠️ Last update failed - retrying...
+          </div>
+          <div v-else-if="autoRefreshEnabled" class="flex items-center gap-2 text-sm text-gray-500">
+            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+            Live updates enabled
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div v-if="loading" class="text-center py-12">
+        <div class="inline-flex flex-col items-center gap-4">
+          <div class="animate-spin">
+            <svg class="w-12 h-12 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+          </div>
+          <p class="text-gray-600 font-semibold">Loading analytics...</p>
+        </div>
+      </div>
+
+      <div v-else class="space-y-10">
+        <!-- Consultation Metrics KPI -->
+        <section>
+          <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <span>📊</span> Consultation Metrics
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <KpiCard
+              label="Total Consultations"
+              :value="consultationMetrics.total"
+              icon="🔵"
+              color="blue"
+            />
+            <KpiCard
+              label="Active Sessions"
+              :value="consultationMetrics.active"
+              icon="🟢"
+              color="green"
+            />
+            <KpiCard
+              label="Completed"
+              :value="consultationMetrics.completed"
+              icon="✓"
+              color="emerald"
+            />
+            <KpiCard
+              label="Completion Rate"
+              :value="`${consultationMetrics.completion_rate.toFixed(1)}%`"
+              icon="📈"
+              color="purple"
+            />
+          </div>
+        </section>
+
+        <!-- Doctor Performance -->
+        <section>
+          <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <span>👨‍⚕️</span> Doctor Performance Rankings
+          </h2>
+          <DoctorPerformanceTable :doctors="doctorPerformance" />
+        </section>
+
+        <!-- Health Trends -->
+        <section>
+          <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <span>🏥</span> Patient Health Trends
+          </h2>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Health Issues -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 hover:shadow-lg transition">
+              <h3 class="text-xl font-bold text-gray-900 mb-6">Top Health Issues</h3>
+              <div class="space-y-3">
+                <div v-for="(count, issue) in topHealthIssues" :key="issue" class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <span class="font-medium text-gray-700">{{ issue }}</span>
+                  <span class="font-bold text-indigo-600 bg-indigo-100 px-3 py-1 rounded-full text-sm">{{ count }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Patient Demographics -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 hover:shadow-lg transition">
+              <h3 class="text-xl font-bold text-gray-900 mb-6">Patient Demographics</h3>
+              <div class="space-y-4">
+                <div class="border-l-4 border-blue-500 pl-4 py-2">
+                  <p class="text-sm text-gray-600">Total Patients</p>
+                  <p class="text-3xl font-bold text-gray-900">{{ healthTrends.total_patients }}</p>
+                </div>
+                <div class="border-l-4 border-green-500 pl-4 py-2">
+                  <p class="text-sm text-gray-600">New This Month</p>
+                  <p class="text-3xl font-bold text-gray-900">{{ healthTrends.new_patients_this_month }}</p>
+                </div>
+                <div class="border-l-4 border-purple-500 pl-4 py-2">
+                  <p class="text-sm text-gray-600">Retention Rate</p>
+                  <p class="text-3xl font-bold text-gray-900">{{ healthTrends.retention_rate.toFixed(1) }}%</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Revenue Analytics -->
+        <section>
+          <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <span>💰</span> Revenue Analytics
+          </h2>
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <KpiCard
+              label="Total Revenue"
+              :value="`$${(revenueData.total_revenue / 1000).toFixed(1)}k`"
+              icon="💵"
+              color="green"
+            />
+            <KpiCard
+              label="Paid Revenue"
+              :value="`$${(revenueData.paid_revenue / 1000).toFixed(1)}k`"
+              icon="✓"
+              color="emerald"
+            />
+            <KpiCard
+              label="Payment Rate"
+              :value="`${revenueData.payment_completion_rate.toFixed(1)}%`"
+              icon="📊"
+              color="blue"
+            />
+          </div>
+
+          <!-- Revenue by Doctor -->
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 hover:shadow-lg transition">
+            <h3 class="text-xl font-bold text-gray-900 mb-6">Top Revenue Generators</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead class="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-sm font-bold text-gray-900">Doctor Name</th>
+                    <th class="px-6 py-3 text-left text-sm font-bold text-gray-900">Consultations</th>
+                    <th class="px-6 py-3 text-left text-sm font-bold text-gray-900">Total Revenue</th>
+                    <th class="px-6 py-3 text-left text-sm font-bold text-gray-900">Avg/Consultation</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                  <tr v-for="doctor in revenueByDoctor" :key="doctor.doctor_id" class="hover:bg-gray-50 transition">
+                    <td class="px-6 py-4 font-medium text-gray-900">{{ doctor.doctor_name }}</td>
+                    <td class="px-6 py-4 text-gray-600">{{ doctor.consultations }}</td>
+                    <td class="px-6 py-4 font-bold text-green-600">${{ doctor.total_revenue.toFixed(2) }}</td>
+                    <td class="px-6 py-4 text-gray-600">${{ doctor.avg_per_consultation.toFixed(2) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Date Range Analytics -->
+        <section>
+          <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <span>📅</span> Custom Date Range Analytics
+          </h2>
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">Start Date</label>
+                <input 
+                  v-model="dateRangeStart" 
+                  type="date" 
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">End Date</label>
+                <input 
+                  v-model="dateRangeEnd" 
+                  type="date" 
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+              </div>
+              <div class="flex items-end">
+                <button 
+                  @click="fetchDateRangeAnalytics"
+                  class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition"
+                >
+                  Load Analytics
+                </button>
+              </div>
+            </div>
+            <div v-if="dateRangeData" class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div v-if="dateRangeData.consultations" class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <h4 class="font-bold text-blue-900 mb-3">Consultations</h4>
+                  <div class="space-y-2 text-sm text-blue-800">
+                    <p v-for="day in dateRangeData.consultations" :key="day.date">
+                      <span class="font-semibold">{{ day.date }}:</span> {{ day.total }} ({{ day.completed }} completed)
+                    </p>
+                  </div>
+                </div>
+                <div v-if="dateRangeData.revenue" class="bg-green-50 p-4 rounded-lg border border-green-200">
+                  <h4 class="font-bold text-green-900 mb-3">Revenue</h4>
+                  <div class="space-y-2 text-sm text-green-800">
+                    <p v-for="day in dateRangeData.revenue" :key="day.date">
+                      <span class="font-semibold">{{ day.date }}:</span> ${{ day.total.toFixed(2) }} ({{ day.count }} consultations)
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+import KpiCard from '@/components/analytics/KpiCard.vue'
+import DoctorPerformanceTable from '@/components/analytics/DoctorPerformanceTable.vue'
+import client from '@/api/client'
+
+const authStore = useAuthStore()
+const loading = ref(true)
+const consultationMetrics = ref({})
+const doctorPerformance = ref([])
+const healthTrends = ref({})
+const revenueData = ref({})
+const revenueByDoctor = ref([])
+const dateRangeStart = ref('')
+const dateRangeEnd = ref('')
+const dateRangeData = ref(null)
+const topHealthIssues = ref({})
+
+// Real-time update settings
+const autoRefreshEnabled = ref(true)
+const autoRefreshInterval = ref(30) // seconds
+const lastUpdated = ref(new Date())
+const updateStatus = ref('idle') // idle, updating, error
+let autoRefreshTimer = null
+let dataCheckInterval = null
+
+const formattedLastUpdated = computed(() => {
+  const now = new Date()
+  const diff = Math.floor((now - lastUpdated.value) / 1000)
+  
+  if (diff < 60) return `${diff}s ago`
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
+  return `${Math.floor(diff / 3600)}h ago`
+})
+
+onMounted(() => {
+  fetchAnalytics()
+  initializeAutoRefresh()
+})
+
+onUnmounted(() => {
+  stopAutoRefresh()
+})
+
+const fetchAnalytics = async () => {
+  try {
+    updateStatus.value = 'updating'
+    const response = await client.get('/analytics/overview')
+    
+    const data = response.data.data
+    consultationMetrics.value = data.consultation_metrics
+    doctorPerformance.value = data.doctor_performance
+    healthTrends.value = data.health_trends
+    revenueData.value = data.revenue
+    revenueByDoctor.value = data.revenue.revenue_by_doctor
+    topHealthIssues.value = data.health_trends.top_health_issues
+    
+    lastUpdated.value = new Date()
+    updateStatus.value = 'idle'
+    
+    if (!loading.value) {
+      // Silent update - data refreshed without showing loading state
+    }
+  } catch (error) {
+    console.error('Failed to fetch analytics:', error)
+    updateStatus.value = 'error'
+    setTimeout(() => { updateStatus.value = 'idle' }, 3000)
+  } finally {
+    loading.value = false
+  }
+}
+
+const refreshAnalytics = async () => {
+  try {
+    await client.post('/analytics/refresh')
+    await fetchAnalytics()
+  } catch (error) {
+    console.error('Failed to refresh analytics:', error)
+  }
+}
+
+const initializeAutoRefresh = () => {
+  // Primary auto-refresh timer
+  if (autoRefreshTimer) clearInterval(autoRefreshTimer)
+  
+  autoRefreshTimer = setInterval(() => {
+    if (autoRefreshEnabled.value) {
+      fetchAnalytics()
+    }
+  }, autoRefreshInterval.value * 1000)
+}
+
+const stopAutoRefresh = () => {
+  if (autoRefreshTimer) {
+    clearInterval(autoRefreshTimer)
+    autoRefreshTimer = null
+  }
+  if (dataCheckInterval) {
+    clearInterval(dataCheckInterval)
+    dataCheckInterval = null
+  }
+}
+
+const toggleAutoRefresh = () => {
+  autoRefreshEnabled.value = !autoRefreshEnabled.value
+  if (autoRefreshEnabled.value) {
+    initializeAutoRefresh()
+  } else {
+    stopAutoRefresh()
+  }
+}
+
+const updateRefreshInterval = (newInterval) => {
+  autoRefreshInterval.value = newInterval
+  initializeAutoRefresh()
+}
+
+const fetchDateRangeAnalytics = async () => {
+  if (!dateRangeStart.value || !dateRangeEnd.value) return
+  
+  try {
+    const response = await client.get('/analytics/range', {
+      params: {
+        start_date: dateRangeStart.value,
+        end_date: dateRangeEnd.value,
+        metrics: 'consultations,revenue'
+      }
+    })
+    dateRangeData.value = response.data.data
+  } catch (error) {
+    console.error('Failed to fetch date range analytics:', error)
+  }
+}
+</script>
