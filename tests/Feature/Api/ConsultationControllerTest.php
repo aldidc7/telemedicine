@@ -157,10 +157,9 @@ class ConsultationControllerTest extends TestCase
      * Test cannot access others consultation
      */
     public function test_cannot_access_others_consultation(): void
-    {
-        $otherPatient = User::factory()->create(['role' => 'pasien']);
+    {        /** @var User $otherPatient */        $otherPatient = User::factory()->create(['role' => 'pasien']);
         
-        $response = $this->actingAs($otherPatient)
+        $response = $this->actingAs($otherPatient, 'sanctum')
             ->getJson("/api/v1/consultations/{$this->consultation->id}");
         
         $response->assertStatus(403);

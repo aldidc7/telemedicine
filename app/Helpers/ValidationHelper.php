@@ -184,6 +184,46 @@ class ValidationHelper
     }
     
     /**
+     * Validate prescription status
+     * 
+     * @param string $status Status yang ingin divalidasi
+     * @return bool True jika valid
+     * @throws \InvalidArgumentException Jika status tidak valid
+     */
+    public static function validatePrescriptionStatus(string $status): bool
+    {
+        $validStatuses = config('appointment.PRESCRIPTION_STATUSES');
+        
+        if (!in_array($status, $validStatuses)) {
+            throw new \InvalidArgumentException(
+                "Invalid prescription status: {$status}. Valid statuses: " . implode(', ', $validStatuses)
+            );
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Validate rating status
+     * 
+     * @param string $status Status yang ingin divalidasi
+     * @return bool True jika valid
+     * @throws \InvalidArgumentException Jika status tidak valid
+     */
+    public static function validateRatingStatus(string $status): bool
+    {
+        $validStatuses = config('appointment.RATING_STATUSES');
+        
+        if (!in_array($status, $validStatuses)) {
+            throw new \InvalidArgumentException(
+                "Invalid rating status: {$status}. Valid statuses: " . implode(', ', $validStatuses)
+            );
+        }
+        
+        return true;
+    }
+    
+    /**
      * Get all valid appointment statuses
      * 
      * @return array

@@ -441,10 +441,18 @@ class AdminDashboardService
         $size = 0;
         $path = storage_path();
         
-        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path)) as $file) {
-            if ($file->isFile()) {
-                $size += $file->getSize();
+        try {
+            /** @var \Traversable $directory */
+            $directory = new \RecursiveDirectoryIterator($path);
+            $iterator = new \RecursiveIteratorIterator($directory);
+            foreach ($iterator as $file) {
+                if ($file->isFile()) {
+                    $size += $file->getSize();
+                }
             }
+        } catch (\Exception $e) {
+            // If storage calculation fails, return 0
+            $size = 0;
         }
 
         return $this->formatBytes($size);

@@ -376,12 +376,18 @@ class EmailNotificationService
         array $parameters = []
     ): bool {
         try {
-            Mail::to($email)
-                ->queue($mailClass, $parameters);
+            // Instantiate mail class if it's a string class name
+            if (is_string($mailClass) && class_exists($mailClass)) {
+                $mailable = new $mailClass(...array_values($parameters));
+            } else {
+                $mailable = $mailClass;
+            }
+            
+            Mail::to($email)->queue($mailable);
 
             Log::info('Email queued', [
                 'email' => $email,
-                'mail_class' => $mailClass,
+                'mail_class' => get_class($mailable),
             ]);
 
             return true;
