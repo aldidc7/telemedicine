@@ -104,20 +104,26 @@ export const useAuthStore = defineStore('auth', () => {
         const timeoutPromise = new Promise((resolve, reject) => {
           setTimeout(() => {
             reject(new Error('Profile fetch timeout'))
-          }, 8000) // 8 second timeout untuk getProfile
+          }, 15000) // 15 second timeout untuk getProfile
         })
         
-        const { data } = await Promise.race([authApi.getProfile(), timeoutPromise])
-        user.value = data.data
-        return true
+        try {
+          const { data } = await Promise.race([authApi.getProfile(), timeoutPromise])
+          user.value = data.data
+          return true
+        } catch (err) {
+          if (err.message === 'Profile fetch timeout') {
+            console.warn('⏱️ Auth initialization timeout - API response terlalu lama')
+          } else {
+            console.warn('❌ Auth initialization failed:', err.message)
+          }
+          // Token mungkin sudah expire atau API down, clear dan continue
+          token.value = null
+          user.value = null
+          localStorage.removeItem('token')
+          return false
+        }
       }
-      return false
-    } catch (err) {
-      // Token invalid atau timeout, clear localStorage dan continue
-      console.warn('Auth initialization error:', err.message)
-      token.value = null
-      user.value = null
-      localStorage.removeItem('token')
       return false
     } finally {
       initialized.value = true
