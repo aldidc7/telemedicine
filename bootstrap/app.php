@@ -12,12 +12,18 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Register rate limiting middleware globally for API
+        $middleware->api(append: [
+            \App\Http\Middleware\ApiRateLimiter::class,
+        ]);
+
         // Register custom middleware untuk role-based access
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureAdminRole::class,
             'dokter' => \App\Http\Middleware\EnsureDokterRole::class,
             'pasien' => \App\Http\Middleware\EnsurePasienRole::class,
             'role' => \App\Http\Middleware\EnsureRoleInList::class,
+            'throttle' => \App\Http\Middleware\ApiRateLimiter::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
