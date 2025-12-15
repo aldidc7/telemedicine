@@ -140,7 +140,7 @@ class DashboardCacheService
     public static function getTrends()
     {
         return Cache::remember(self::KEY_TRENDS, self::CACHE_TTL_LONG, function () {
-            $konsultasiPerBulan = Konsultasi::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as bulan, COUNT(*) as count')
+            $konsultasiPerBulan = Konsultasi::selectRaw('strftime("%Y-%m", created_at) as bulan, COUNT(*) as count')
                 ->where('created_at', '>=', now()->subMonths(12))
                 ->groupBy('bulan')
                 ->orderBy('bulan')
