@@ -5,9 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Services\PrescriptionService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class PrescriptionController extends Controller
 {
+    use AuthorizesRequests;
+    
     protected $prescriptionService;
 
     public function __construct(PrescriptionService $prescriptionService)
@@ -39,15 +43,15 @@ class PrescriptionController extends Controller
             ]);
 
             // Check user adalah doctor
-            if (auth()->user()->role !== 'dokter') {
+            if (Auth::user()->role !== 'dokter') {
                 return response()->json(['error' => 'Hanya dokter yang dapat membuat resep'], 403);
             }
 
             // Create prescription
             $prescription = $this->prescriptionService->createPrescription(
                 $validated['appointment_id'],
-                auth()->user()->id,
-                auth()->user()->id, // Will be replaced from appointment
+                Auth::user()->id,
+                Auth::user()->id, // Will be replaced from appointment
                 $validated['medications'],
                 $validated['notes'] ?? null,
                 $validated['instructions'] ?? null,
@@ -78,7 +82,7 @@ class PrescriptionController extends Controller
             $prescription = $this->prescriptionService->getPrescriptionDetail($id);
 
             // Check if user authorized
-            $user = auth()->user();
+            $user = Auth::user();
             if ($prescription->patient_id !== $user->id && $prescription->doctor_id !== $user->id) {
                 return response()->json(['error' => 'Anda tidak berhak mengakses resep ini'], 403);
             }
@@ -105,7 +109,7 @@ class PrescriptionController extends Controller
             $dateFrom = $request->query('date_from');
             $dateTo = $request->query('date_to');
 
-            $user = auth()->user();
+            $user = Auth::user();
 
             if ($search || $dateFrom || $dateTo) {
                 // Advanced search
@@ -159,7 +163,7 @@ class PrescriptionController extends Controller
     public function active()
     {
         try {
-            $user = auth()->user();
+            $user = Auth::user();
 
             if ($user->role !== 'pasien') {
                 return response()->json(['error' => 'Hanya pasien yang bisa akses ini'], 403);
@@ -183,7 +187,7 @@ class PrescriptionController extends Controller
     public function unacknowledged()
     {
         try {
-            $user = auth()->user();
+            $user = Auth::user();
 
             if ($user->role !== 'pasien') {
                 return response()->json(['error' => 'Hanya pasien yang bisa akses ini'], 403);
@@ -207,7 +211,7 @@ class PrescriptionController extends Controller
     public function acknowledge($id)
     {
         try {
-            $user = auth()->user();
+            $user = Auth::user();
 
             if ($user->role !== 'pasien') {
                 return response()->json(['error' => 'Hanya pasien yang bisa acknowledge resep'], 403);
@@ -248,7 +252,7 @@ class PrescriptionController extends Controller
                 'instructions' => 'nullable|string|max:1000',
             ]);
 
-            $user = auth()->user();
+            $user = Auth::user();
 
             $prescription = $this->prescriptionService->updatePrescription(
                 $id,
@@ -274,7 +278,7 @@ class PrescriptionController extends Controller
     public function complete($id)
     {
         try {
-            $user = auth()->user();
+            $user = Auth::user();
 
             if ($user->role !== 'pasien') {
                 return response()->json(['error' => 'Hanya pasien yang bisa mark resep'], 403);
@@ -303,7 +307,7 @@ class PrescriptionController extends Controller
             // Authorize using policy
             $this->authorize('delete', $prescription);
 
-            $this->prescriptionService->deletePrescription($id, auth()->user()->id);
+            $this->prescriptionService->deletePrescription($id, Auth::user()->id);
 
             return response()->json([
                 'message' => 'Resep berhasil dihapus',
@@ -320,7 +324,7 @@ class PrescriptionController extends Controller
     public function stats()
     {
         try {
-            $user = auth()->user();
+            $user = Auth::user();
             $stats = $this->prescriptionService->getPrescriptionStats($user->id, $user->role);
 
             return response()->json([
@@ -338,7 +342,7 @@ class PrescriptionController extends Controller
     public function byAppointment($appointmentId)
     {
         try {
-            $user = auth()->user();
+            $user = Auth::user();
             
             // Verify user is authorized for this appointment
             $appointment = \App\Models\Appointment::findOrFail($appointmentId);

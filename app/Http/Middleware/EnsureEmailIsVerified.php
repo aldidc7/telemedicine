@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Middleware untuk memastikan user sudah verifikasi email
@@ -21,14 +22,14 @@ class EnsureEmailIsVerified
     public function handle(Request $request, Closure $next): Response
     {
         // Check if user is authenticated
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Anda harus login terlebih dahulu',
             ], 401);
         }
 
-        $user = auth()->user();
+        $user = Auth::user();
 
         // Check if email is verified
         if (!$user->email_verified_at) {

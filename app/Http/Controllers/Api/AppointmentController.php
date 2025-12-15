@@ -6,9 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Services\AppointmentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class AppointmentController extends Controller
 {
+    use AuthorizesRequests;
+    
     protected $appointmentService;
 
     public function __construct(AppointmentService $appointmentService)
@@ -34,13 +38,13 @@ class AppointmentController extends Controller
             ]);
 
             // Check user adalah patient
-            if (auth()->user()->role !== 'pasien') {
+            if (Auth::user()->role !== 'pasien') {
                 return response()->json(['error' => 'Hanya pasien dapat membuat appointment'], 403);
             }
 
             // Book appointment
             $appointment = $this->appointmentService->bookAppointment(
-                auth()->user()->id,
+                Auth::user()->id,
                 $validated['doctor_id'],
                 $validated['scheduled_at'],
                 $validated['type'],
@@ -71,7 +75,7 @@ class AppointmentController extends Controller
             $dateFrom = $request->query('date_from');
             $dateTo = $request->query('date_to');
 
-            $user = auth()->user();
+            $user = Auth::user();
 
             if ($search || $dateFrom || $dateTo) {
                 // Advanced search
@@ -128,7 +132,7 @@ class AppointmentController extends Controller
             $appointment = $this->appointmentService->getAppointmentDetail($id);
 
             // Check if user berhak lihat
-            $user = auth()->user();
+            $user = Auth::user();
             if ($appointment->patient_id !== $user->id && $appointment->doctor_id !== $user->id) {
                 return response()->json(['error' => 'Anda tidak berhak mengakses appointment ini'], 403);
             }
@@ -174,7 +178,7 @@ class AppointmentController extends Controller
     public function confirm($id)
     {
         try {
-            $user = auth()->user();
+            $user = Auth::user();
 
             if ($user->role !== 'dokter') {
                 return response()->json(['error' => 'Hanya dokter dapat confirm appointment'], 403);
@@ -202,7 +206,7 @@ class AppointmentController extends Controller
                 'reason' => 'required|string|max:500',
             ]);
 
-            $user = auth()->user();
+            $user = Auth::user();
 
             if ($user->role !== 'dokter') {
                 return response()->json(['error' => 'Hanya dokter dapat reject appointment'], 403);
@@ -241,7 +245,7 @@ class AppointmentController extends Controller
 
             $appointment = $this->appointmentService->cancelAppointment(
                 $id,
-                auth()->user()->id,
+                Auth::user()->id,
                 $validated['reason']
             );
 
@@ -273,7 +277,7 @@ class AppointmentController extends Controller
             $appointment = $this->appointmentService->rescheduleAppointment(
                 $id,
                 $validated['scheduled_at'],
-                auth()->user()->id
+                Auth::user()->id
             );
 
             return response()->json([
@@ -292,7 +296,7 @@ class AppointmentController extends Controller
     public function start($id)
     {
         try {
-            $user = auth()->user();
+            $user = Auth::user();
 
             if ($user->role !== 'dokter') {
                 return response()->json(['error' => 'Hanya dokter dapat start appointment'], 403);
@@ -320,7 +324,7 @@ class AppointmentController extends Controller
                 'notes' => 'nullable|string|max:1000',
             ]);
 
-            $user = auth()->user();
+            $user = Auth::user();
 
             if ($user->role !== 'dokter') {
                 return response()->json(['error' => 'Hanya dokter dapat end appointment'], 403);
@@ -348,7 +352,7 @@ class AppointmentController extends Controller
     public function stats()
     {
         try {
-            $user = auth()->user();
+            $user = Auth::user();
             $stats = $this->appointmentService->getAppointmentStats($user->id, $user->role);
 
             return response()->json([
@@ -366,7 +370,7 @@ class AppointmentController extends Controller
     public function today()
     {
         try {
-            $user = auth()->user();
+            $user = Auth::user();
             $appointments = $this->appointmentService->getTodayAppointments($user->id, $user->role);
 
             return response()->json([

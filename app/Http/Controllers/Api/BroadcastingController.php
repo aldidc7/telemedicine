@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Services\WebSocketService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class BroadcastingController extends Controller
 {
@@ -17,7 +18,7 @@ class BroadcastingController extends Controller
     public function authenticate(Request $request)
     {
         // User must be authenticated
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             return abort(403, 'Unauthorized');
         }
 
@@ -37,13 +38,13 @@ class BroadcastingController extends Controller
      */
     public function getConfig(Request $request)
     {
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             return response()->json(['error' => 'Unauthenticated'], 401);
         }
 
         try {
             $webSocketService = new WebSocketService();
-            $config = $webSocketService->getAuthenticationData(auth()->id());
+            $config = $webSocketService->getAuthenticationData(Auth::id());
             
             return response()->json([
                 'status' => 'success',

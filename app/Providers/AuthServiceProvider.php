@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Contracts\Auth\Access\Gate;
 use App\Models\Appointment;
 use App\Models\Prescription;
 use App\Models\Message;
@@ -29,6 +28,6 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->registerPolicies();
+        // Policies are automatically registered with the container
     }
 }

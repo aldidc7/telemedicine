@@ -5,6 +5,7 @@ namespace App\Exceptions;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Throwable;
 
 /**
@@ -47,7 +48,7 @@ class Handler extends ExceptionHandler
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'url' => request()->url(),
                 'method' => request()->method(),
                 'ip' => request()->ip(),

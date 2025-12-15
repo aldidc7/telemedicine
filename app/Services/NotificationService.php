@@ -385,4 +385,101 @@ class NotificationService
             "/prescriptions/{$prescriptionId}"
         );
     }
+
+    /**
+     * Notify when appointment is created
+     */
+    public function notifyAppointmentCreated($doctorId, $appointmentId, $patientName, $scheduledAt)
+    {
+        return $this->create(
+            $doctorId,
+            'appointment_created',
+            "{$patientName} telah membuat janji temu pada {$scheduledAt}",
+            "/appointments/{$appointmentId}"
+        );
+    }
+
+    /**
+     * Notify when appointment is confirmed
+     */
+    public function notifyAppointmentConfirmed($patientId, $appointmentId, $doctorName)
+    {
+        return $this->create(
+            $patientId,
+            'appointment_confirmed',
+            "Dr. {$doctorName} telah mengkonfirmasi janji temu Anda",
+            "/appointments/{$appointmentId}"
+        );
+    }
+
+    /**
+     * Notify when appointment is rejected
+     */
+    public function notifyAppointmentRejected($patientId, $appointmentId, $reason)
+    {
+        return $this->create(
+            $patientId,
+            'appointment_rejected',
+            "Janji temu Anda ditolak. Alasan: {$reason}",
+            "/appointments/{$appointmentId}"
+        );
+    }
+
+    /**
+     * Notify when appointment is cancelled
+     */
+    public function notifyAppointmentCancelled($recipientId, $appointmentId, $reason = null)
+    {
+        $message = "Janji temu telah dibatalkan";
+        if ($reason) {
+            $message .= ". Alasan: {$reason}";
+        }
+        
+        return $this->create(
+            $recipientId,
+            'appointment_cancelled',
+            $message,
+            "/appointments/{$appointmentId}"
+        );
+    }
+
+    /**
+     * Notify when appointment is rescheduled
+     */
+    public function notifyAppointmentRescheduled($recipientId, $appointmentId, $newDate)
+    {
+        return $this->create(
+            $recipientId,
+            'appointment_rescheduled',
+            "Janji temu Anda telah dijadwalkan ulang menjadi {$newDate}",
+            "/appointments/{$appointmentId}"
+        );
+    }
+
+    /**
+     * Notify when appointment starts
+     */
+    public function notifyAppointmentStarted($recipientId, $appointmentId, $participantName)
+    {
+        return $this->create(
+            $recipientId,
+            'appointment_started',
+            "Janji temu dengan {$participantName} sedang dimulai",
+            "/appointments/{$appointmentId}"
+        );
+    }
+
+    /**
+     * Notify when appointment is completed
+     */
+    public function notifyAppointmentCompleted($recipientId, $appointmentId)
+    {
+        return $this->create(
+            $recipientId,
+            'appointment_completed',
+            "Janji temu Anda telah selesai",
+            "/appointments/{$appointmentId}"
+        );
+    }
 }
+

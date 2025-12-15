@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\User;
 use Pusher\Pusher;
+use Illuminate\Support\Facades\Auth;
 
 class WebSocketService
 {
@@ -212,7 +213,7 @@ class WebSocketService
      */
     public function authenticateChannel($request)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         
         if (!$user) {
             return abort(403);
@@ -221,12 +222,12 @@ class WebSocketService
         return $this->pusher->socket_auth(
             $request->channel_name,
             $request->socket_id,
-            [
-                'user_id' => $user->id,
+            json_encode([
+                'user_id' => (string) $user->id,
                 'user_name' => $user->name,
                 'user_email' => $user->email,
                 'user_role' => $user->role,
-            ]
+            ])
         );
     }
 

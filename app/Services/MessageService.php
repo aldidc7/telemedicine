@@ -86,11 +86,6 @@ class MessageService
 
             return $message;
         });
-        } catch (\Exception $e) {
-            \Log::warning('Failed to create message notification: ' . $e->getMessage());
-        }
-
-        return $message;
     }
 
     /**

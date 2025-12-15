@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class LogApiRequests
@@ -24,7 +25,7 @@ class LogApiRequests
             'path' => $request->path(),
             'url' => $request->url(),
             'ip' => $request->ip(),
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
             'headers' => $this->sanitizeHeaders($request->headers->all()),
         ]);
 
@@ -40,7 +41,7 @@ class LogApiRequests
             'path' => $request->path(),
             'status' => $response->status(),
             'duration_ms' => round($duration, 2),
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
         ]);
 
         return $response;
