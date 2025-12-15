@@ -29,8 +29,8 @@ class AdminSeeder extends Seeder
         $admin_data = [
             [
                 'name' => 'Admin Telemedicine',
-                'email' => 'admin@telemedicine.local',
-                'password' => Hash::make('Admin123!'),
+                'email' => 'admintelemedicine',
+                'password' => Hash::make('Rsud123!'),
                 'role' => 'admin',
                 'is_active' => true,
                 'last_login_at' => now(),
