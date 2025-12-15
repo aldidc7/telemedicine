@@ -33,51 +33,59 @@ class MessageService
      */
     public function sendMessage($conversationId, $senderId, $content, $attachmentPath = null, $attachmentType = null)
     {
-        $conversation = Conversation::findOrFail($conversationId);
+        // Use transaction to ensure data consistency
+        return DB::transaction(function () use ($conversationId, $senderId, $content, $attachmentPath, $attachmentType) {
+            $conversation = Conversation::findOrFail($conversationId);
 
-        // Verify sender is part of conversation
-        if (!$conversation->hasUser($senderId)) {
-            throw new \Exception('User tidak termasuk dalam conversation ini');
-        }
+            // Verify sender is part of conversation
+            if (!$conversation->hasUser($senderId)) {
+                throw new \Exception('User tidak termasuk dalam conversation ini');
+            }
 
-        $message = Message::create([
-            'conversation_id' => $conversationId,
-            'sender_id' => $senderId,
-            'content' => $content,
-            'attachment_path' => $attachmentPath,
-            'attachment_type' => $attachmentType,
-        ]);
+            $message = Message::create([
+                'conversation_id' => $conversationId,
+                'sender_id' => $senderId,
+                'content' => $content,
+                'attachment_path' => $attachmentPath,
+                'attachment_type' => $attachmentType,
+            ]);
 
-        // Update conversation's last message
-        $conversation->update([
-            'last_message_at' => now(),
-            'last_message_preview' => substr($content, 0, 50),
-        ]);
+            // Update conversation's last message
+            $conversation->update([
+                'last_message_at' => now(),
+                'last_message_preview' => substr($content, 0, 50),
+            ]);
 
-        // Load sender for event broadcasting
-        $message->load('sender');
+            // Load sender for event broadcasting
+            $message->load('sender');
 
-        // Broadcast message to conversation members via WebSocket
-        try {
-            broadcast(new MessageSent($message));
-        } catch (\Exception $e) {
-            \Log::warning('Failed to broadcast message: ' . $e->getMessage());
-        }
+            // Broadcast message to conversation members via WebSocket
+            try {
+                broadcast(new MessageSent($message));
+            } catch (\Exception $e) {
+                \Log::warning('Failed to broadcast message: ' . $e->getMessage());
+            }
 
-        // Send notification to recipient
-        try {
-            $sender = \App\Models\User::findOrFail($senderId);
-            $recipientId = $sender->id === $conversation->user_1_id 
-                ? $conversation->user_2_id 
-                : $conversation->user_1_id;
-            
-            $notificationService = app(NotificationService::class);
-            $notificationService->notifyNewMessage(
-                $recipientId,
-                $sender->name,
-                substr($content, 0, 50),
-                $conversationId
-            );
+            // Send notification to recipient
+            try {
+                $sender = \App\Models\User::findOrFail($senderId);
+                $recipientId = $sender->id === $conversation->user_1_id 
+                    ? $conversation->user_2_id 
+                    : $conversation->user_1_id;
+                
+                $notificationService = app(NotificationService::class);
+                $notificationService->notifyNewMessage(
+                    $recipientId,
+                    $sender->name,
+                    substr($content, 0, 50),
+                    $conversationId
+                );
+            } catch (\Exception $e) {
+                \Log::warning('Failed to create message notification: ' . $e->getMessage());
+            }
+
+            return $message;
+        });
         } catch (\Exception $e) {
             \Log::warning('Failed to create message notification: ' . $e->getMessage());
         }

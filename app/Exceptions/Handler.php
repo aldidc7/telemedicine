@@ -41,7 +41,19 @@ class Handler extends ExceptionHandler
     public function register(): void
     {
         $this->reportable(function (Throwable $e) {
-            // Log exception
+            // Log exception dengan context detail
+            \Log::error('Application Exception Occurred', [
+                'exception' => get_class($e),
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'user_id' => auth()->id(),
+                'url' => request()->url(),
+                'method' => request()->method(),
+                'ip' => request()->ip(),
+            ]);
+
+            // Report to Sentry if configured
             if (app()->bound('sentry')) {
                 app('sentry')->captureException($e);
             }

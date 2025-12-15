@@ -14,7 +14,7 @@ class RegisterRequest extends ApiRequest
         $rules = [
             'name' => 'required|string|min:3|max:255',
             'email' => 'required|email|unique:users,email|max:255',
-            'password' => 'required|string|min:8|max:255|confirmed',
+            'password' => 'required|string|min:8|max:255|confirmed|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/',
             'password_confirmation' => 'required|string|min:8|max:255',
             'phone' => 'nullable|string|max:20',
             'role' => 'required|in:pasien,dokter',
@@ -52,6 +52,7 @@ class RegisterRequest extends ApiRequest
     public function messages(): array
     {
         return [
+            'password.regex' => 'Password harus minimal 8 karakter, terdiri dari huruf besar, huruf kecil, angka, dan simbol (@$!%*?&)',
             'nik.required' => 'NIK wajib diisi',
             'nik.size' => 'NIK harus 16 digit',
             'nik.regex' => 'NIK harus berupa angka',

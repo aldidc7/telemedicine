@@ -7,6 +7,7 @@ use App\Models\Appointment;
 use App\Models\User;
 use App\Events\PrescriptionCreated;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 class PrescriptionService
 {
@@ -22,50 +23,59 @@ class PrescriptionService
         ?string $instructions = null,
         ?string $expiresAt = null
     ): Prescription {
-        // Validasi appointment exists dan selesai
-        $appointment = Appointment::findOrFail($appointmentId);
-        if ($appointment->status !== 'completed') {
-            throw new \Exception('Hanya appointment yang sudah selesai yang bisa diberi resep');
-        }
+        // Use transaction to ensure consistency
+        return DB::transaction(function () use ($appointmentId, $doctorId, $patientId, $medications, $notes, $instructions, $expiresAt) {
+            // Validasi appointment exists dan selesai
+            $appointment = Appointment::findOrFail($appointmentId);
+            if ($appointment->status !== 'completed') {
+                throw new \Exception('Hanya appointment yang sudah selesai yang bisa diberi resep');
+            }
 
-        // Validasi doctor owns appointment
-        if ($appointment->doctor_id !== $doctorId) {
-            throw new \Exception('Hanya doctor yang menangani appointment ini yang bisa buat resep');
-        }
+            // Validasi doctor owns appointment
+            if ($appointment->doctor_id !== $doctorId) {
+                throw new \Exception('Hanya doctor yang menangani appointment ini yang bisa buat resep');
+            }
 
-        // Validasi medications tidak kosong
-        if (empty($medications)) {
-            throw new \Exception('Minimal ada satu obat dalam resep');
-        }
+            // Validasi medications tidak kosong
+            if (empty($medications)) {
+                throw new \Exception('Minimal ada satu obat dalam resep');
+            }
 
-        // Create prescription
-        $prescription = Prescription::create([
-            'appointment_id' => $appointmentId,
-            'doctor_id' => $doctorId,
-            'patient_id' => $patientId,
-            'medications' => $medications,
-            'notes' => $notes,
-            'instructions' => $instructions,
-            'expires_at' => $expiresAt,
-            'issued_at' => now(),
-            'status' => 'active',
-        ]);
+            // Create prescription
+            $prescription = Prescription::create([
+                'appointment_id' => $appointmentId,
+                'doctor_id' => $doctorId,
+                'patient_id' => $patientId,
+                'medications' => $medications,
+                'notes' => $notes,
+                'instructions' => $instructions,
+                'expires_at' => $expiresAt,
+                'issued_at' => now(),
+                'status' => 'active',
+            ]);
 
-        // Broadcast prescription created via WebSocket
-        try {
-            $prescription->load(['doctor', 'patient']);
-            broadcast(new PrescriptionCreated($prescription));
-        } catch (\Exception $e) {
-            \Log::warning('Failed to broadcast prescription: ' . $e->getMessage());
-        }
+            // Broadcast prescription created via WebSocket
+            try {
+                $prescription->load(['doctor', 'patient']);
+                broadcast(new PrescriptionCreated($prescription));
+            } catch (\Exception $e) {
+                \Log::warning('Failed to broadcast prescription: ' . $e->getMessage());
+            }
 
-        // Send notification ke patient
-        (new NotificationService())->notifyPrescriptionCreated(
-            $patientId,
-            $prescription->id,
-            $appointment->doctor->name,
-            count($medications)
-        );
+            // Send notification ke patient
+            try {
+                (new NotificationService())->notifyPrescriptionCreated(
+                    $patientId,
+                    $prescription->id,
+                    $appointment->doctor->name,
+                    count($medications)
+                );
+            } catch (\Exception $e) {
+                \Log::warning('Failed to create prescription notification: ' . $e->getMessage());
+            }
+
+            return $prescription;
+        });
 
         return $prescription;
     }

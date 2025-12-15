@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Events\AppointmentUpdated;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class AppointmentService
@@ -22,49 +23,58 @@ class AppointmentService
         ?string $reason = null,
         ?float $price = null
     ): Appointment {
-        // Validasi doctor exists dan adalah dokter
-        $doctor = User::findOrFail($doctorId);
-        if ($doctor->role !== 'dokter') {
-            throw new \Exception('User harus dokter');
-        }
+        // Use transaction to ensure data consistency
+        return DB::transaction(function () use ($patientId, $doctorId, $scheduledAt, $type, $reason, $price) {
+            // Validasi doctor exists dan adalah dokter
+            $doctor = User::findOrFail($doctorId);
+            if ($doctor->role !== 'dokter') {
+                throw new \Exception('User harus dokter');
+            }
 
-        // Validasi patient exists
-        $patient = User::findOrFail($patientId);
-        if ($patient->role !== 'pasien') {
-            throw new \Exception('User harus pasien');
-        }
+            // Validasi patient exists
+            $patient = User::findOrFail($patientId);
+            if ($patient->role !== 'pasien') {
+                throw new \Exception('User harus pasien');
+            }
 
-        // Validasi tidak ada appointment konflik
-        $existingAppointment = Appointment::where('doctor_id', $doctorId)
-            ->where('scheduled_at', $scheduledAt)
-            ->whereIn('status', ['pending', 'confirmed', 'in_progress'])
-            ->exists();
+            // Validasi tidak ada appointment konflik (with locking)
+            $existingAppointment = Appointment::where('doctor_id', $doctorId)
+                ->where('scheduled_at', $scheduledAt)
+                ->whereIn('status', ['pending', 'confirmed', 'in_progress'])
+                ->lockForUpdate()
+                ->exists();
 
-        if ($existingAppointment) {
-            throw new \Exception('Doctor sudah memiliki appointment pada waktu tersebut');
-        }
+            if ($existingAppointment) {
+                throw new \Exception('Doctor sudah memiliki appointment pada waktu tersebut');
+            }
 
-        // Create appointment
-        $appointment = Appointment::create([
-            'patient_id' => $patientId,
-            'doctor_id' => $doctorId,
-            'scheduled_at' => $scheduledAt,
-            'type' => $type,
-            'reason' => $reason,
-            'price' => $price,
-            'status' => 'pending',
-            'payment_status' => 'pending',
-        ]);
+            // Create appointment
+            $appointment = Appointment::create([
+                'patient_id' => $patientId,
+                'doctor_id' => $doctorId,
+                'scheduled_at' => $scheduledAt,
+                'type' => $type,
+                'reason' => $reason,
+                'price' => $price,
+                'status' => 'pending',
+                'payment_status' => 'pending',
+            ]);
 
-        // Send notification ke doctor
-        (new NotificationService())->notifyAppointmentCreated(
-            $doctorId,
-            $appointment->id,
-            $patient->name,
-            $scheduledAt
-        );
+            // Send notification ke doctor
+            try {
+                (new NotificationService())->notifyAppointmentCreated(
+                    $doctorId,
+                    $appointment->id,
+                    $patient->name,
+                    $scheduledAt
+                );
+            } catch (\Exception $e) {
+                \Log::warning('Failed to create appointment notification: ' . $e->getMessage());
+                // Continue - appointment created, notification failure is non-critical
+            }
 
-        return $appointment;
+            return $appointment;
+        });
     }
 
     /**
