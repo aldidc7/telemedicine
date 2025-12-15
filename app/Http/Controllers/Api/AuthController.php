@@ -224,4 +224,26 @@ class AuthController extends Controller
         
         return $this->successResponse(null, 'Logout berhasil');
     }
+
+    /**
+     * Verify email dengan token
+     * 
+     * GET /api/v1/auth/verify-email?token=xxx
+     */
+    public function verifyEmail(Request $request)
+    {
+        $token = $request->query('token');
+        
+        if (!$token) {
+            return $this->validationErrorResponse('Token tidak ditemukan');
+        }
+
+        $verified = $this->authService->verifyEmail($token);
+
+        if (!$verified) {
+            return $this->notFoundResponse('Token verifikasi tidak valid atau sudah kadaluarsa');
+        }
+
+        return $this->successResponse(null, 'Email berhasil diverifikasi. Anda sekarang bisa login.');
+    }
 }

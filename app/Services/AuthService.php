@@ -5,9 +5,12 @@ namespace App\Services;
 use App\Models\User;
 use App\Models\Pasien;
 use App\Models\Dokter;
+use App\Mail\VerifyEmailMail;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 /**
  * Authentication Service
@@ -25,6 +28,9 @@ class AuthService
     public function register(array $data): array
     {
         $result = DB::transaction(function () use ($data) {
+            // Generate email verification token
+            $verificationToken = Str::random(64);
+            
             // Create user
             $user = User::create([
                 'name' => $data['name'],
@@ -33,6 +39,7 @@ class AuthService
                 'role' => $data['role'] ?? 'pasien',
                 'is_active' => true,
                 'last_login_at' => now(),
+                'email_verification_token' => $verificationToken,
             ]);
 
             // Create role-specific data
@@ -63,6 +70,13 @@ class AuthService
             return $user;
         });
 
+        // Send email verification
+        try {
+            Mail::to($result->email)->send(new VerifyEmailMail($result));
+        } catch (\Exception $e) {
+            \Log::error('Failed to send verification email: ' . $e->getMessage());
+        }
+
         // Generate token
         $token = $result->createToken('api-token')->plainTextToken;
 
@@ -70,6 +84,7 @@ class AuthService
             'user' => $result,
             'token' => $token,
             'token_type' => 'Bearer',
+            'message' => 'Registrasi berhasil. Silakan verifikasi email Anda.',
         ];
     }
 
@@ -203,6 +218,28 @@ class AuthService
 
         // Revoke all tokens untuk security
         $user->tokens()->delete();
+
+        return true;
+    }
+
+    /**
+     * Verify user email dengan token
+     *
+     * @param string $token - Email verification token
+     * @return bool - True jika berhasil, false jika token invalid
+     */
+    public function verifyEmail(string $token): bool
+    {
+        $user = User::where('email_verification_token', $token)->first();
+
+        if (!$user) {
+            return false;
+        }
+
+        $user->update([
+            'email_verified_at' => now(),
+            'email_verification_token' => null,
+        ]);
 
         return true;
     }
