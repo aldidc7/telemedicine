@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\RatingController;
 use App\Http\Controllers\Api\DoctorVerificationController;
 use App\Http\Controllers\Api\AppointmentController;
+use App\Http\Controllers\Api\PrescriptionController;
 use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\SimrsApi\SimrsPasienController;
 use App\Http\Controllers\SimrsApi\SimrsDokterController;
@@ -307,6 +308,39 @@ Route::prefix('v1')->group(function () {
 
         // Available slots endpoint
         Route::get('/doctor/{doctorId}/available-slots', [AppointmentController::class, 'getAvailableSlots']);
+
+        // ========== PRESCRIPTION ENDPOINTS ==========
+        /**
+         * Prescription Routes - Resep dokter untuk pasien
+         * GET /api/v1/prescriptions - List prescriptions
+         * POST /api/v1/prescriptions - Create prescription (doctor only)
+         * GET /api/v1/prescriptions/{id} - Get prescription detail
+         * GET /api/v1/prescriptions/active - Get active prescriptions (patient)
+         * GET /api/v1/prescriptions/unacknowledged - Get unacknowledged (patient)
+         * PUT /api/v1/prescriptions/{id} - Update prescription (doctor)
+         * POST /api/v1/prescriptions/{id}/acknowledge - Acknowledge (patient)
+         * POST /api/v1/prescriptions/{id}/complete - Mark complete (patient)
+         * DELETE /api/v1/prescriptions/{id} - Delete prescription (doctor)
+         * GET /api/v1/prescriptions/stats - Get statistics
+         * GET /api/v1/appointments/{appointmentId}/prescriptions - Get appointment prescriptions
+         * GET /api/v1/appointments/{appointmentId}/has-prescription - Check if has prescription
+         */
+        Route::prefix('/prescriptions')->group(function () {
+            Route::get('/', [PrescriptionController::class, 'index']);
+            Route::post('/', [PrescriptionController::class, 'store']);
+            Route::get('/stats', [PrescriptionController::class, 'stats']);
+            Route::get('/active', [PrescriptionController::class, 'active']);
+            Route::get('/unacknowledged', [PrescriptionController::class, 'unacknowledged']);
+            Route::get('/{id}', [PrescriptionController::class, 'show']);
+            Route::put('/{id}', [PrescriptionController::class, 'update']);
+            Route::post('/{id}/acknowledge', [PrescriptionController::class, 'acknowledge']);
+            Route::post('/{id}/complete', [PrescriptionController::class, 'complete']);
+            Route::delete('/{id}', [PrescriptionController::class, 'destroy']);
+        });
+
+        // Appointment prescription endpoints
+        Route::get('/appointments/{appointmentId}/prescriptions', [PrescriptionController::class, 'byAppointment']);
+        Route::get('/appointments/{appointmentId}/has-prescription', [PrescriptionController::class, 'appointmentHasPrescription']);
 
         // ========== ANALYTICS ENDPOINTS (Admin Only) ==========
         /**

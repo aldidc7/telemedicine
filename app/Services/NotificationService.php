@@ -337,4 +337,43 @@ class NotificationService
             $message
         );
     }
+
+    /**
+     * Notify prescription created
+     */
+    public function notifyPrescriptionCreated($userId, $prescriptionId, $doctorName, $medicationCount)
+    {
+        return $this->create(
+            $userId,
+            'prescription_created',
+            "Dr. {$doctorName} telah memberikan resep dengan {$medicationCount} obat",
+            "/prescriptions/{$prescriptionId}"
+        );
+    }
+
+    /**
+     * Notify prescription updated
+     */
+    public function notifyPrescriptionUpdated($userId, $prescriptionId, $doctorName)
+    {
+        return $this->create(
+            $userId,
+            'prescription_updated',
+            "Dr. {$doctorName} telah mengupdate resep Anda",
+            "/prescriptions/{$prescriptionId}"
+        );
+    }
+
+    /**
+     * Notify prescription acknowledged
+     */
+    public function notifyPrescriptionAcknowledged($userId, $prescriptionId, $patientName)
+    {
+        return $this->create(
+            $userId,
+            'prescription_acknowledged',
+            "{$patientName} telah mengconfirm resep Anda",
+            "/prescriptions/{$prescriptionId}"
+        );
+    }
 }
