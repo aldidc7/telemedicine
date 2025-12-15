@@ -3,12 +3,16 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Traits\SanitizeInput;
 
 /**
  * Appointment Request Validation
+ * Sanitize input to prevent XSS attacks
  */
 class AppointmentRequest extends FormRequest
 {
+    use SanitizeInput;
+
     public function authorize(): bool
     {
         return $this->user() !== null;
@@ -37,5 +41,13 @@ class AppointmentRequest extends FormRequest
             'reason.required' => 'Alasan appointment harus diisi',
             'reason.min' => 'Alasan minimal 10 karakter',
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'reason' => $this->sanitizeInput($this->reason, 'text'),
+            'notes' => $this->sanitizeInput($this->notes ?? '', 'text'),
+        ]);
     }
 }

@@ -3,12 +3,16 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Traits\SanitizeInput;
 
 /**
  * Message Request Validation
+ * Sanitize message content to prevent XSS
  */
 class MessageRequest extends FormRequest
 {
+    use SanitizeInput;
+
     public function authorize(): bool
     {
         return $this->user() !== null;
@@ -32,5 +36,13 @@ class MessageRequest extends FormRequest
             'message.max' => 'Pesan maksimal 2000 karakter',
             'attachment_url.url' => 'Format URL tidak valid',
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'message' => $this->sanitizeInput($this->message, 'html'),
+            'attachment_url' => $this->sanitizeInput($this->attachment_url ?? '', 'url'),
+        ]);
     }
 }

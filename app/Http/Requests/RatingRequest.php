@@ -3,12 +3,16 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Traits\SanitizeInput;
 
 /**
  * Rating Request Validation
+ * Sanitize comments to prevent XSS
  */
 class RatingRequest extends FormRequest
 {
+    use SanitizeInput;
+
     public function authorize(): bool
     {
         return $this->user() && $this->user()->type === 'pasien';
@@ -34,5 +38,12 @@ class RatingRequest extends FormRequest
             'rating.max' => 'Rating maksimal 5',
             'comment.max' => 'Komentar maksimal 500 karakter',
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'comment' => $this->sanitizeInput($this->comment ?? '', 'text'),
+        ]);
     }
 }

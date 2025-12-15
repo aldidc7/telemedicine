@@ -3,12 +3,16 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Traits\SanitizeInput;
 
 /**
  * Profile Update Request Validation
+ * Sanitize profile fields to prevent XSS
  */
 class UpdateProfileRequest extends FormRequest
 {
+    use SanitizeInput;
+
     public function authorize(): bool
     {
         return $this->user() !== null;
@@ -46,10 +50,46 @@ class UpdateProfileRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $data = [];
+
         if ($this->has('email')) {
-            $this->merge([
-                'email' => strtolower($this->email),
-            ]);
+            $data['email'] = strtolower($this->sanitizeInput($this->email, 'email'));
+        }
+
+        if ($this->has('name')) {
+            $data['name'] = $this->sanitizeInput($this->name, 'text');
+        }
+
+        if ($this->has('bio')) {
+            $data['bio'] = $this->sanitizeInput($this->bio, 'text');
+        }
+
+        if ($this->has('phone')) {
+            $data['phone'] = $this->sanitizeInput($this->phone, 'text');
+        }
+
+        if ($this->has('specialization')) {
+            $data['specialization'] = $this->sanitizeInput($this->specialization, 'text');
+        }
+
+        if ($this->has('address')) {
+            $data['address'] = $this->sanitizeInput($this->address, 'text');
+        }
+
+        if ($this->has('city')) {
+            $data['city'] = $this->sanitizeInput($this->city, 'text');
+        }
+
+        if ($this->has('province')) {
+            $data['province'] = $this->sanitizeInput($this->province, 'text');
+        }
+
+        if ($this->has('profile_photo')) {
+            $data['profile_photo'] = $this->sanitizeInput($this->profile_photo, 'url');
+        }
+
+        if (!empty($data)) {
+            $this->merge($data);
         }
     }
 }

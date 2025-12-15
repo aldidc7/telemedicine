@@ -4,14 +4,18 @@ namespace App\Http\Requests\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
+use App\Traits\SanitizeInput;
 
 /**
  * Register Request Validation
  * 
  * Validate user registration dengan strong password requirements
+ * Sanitize input untuk prevent XSS attacks
  */
 class RegisterRequest extends FormRequest
 {
+    use SanitizeInput;
+
     public function authorize(): bool
     {
         return true; // Public endpoint
@@ -60,8 +64,13 @@ class RegisterRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'email' => strtolower($this->email),
+            'email' => strtolower($this->sanitizeInput($this->email, 'email')),
             'type' => strtolower($this->type),
+            'name' => $this->sanitizeInput($this->name, 'text'),
+            'bio' => $this->sanitizeInput($this->bio ?? '', 'text'),
+            'specialization' => $this->sanitizeInput($this->specialization ?? '', 'text'),
+            'phone' => $this->sanitizeInput($this->phone ?? '', 'text'),
+            'nik' => $this->sanitizeInput($this->nik ?? '', 'number'),
         ]);
     }
 }

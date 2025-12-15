@@ -3,12 +3,16 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Traits\SanitizeInput;
 
 /**
  * Prescription Request Validation
+ * Sanitize medicine details to prevent XSS
  */
 class PrescriptionRequest extends FormRequest
 {
+    use SanitizeInput;
+
     public function authorize(): bool
     {
         return $this->user() && $this->user()->type === 'dokter';
@@ -38,5 +42,25 @@ class PrescriptionRequest extends FormRequest
             'medicines.*.frequency.required' => 'Frekuensi harus diisi',
             'medicines.*.duration.required' => 'Durasi harus diisi',
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $medicines = $this->medicines ?? [];
+        $sanitizedMedicines = [];
+
+        foreach ($medicines as $medicine) {
+            $sanitizedMedicines[] = [
+                'medicine_name' => $this->sanitizeInput($medicine['medicine_name'] ?? '', 'text'),
+                'dosage' => $this->sanitizeInput($medicine['dosage'] ?? '', 'text'),
+                'frequency' => $this->sanitizeInput($medicine['frequency'] ?? '', 'text'),
+                'duration' => $this->sanitizeInput($medicine['duration'] ?? '', 'text'),
+            ];
+        }
+
+        $this->merge([
+            'medicines' => $sanitizedMedicines,
+            'notes' => $this->sanitizeInput($this->notes ?? '', 'text'),
+        ]);
     }
 }
