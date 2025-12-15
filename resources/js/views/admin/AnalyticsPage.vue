@@ -350,6 +350,8 @@ const fetchAnalytics = async () => {
     
     const data = response.data?.data || response.data || {}
     
+    if (!isMounted) return
+    
     // Safely assign with defaults
     consultationMetrics.value = {
       ...consultationMetrics.value,
@@ -361,8 +363,10 @@ const fetchAnalytics = async () => {
     revenueByDoctor.value = data.revenue?.revenue_by_doctor || []
     topHealthIssues.value = data.health_trends?.top_health_issues || {}
     
-    lastUpdated.value = new Date()
-    updateStatus.value = 'idle'
+    if (isMounted) {
+      lastUpdated.value = new Date()
+      updateStatus.value = 'idle'
+    }
   } catch (error) {
     if (!isMounted) return
     
@@ -394,7 +398,8 @@ const initializeAutoRefresh = () => {
   if (autoRefreshTimer) clearInterval(autoRefreshTimer)
   
   autoRefreshTimer = setInterval(() => {
-    if (autoRefreshEnabled.value) {
+    // Check if component is still mounted before fetching
+    if (isMounted && autoRefreshEnabled.value) {
       fetchAnalytics()
     }
   }, autoRefreshInterval.value * 1000)
