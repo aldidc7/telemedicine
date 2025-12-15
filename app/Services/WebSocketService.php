@@ -219,16 +219,35 @@ class WebSocketService
             return abort(403);
         }
 
-        return $this->pusher->socket_auth(
-            $request->channel_name,
-            $request->socket_id,
-            json_encode([
+        try {
+            $channelName = $request->channel_name;
+            $socketId = $request->socket_id;
+            $userData = [
                 'user_id' => (string) $user->id,
                 'user_name' => $user->name,
                 'user_email' => $user->email,
                 'user_role' => $user->role,
-            ])
-        );
+            ];
+
+            // Use presence auth for presence channels, socket auth for private channels
+            if (strpos($channelName, 'presence-') === 0) {
+                return $this->pusher->presence_auth(
+                    $channelName,
+                    $socketId,
+                    $user->id,
+                    json_encode($userData)
+                );
+            } else {
+                // For private channels, use the modern approach
+                return json_encode([
+                    'auth' => hash_hmac('sha256', "$socketId:$channelName", env('PUSHER_APP_SECRET')),
+                    'channel_data' => json_encode($userData),
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::error('WebSocket authentication failed: ' . $e->getMessage());
+            return abort(403, 'Authentication failed');
+        }
     }
 
     /**
