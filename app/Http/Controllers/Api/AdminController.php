@@ -70,10 +70,10 @@ class AdminController extends Controller
             $totalPasien = Pasien::count();
             $totalDokter = Dokter::count();
             $totalKonsultasi = Konsultasi::count();
-            $konsultasiAktif = Konsultasi::where('status', 'aktif')->count();
-            $konsultasiMenunggu = Konsultasi::where('status', 'menunggu')->count();
-            $konsultasiSelesai = Konsultasi::where('status', 'selesai')->count();
-            $konsultasiBatalkan = Konsultasi::where('status', 'dibatalkan')->count();
+            $konsultasiAktif = Konsultasi::where('status', 'active')->count();
+            $konsultasiMenunggu = Konsultasi::where('status', 'pending')->count();
+            $konsultasiSelesai = Konsultasi::where('status', 'closed')->count();
+            $konsultasiBatalkan = Konsultasi::where('status', 'cancelled')->count();
             $totalAdmin = Admin::count();
 
             // ===== MONTHLY STATS =====
@@ -85,7 +85,7 @@ class AdminController extends Controller
             $pasienBaru = Pasien::whereMonth('created_at', $bulanIni)
                 ->whereYear('created_at', $tahunIni)
                 ->count();
-            $konsultasiSelesaiBulanIni = Konsultasi::where('status', 'selesai')
+            $konsultasiSelesaiBulanIni = Konsultasi::where('status', 'closed')
                 ->whereMonth('waktu_selesai', $bulanIni)
                 ->whereYear('waktu_selesai', $tahunIni)
                 ->count();
@@ -99,7 +99,7 @@ class AdminController extends Controller
             $userNonaktif = User::where('is_active', false)->count();
 
             // ===== CONSULTATION METRICS =====
-            $rataRataDurasiSelesai = Konsultasi::where('status', 'selesai')
+            $rataRataDurasiSelesai = Konsultasi::where('status', 'closed')
                 ->whereNotNull('waktu_mulai')
                 ->whereNotNull('waktu_selesai')
                 ->get()
@@ -108,7 +108,7 @@ class AdminController extends Controller
                 });
 
             // ===== CONSULTATION BY SPECIALTY =====
-            $konsultasiPerSpesialisasi = Konsultasi::where('status', 'selesai')
+            $konsultasiPerSpesialisasi = Konsultasi::where('status', 'closed')
                 ->with('dokter')
                 ->get()
                 ->groupBy(function ($k) {

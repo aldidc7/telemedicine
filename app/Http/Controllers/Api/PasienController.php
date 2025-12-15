@@ -57,9 +57,8 @@ class PasienController extends Controller
         ]);
 
         return $this->paginatedResponse(
-            $pasien->items(),
-            'Daftar pasien berhasil diambil',
-            $pasien
+            $pasien,
+            'Daftar pasien berhasil diambil'
         );
     }
 
