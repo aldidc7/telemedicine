@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Dokter;
 use App\Models\ActivityLog;
+use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -15,13 +17,20 @@ use Illuminate\Support\Facades\DB;
  * - POST /api/v1/admin/doctors/{id}/approve - Approve dokter
  * - POST /api/v1/admin/doctors/{id}/reject - Reject dokter
  */
-class DoctorVerificationController extends BaseController
+class DoctorVerificationController extends BaseApiController
 {
+    use ApiResponse;
+
     /**
      * List dokter yang pending verifikasi (untuk admin)
      */
     public function pendingDoctors()
     {
+        // Check if user is admin
+        if (!Auth::user()?->isAdmin()) {
+            return $this->forbiddenResponse('Anda tidak memiliki izin mengakses fitur ini');
+        }
+
         $doctors = Dokter::pending()
             ->with('user')
             ->orderBy('created_at', 'desc')
@@ -35,7 +44,10 @@ class DoctorVerificationController extends BaseController
      */
     public function approvDoctor(Request $request, $id)
     {
-        $this->authorize('update', Dokter::class); // Admin only
+        // Check if user is admin
+        if (!Auth::user()?->isAdmin()) {
+            return $this->forbiddenResponse('Anda tidak memiliki izin untuk melakukan ini');
+        }
 
         $request->validate([
             'notes' => 'nullable|string|max:500'
@@ -47,13 +59,13 @@ class DoctorVerificationController extends BaseController
             $doctor->update([
                 'is_verified' => true,
                 'verified_at' => now(),
-                'verified_by_admin_id' => auth()->id(),
+                'verified_by_admin_id' => Auth::id(),
                 'verification_notes' => $request->notes ?? null,
             ]);
 
             // Log activity
             ActivityLog::create([
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'action' => 'approve_doctor',
                 'description' => "Admin approved doctor: {$doctor->user->name}",
                 'data' => [
@@ -74,7 +86,10 @@ class DoctorVerificationController extends BaseController
      */
     public function rejectDoctor(Request $request, $id)
     {
-        $this->authorize('update', Dokter::class); // Admin only
+        // Check if user is admin
+        if (!Auth::user()?->isAdmin()) {
+            return $this->forbiddenResponse('Anda tidak memiliki izin untuk melakukan ini');
+        }
 
         $request->validate([
             'reason' => 'required|string|max:500'
@@ -86,7 +101,7 @@ class DoctorVerificationController extends BaseController
 
             // Log activity sebelum delete
             ActivityLog::create([
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'action' => 'reject_doctor',
                 'description' => "Admin rejected doctor: {$doctorName}",
                 'data' => [
