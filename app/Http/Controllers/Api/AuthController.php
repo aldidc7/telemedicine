@@ -8,6 +8,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Services\AuthService;
+use App\Services\RateLimitService;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -93,8 +94,21 @@ class AuthController extends Controller
      */
     public function register(RegisterRequest $request)
     {
+        // Rate limiting check by email
+        $email = $request->email;
+        $key = "register:{$email}";
+        
+        if (RateLimitService::isLimited($key, RateLimitService::REGISTER_MAX_ATTEMPTS, RateLimitService::REGISTER_DECAY_MINUTES)) {
+            return $this->validationErrorResponse('Terlalu banyak upaya registrasi. Silakan coba lagi nanti.', 429, [
+                'retry_after' => RateLimitService::REGISTER_DECAY_MINUTES * 60,
+            ]);
+        }
+        
         // Validation happens automatically in RegisterRequest
         $result = $this->authService->register($request->validated());
+        
+        // Reset rate limit on successful registration
+        RateLimitService::reset($key);
         
         return $this->createdResponse(
             $result,
@@ -129,6 +143,19 @@ class AuthController extends Controller
      */
     public function login(LoginRequest $request)
     {
+        // Rate limiting check
+        $email = $request->email;
+        $ip = $request->ip();
+        $key = "login:{$email}:{$ip}";
+        
+        if (RateLimitService::isLimited($key, RateLimitService::LOGIN_MAX_ATTEMPTS, RateLimitService::LOGIN_DECAY_MINUTES)) {
+            $remaining = RateLimitService::remaining($key, RateLimitService::LOGIN_MAX_ATTEMPTS, RateLimitService::LOGIN_DECAY_MINUTES);
+            return $this->validationErrorResponse('Terlalu banyak upaya login. Silakan coba lagi dalam 15 menit.', 429, [
+                'retry_after' => RateLimitService::LOGIN_DECAY_MINUTES * 60,
+                'remaining' => $remaining,
+            ]);
+        }
+        
         // Validation happens automatically in LoginRequest
         $data = $request->validated();
         
@@ -138,8 +165,17 @@ class AuthController extends Controller
         );
         
         if (!$result) {
-            return $this->unauthorizedResponse('Email atau password salah');
+            // Increment rate limit on failed attempt
+            RateLimitService::increment($key, RateLimitService::LOGIN_DECAY_MINUTES);
+            
+            $remaining = RateLimitService::remaining($key, RateLimitService::LOGIN_MAX_ATTEMPTS, RateLimitService::LOGIN_DECAY_MINUTES);
+            return $this->unauthorizedResponse('Email atau password salah', null, [
+                'remaining_attempts' => $remaining,
+            ]);
         }
+        
+        // Reset rate limit on successful login
+        RateLimitService::reset($key);
         
         return $this->successResponse(
             $result,
@@ -176,6 +212,26 @@ class AuthController extends Controller
         }
         
         return $this->successResponse($user, 'Profil user berhasil diambil');
+    }
+
+    /**
+     * Get profile completion status
+     * 
+     * GET /api/v1/auth/profile-completion
+     * 
+     * Returns percentage completion of user profile
+     */
+    public function profileCompletion(Request $request)
+    {
+        $user = $request->user();
+        
+        if (!$user) {
+            return $this->unauthorizedResponse('User tidak ditemukan');
+        }
+        
+        $completion = \App\Services\ProfileCompletionService::getCompletion($user);
+        
+        return $this->successResponse($completion, 'Status kelengkapan profil berhasil diambil');
     }
 
     /**
@@ -263,6 +319,17 @@ class AuthController extends Controller
             'email' => 'required|email',
         ]);
 
+        // Rate limiting check
+        $email = $request->email;
+        $key = "forgot-password:{$email}";
+        
+        if (RateLimitService::isLimited($key, RateLimitService::FORGOT_PASSWORD_MAX_ATTEMPTS, RateLimitService::FORGOT_PASSWORD_DECAY_MINUTES)) {
+            return $this->validationErrorResponse('Terlalu banyak upaya reset password. Silakan coba lagi nanti.', 429, [
+                'retry_after' => RateLimitService::FORGOT_PASSWORD_DECAY_MINUTES * 60,
+            ]);
+        }
+        
+        RateLimitService::increment($key, RateLimitService::FORGOT_PASSWORD_DECAY_MINUTES);
         $result = $this->authService->forgotPassword($request->email);
 
         return $this->successResponse(null, $result['message']);

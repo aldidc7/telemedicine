@@ -45,6 +45,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/auth/refresh', [AuthController::class, 'refreshToken']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/auth/me', [AuthController::class, 'me']);
+        Route::get('/auth/profile-completion', [AuthController::class, 'profileCompletion']);
 
         // ========== PASIEN ENDPOINTS (Admin & Self) ==========
         /**
