@@ -12,6 +12,8 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\RatingController;
 use App\Http\Controllers\Api\DoctorVerificationController;
+use App\Http\Controllers\Api\AppointmentController;
+use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\SimrsApi\SimrsPasienController;
 use App\Http\Controllers\SimrsApi\SimrsDokterController;
 use App\Http\Controllers\SimrsApi\SimrsRekamMedisController;
@@ -272,6 +274,39 @@ Route::prefix('v1')->group(function () {
             Route::delete('/delete-multiple', [NotificationController::class, 'deleteMultiple']);
             Route::delete('/clear', [NotificationController::class, 'clearAll']);
         });
+
+        // ========== APPOINTMENT ENDPOINTS ==========
+        /**
+         * Appointment/Booking Routes - Penjadwalan konsultasi
+         * GET /api/v1/appointments - List user's appointments
+         * POST /api/v1/appointments - Book appointment (patient only)
+         * GET /api/v1/appointments/{id} - Get appointment detail
+         * GET /api/v1/appointments/stats - Get appointment statistics
+         * GET /api/v1/appointments/today - Get today's appointments
+         * GET /api/v1/doctor/{id}/available-slots - Get doctor's available slots
+         * POST /api/v1/appointments/{id}/confirm - Confirm (doctor only)
+         * POST /api/v1/appointments/{id}/reject - Reject appointment (doctor only)
+         * POST /api/v1/appointments/{id}/cancel - Cancel appointment
+         * POST /api/v1/appointments/{id}/reschedule - Reschedule (patient only)
+         * POST /api/v1/appointments/{id}/start - Start consultation (doctor only)
+         * POST /api/v1/appointments/{id}/end - End consultation (doctor only)
+         */
+        Route::prefix('/appointments')->group(function () {
+            Route::get('/', [AppointmentController::class, 'index']);
+            Route::post('/', [AppointmentController::class, 'store']);
+            Route::get('/stats', [AppointmentController::class, 'stats']);
+            Route::get('/today', [AppointmentController::class, 'today']);
+            Route::get('/{id}', [AppointmentController::class, 'show']);
+            Route::post('/{id}/confirm', [AppointmentController::class, 'confirm']);
+            Route::post('/{id}/reject', [AppointmentController::class, 'reject']);
+            Route::post('/{id}/cancel', [AppointmentController::class, 'cancel']);
+            Route::post('/{id}/reschedule', [AppointmentController::class, 'reschedule']);
+            Route::post('/{id}/start', [AppointmentController::class, 'start']);
+            Route::post('/{id}/end', [AppointmentController::class, 'end']);
+        });
+
+        // Available slots endpoint
+        Route::get('/doctor/{doctorId}/available-slots', [AppointmentController::class, 'getAvailableSlots']);
 
         // ========== ANALYTICS ENDPOINTS (Admin Only) ==========
         /**
