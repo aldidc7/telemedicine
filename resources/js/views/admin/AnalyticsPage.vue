@@ -91,25 +91,25 @@
             <KpiCard
               label="Total Consultations"
               :value="consultationMetrics.total"
-              icon="M12 3a9 9 0 110 18 9 9 0 010-18z"
+              icon="🔵"
               color="blue"
             />
             <KpiCard
               label="Active Sessions"
               :value="consultationMetrics.active"
-              icon="M13 10V3L4 14h7v7l9-11h-7z"
+              icon="🟢"
               color="green"
             />
             <KpiCard
               label="Completed"
               :value="consultationMetrics.completed"
-              icon="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z"
+              icon="✓"
               color="emerald"
             />
             <KpiCard
               label="Completion Rate"
               :value="`${(consultationMetrics.completion_rate || 0).toFixed(1)}%`"
-              icon="M13 7H7v10h6V7zm0-2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V7m6 0h6a2 2 0 012 2v10a2 2 0 01-2 2h-6V5z"
+              icon="📈"
               color="purple"
             />
           </div>
@@ -179,19 +179,19 @@
             <KpiCard
               label="Total Revenue"
               :value="`$${((revenueData.total_revenue || 0) / 1000).toFixed(1)}k`"
-              icon="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              icon="💵"
               color="green"
             />
             <KpiCard
               label="Paid Revenue"
               :value="`$${((revenueData.paid_revenue || 0) / 1000).toFixed(1)}k`"
-              icon="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z"
+              icon="✓"
               color="emerald"
             />
             <KpiCard
               label="Payment Rate"
               :value="`${(revenueData.payment_completion_rate || 0).toFixed(1)}%`"
-              icon="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              icon="📊"
               color="blue"
             />
           </div>
