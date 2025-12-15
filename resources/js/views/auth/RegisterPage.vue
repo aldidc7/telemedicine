@@ -133,13 +133,28 @@
           <!-- Confirm Password -->
           <div>
             <label class="block text-sm font-semibold text-gray-900 mb-2">Konfirmasi Password</label>
-            <input
-              v-model="form.password_confirmation"
-              :type="showPassword ? 'text' : 'password'"
-              required
-              class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition bg-gray-50 hover:bg-white"
-              placeholder="Ulangi password Anda"
-            />
+            <div class="relative">
+              <input
+                v-model="form.password_confirmation"
+                :type="showConfirmPassword ? 'text' : 'password'"
+                required
+                class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition bg-gray-50 hover:bg-white"
+                placeholder="Ulangi password Anda"
+              />
+              <button
+                type="button"
+                @click="showConfirmPassword = !showConfirmPassword"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-600 transition"
+              >
+                <svg v-if="!showConfirmPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m5.596-3.856a3.375 3.375 0 11-4.753 4.753m7.538 1.25a3 3 0 00-5.396-1.25M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           <!-- Terms -->
@@ -203,6 +218,7 @@ const route = useRoute()
 const isLoading = ref(false)
 const error = ref(null)
 const showPassword = ref(false)
+const showConfirmPassword = ref(false)
 
 const userType = computed(() => {
   return route.path.includes('pasien') ? 'pasien' : 'dokter'
