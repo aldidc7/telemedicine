@@ -246,4 +246,64 @@ class AuthController extends Controller
 
         return $this->successResponse(null, 'Email berhasil diverifikasi. Anda sekarang bisa login.');
     }
+
+    /**
+     * Request password reset
+     * 
+     * POST /api/v1/auth/forgot-password
+     * 
+     * Request body:
+     * {
+     *   "email": "user@example.com"
+     * }
+     */
+    public function forgotPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $result = $this->authService->forgotPassword($request->email);
+
+        return $this->successResponse(null, $result['message']);
+    }
+
+    /**
+     * Reset password dengan token
+     * 
+     * POST /api/v1/auth/reset-password
+     * 
+     * Request body:
+     * {
+     *   "token": "xxx...",
+     *   "password": "NewPassword123!",
+     *   "password_confirmation": "NewPassword123!"
+     * }
+     */
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required|string',
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[a-zA-Z\d@$!%*?&]+$/',
+                'confirmed',
+            ],
+        ], [
+            'password.regex' => 'Password harus mengandung huruf besar, kecil, angka, dan simbol (@$!%*?&)',
+        ]);
+
+        $result = $this->authService->resetPassword(
+            $request->token,
+            $request->password
+        );
+
+        if (!$result['success']) {
+            return $this->validationErrorResponse($result['message']);
+        }
+
+        return $this->successResponse(null, $result['message']);
+    }
 }

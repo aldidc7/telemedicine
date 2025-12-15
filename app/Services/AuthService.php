@@ -243,4 +243,100 @@ class AuthService
 
         return true;
     }
+
+    /**
+     * Generate password reset token dan send email
+     *
+     * @param string $email - Email user
+     * @return array - ['success' => bool, 'message' => string]
+     */
+    public function forgotPassword(string $email): array
+    {
+        $user = User::where('email', $email)->first();
+
+        if (!$user) {
+            // Return generic message untuk security (don't reveal if email exists)
+            return [
+                'success' => true,
+                'message' => 'Jika email terdaftar, Anda akan menerima link reset password',
+            ];
+        }
+
+        try {
+            // Generate reset token (64 chars)
+            $resetToken = Str::random(64);
+            
+            // Update user dengan reset token dan expiry (2 hours)
+            $user->update([
+                'password_reset_token' => $resetToken,
+                'password_reset_expires_at' => now()->addHours(2),
+            ]);
+
+            // Send reset email
+            Mail::to($user->email)->send(new \App\Mail\PasswordResetMail($user, $resetToken));
+
+            return [
+                'success' => true,
+                'message' => 'Jika email terdaftar, Anda akan menerima link reset password',
+            ];
+        } catch (\Exception $e) {
+            \Log::error('Failed to send password reset email: ' . $e->getMessage());
+            
+            return [
+                'success' => true,
+                'message' => 'Jika email terdaftar, Anda akan menerima link reset password',
+            ];
+        }
+    }
+
+    /**
+     * Reset password dengan token
+     *
+     * @param string $token - Password reset token
+     * @param string $newPassword - Password baru
+     * @return array - ['success' => bool, 'message' => string]
+     */
+    public function resetPassword(string $token, string $newPassword): array
+    {
+        $user = User::where('password_reset_token', $token)->first();
+
+        if (!$user) {
+            return [
+                'success' => false,
+                'message' => 'Token reset password tidak valid',
+            ];
+        }
+
+        // Check jika token sudah expired
+        if ($user->password_reset_expires_at && $user->password_reset_expires_at->isPast()) {
+            return [
+                'success' => false,
+                'message' => 'Token reset password sudah kadaluarsa. Silakan request reset password lagi',
+            ];
+        }
+
+        try {
+            // Update password dan clear reset token
+            $user->update([
+                'password' => Hash::make($newPassword),
+                'password_reset_token' => null,
+                'password_reset_expires_at' => null,
+            ]);
+
+            // Revoke all tokens untuk security
+            $user->tokens()->delete();
+
+            return [
+                'success' => true,
+                'message' => 'Password berhasil direset. Silakan login dengan password baru',
+            ];
+        } catch (\Exception $e) {
+            \Log::error('Failed to reset password: ' . $e->getMessage());
+            
+            return [
+                'success' => false,
+                'message' => 'Gagal mereset password. Silakan coba lagi',
+            ];
+        }
+    }
 }

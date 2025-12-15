@@ -30,10 +30,15 @@ Route::prefix('v1')->group(function () {
      * POST /api/v1/auth/refresh - Refresh token
      * POST /api/v1/auth/logout - Logout user
      * GET /api/v1/auth/me - Get current user profile
+     * GET /api/v1/auth/verify-email - Verifikasi email
+     * POST /api/v1/auth/forgot-password - Request reset password
+     * POST /api/v1/auth/reset-password - Reset password dengan token
      */
     Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/login', [AuthController::class, 'login']);
     Route::get('/auth/verify-email', [AuthController::class, 'verifyEmail']);
+    Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
 
     // ============ PROTECTED ROUTES (Sanctum Auth) ============
     Route::middleware('auth:sanctum')->group(function () {

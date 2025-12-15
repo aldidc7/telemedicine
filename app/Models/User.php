@@ -60,6 +60,8 @@ class User extends Authenticatable
         'last_login_at',
         'email_verified_at',
         'email_verification_token',
+        'password_reset_token',
+        'password_reset_expires_at',
     ];
 
     /**
@@ -72,6 +74,7 @@ class User extends Authenticatable
         'password',
         'remember_token',
         'email_verification_token',
+        'password_reset_token',
     ];
 
     /**
@@ -83,6 +86,8 @@ class User extends Authenticatable
     protected $casts = [
         'is_active' => 'boolean',              // Tipe boolean
         'last_login_at' => 'datetime',         // Tipe datetime
+        'email_verified_at' => 'datetime',     // Tipe datetime untuk email verification
+        'password_reset_expires_at' => 'datetime',  // Tipe datetime untuk password reset expiry
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
