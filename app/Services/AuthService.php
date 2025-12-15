@@ -40,19 +40,19 @@ class AuthService
                 Pasien::create([
                     'user_id' => $user->id,
                     'nik' => $data['nik'] ?? null,
-                    'date_of_birth' => $data['tanggal_lahir'] ?? null,
-                    'gender' => $data['jenis_kelamin'] ?? null,
-                    'address' => $data['alamat'] ?? null,
-                    'phone_number' => $data['phone'] ?? null,
-                    'blood_type' => $data['golongan_darah'] ?? null,
-                    'emergency_contact_name' => $data['nama_kontak_darurat'] ?? null,
-                    'emergency_contact_phone' => $data['no_kontak_darurat'] ?? null,
+                    'date_of_birth' => $data['date_of_birth'] ?? $data['tanggal_lahir'] ?? now()->subYears(25)->format('Y-m-d'),
+                    'gender' => $data['gender'] ?? $data['jenis_kelamin'] ?? 'laki-laki',
+                    'address' => $data['address'] ?? $data['alamat'] ?? '-',
+                    'phone_number' => $data['phone'] ?? '-',
+                    'blood_type' => $data['blood_type'] ?? $data['golongan_darah'] ?? null,
+                    'emergency_contact_name' => $data['emergency_contact_name'] ?? $data['nama_kontak_darurat'] ?? null,
+                    'emergency_contact_phone' => $data['emergency_contact_phone'] ?? $data['no_kontak_darurat'] ?? null,
                 ]);
             } elseif ($user->role === 'dokter') {
                 Dokter::create([
                     'user_id' => $user->id,
-                    'specialization' => $data['spesialisasi'] ?? '',
-                    'license_number' => $data['no_lisensi'] ?? '',
+                    'specialization' => $data['specialization'] ?? '',
+                    'license_number' => $data['sip'] ?? '',
                     'phone_number' => $data['phone'] ?? null,
                     'is_available' => true,
                     'is_verified' => false,  // Dokter baru belum terverifikasi
