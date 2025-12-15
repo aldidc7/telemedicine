@@ -60,10 +60,9 @@ class DashboardCacheService
             $totalKonsultasi = Konsultasi::count();
             $konsultasiByStatus = [
                 'pending' => Konsultasi::where('status', 'pending')->count(),
-                'accepted' => Konsultasi::where('status', 'accepted')->count(),
-                'ongoing' => Konsultasi::where('status', 'ongoing')->count(),
-                'completed' => Konsultasi::where('status', 'completed')->count(),
-                'rejected' => Konsultasi::where('status', 'rejected')->count(),
+                'active' => Konsultasi::where('status', 'active')->count(),
+                'closed' => Konsultasi::where('status', 'closed')->count(),
+                'cancelled' => Konsultasi::where('status', 'cancelled')->count(),
             ];
 
             return [

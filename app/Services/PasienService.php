@@ -87,7 +87,7 @@ class PasienService
                 'no_kontak_darurat' => $data['no_kontak_darurat'] ?? null,
             ]);
 
-            return $pasien->load('pengguna');
+            return $pasien->load('user');
         });
     }
 
@@ -103,9 +103,9 @@ class PasienService
         return DB::transaction(function () use ($pasien, $data) {
             // Update user data if provided
             if (isset($data['nama']) || isset($data['email'])) {
-                $pasien->pengguna->update([
-                    'name' => $data['nama'] ?? $pasien->pengguna->name,
-                    'email' => $data['email'] ?? $pasien->pengguna->email,
+                $pasien->user->update([
+                    'name' => $data['nama'] ?? $pasien->user->name,
+                    'email' => $data['email'] ?? $pasien->user->email,
                 ]);
             }
 
@@ -123,7 +123,7 @@ class PasienService
                 $pasien->update($pasienData);
             }
 
-            return $pasien->fresh(['pengguna']);
+            return $pasien->fresh(['user']);
         });
     }
 

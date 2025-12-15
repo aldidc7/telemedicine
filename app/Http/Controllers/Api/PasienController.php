@@ -199,7 +199,7 @@ class PasienController extends Controller
         // Find pasien by ID or user_id
         $pasien = Pasien::where('id', $id)
             ->orWhere('user_id', $id)
-            ->with('pengguna')
+            ->with('user')
             ->first();
         
         if (!$pasien) {
