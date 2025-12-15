@@ -46,6 +46,7 @@
               <input
                 v-model="form.password"
                 :type="showPassword ? 'text' : 'password'"
+                autocomplete="current-password"
                 required
                 class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition bg-gray-50 hover:bg-white pr-10"
                 placeholder="Masukkan password Anda"
