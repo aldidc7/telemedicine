@@ -16,21 +16,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Konsultasi table indexes
-        Schema::table('konsultasi', function (Blueprint $table) {
-            $table->index('pasien_id');
-            $table->index('dokter_id');
+        // Consultations table indexes
+        Schema::table('consultations', function (Blueprint $table) {
+            $table->index('patient_id');
+            $table->index('doctor_id');
             $table->index('status');
             $table->index(['status', 'created_at']);
             $table->index('updated_at');
         });
 
-        // PesanChat table indexes
-        Schema::table('pesan_chat', function (Blueprint $table) {
-            $table->index('konsultasi_id');
-            $table->index('pengirim_id');
-            $table->index('dibaca');
-            $table->index(['konsultasi_id', 'dibaca']);
+        // ChatMessages table indexes
+        Schema::table('chat_messages', function (Blueprint $table) {
+            $table->index('consultation_id');
+            $table->index('sender_id');
+            $table->index('read_at');
+            $table->index(['consultation_id', 'read_at']);
             $table->index('created_at');
         });
 
@@ -40,34 +40,34 @@ return new class extends Migration
             $table->index('created_at');
         });
 
-        // Pasien table indexes
-        Schema::table('pasien', function (Blueprint $table) {
+        // Patients table indexes
+        Schema::table('patients', function (Blueprint $table) {
             $table->index('user_id');
-            $table->index('no_identitas');
+            $table->index('nik');
         });
 
-        // Dokter table indexes
-        Schema::table('dokter', function (Blueprint $table) {
+        // Doctors table indexes
+        Schema::table('doctors', function (Blueprint $table) {
             $table->index('user_id');
-            $table->index('spesialisasi');
-            $table->index('status_ketersediaan');
+            $table->index('specialization');
+            $table->index('is_available');
         });
 
-        // Rating table indexes
-        Schema::table('rating', function (Blueprint $table) {
-            $table->index('konsultasi_id');
+        // Ratings table indexes
+        Schema::table('ratings', function (Blueprint $table) {
+            $table->index('consultation_id');
             $table->index('created_at');
         });
 
-        // RekamMedis table indexes
-        Schema::table('rekam_medis', function (Blueprint $table) {
-            $table->index('konsultasi_id');
-            $table->index('dokter_id');
+        // MedicalRecords table indexes
+        Schema::table('medical_records', function (Blueprint $table) {
+            $table->index('consultation_id');
+            $table->index('doctor_id');
             $table->index('created_at');
         });
 
-        // ActivityLog table indexes
-        Schema::table('activity_log', function (Blueprint $table) {
+        // ActivityLogs table indexes
+        Schema::table('activity_logs', function (Blueprint $table) {
             $table->index('user_id');
             $table->index('model_type');
             $table->index('model_id');
@@ -80,19 +80,19 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('konsultasi', function (Blueprint $table) {
-            $table->dropIndex(['pasien_id']);
-            $table->dropIndex(['dokter_id']);
+        Schema::table('consultations', function (Blueprint $table) {
+            $table->dropIndex(['patient_id']);
+            $table->dropIndex(['doctor_id']);
             $table->dropIndex(['status']);
             $table->dropIndex(['status', 'created_at']);
             $table->dropIndex(['updated_at']);
         });
 
-        Schema::table('pesan_chat', function (Blueprint $table) {
-            $table->dropIndex(['konsultasi_id']);
-            $table->dropIndex(['pengirim_id']);
-            $table->dropIndex(['dibaca']);
-            $table->dropIndex(['konsultasi_id', 'dibaca']);
+        Schema::table('chat_messages', function (Blueprint $table) {
+            $table->dropIndex(['consultation_id']);
+            $table->dropIndex(['sender_id']);
+            $table->dropIndex(['read_at']);
+            $table->dropIndex(['consultation_id', 'read_at']);
             $table->dropIndex(['created_at']);
         });
 
@@ -101,29 +101,29 @@ return new class extends Migration
             $table->dropIndex(['created_at']);
         });
 
-        Schema::table('pasien', function (Blueprint $table) {
+        Schema::table('patients', function (Blueprint $table) {
             $table->dropIndex(['user_id']);
-            $table->dropIndex(['no_identitas']);
+            $table->dropIndex(['nik']);
         });
 
-        Schema::table('dokter', function (Blueprint $table) {
+        Schema::table('doctors', function (Blueprint $table) {
             $table->dropIndex(['user_id']);
-            $table->dropIndex(['spesialisasi']);
-            $table->dropIndex(['status_ketersediaan']);
+            $table->dropIndex(['specialization']);
+            $table->dropIndex(['is_available']);
         });
 
-        Schema::table('rating', function (Blueprint $table) {
-            $table->dropIndex(['konsultasi_id']);
+        Schema::table('ratings', function (Blueprint $table) {
+            $table->dropIndex(['consultation_id']);
             $table->dropIndex(['created_at']);
         });
 
-        Schema::table('rekam_medis', function (Blueprint $table) {
-            $table->dropIndex(['konsultasi_id']);
-            $table->dropIndex(['dokter_id']);
+        Schema::table('medical_records', function (Blueprint $table) {
+            $table->dropIndex(['consultation_id']);
+            $table->dropIndex(['doctor_id']);
             $table->dropIndex(['created_at']);
         });
 
-        Schema::table('activity_log', function (Blueprint $table) {
+        Schema::table('activity_logs', function (Blueprint $table) {
             $table->dropIndex(['user_id']);
             $table->dropIndex(['model_type']);
             $table->dropIndex(['model_id']);
