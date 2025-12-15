@@ -250,6 +250,30 @@ const handleRegister = async () => {
     return
   }
 
+  // Validate pasien NIK
+  if (userType.value === 'pasien') {
+    if (!form.value.nik || form.value.nik.trim() === '') {
+      error.value = 'NIK harus diisi'
+      return
+    }
+    if (form.value.nik.length !== 16 || !/^\d+$/.test(form.value.nik)) {
+      error.value = 'NIK harus berupa 16 digit angka'
+      return
+    }
+  }
+
+  // Validate dokter SIP and specialization
+  if (userType.value === 'dokter') {
+    if (!form.value.sip || form.value.sip.trim() === '') {
+      error.value = 'Nomor SIP harus diisi'
+      return
+    }
+    if (!form.value.specialization || form.value.specialization === '') {
+      error.value = 'Spesialisasi harus dipilih'
+      return
+    }
+  }
+
   if (!form.value.agree) {
     error.value = 'Anda harus menyetujui syarat & ketentuan'
     return
