@@ -78,48 +78,53 @@ class AppointmentService
     }
 
     /**
-     * Get available slots untuk doctor di tanggal tertentu
+     * Get available slots untuk doctor di tanggal tertentu (with caching)
      */
     public function getAvailableSlots(int $doctorId, string $date, int $slotDurationMinutes = 30): array
     {
-        $date = Carbon::parse($date)->startOfDay();
+        // Use cache with 15 minute TTL
+        $cacheKey = "appointments:slots:{$doctorId}:" . Carbon::parse($date)->format('Y-m-d');
+        
+        return Cache::remember($cacheKey, 900, function () use ($doctorId, $date, $slotDurationMinutes) {
+            $date = Carbon::parse($date)->startOfDay();
 
-        // Get working hours (9 AM - 5 PM default)
-        $workStart = $date->clone()->setHour(9);
-        $workEnd = $date->clone()->setHour(17);
+            // Get working hours (9 AM - 5 PM default)
+            $workStart = $date->clone()->setHour(9);
+            $workEnd = $date->clone()->setHour(17);
 
-        // Get booked appointments
-        $bookedAppointments = Appointment::where('doctor_id', $doctorId)
-            ->whereDate('scheduled_at', $date)
-            ->whereIn('status', ['pending', 'confirmed', 'in_progress'])
-            ->pluck('scheduled_at')
-            ->toArray();
+            // Get booked appointments
+            $bookedAppointments = Appointment::where('doctor_id', $doctorId)
+                ->whereDate('scheduled_at', $date)
+                ->whereIn('status', ['pending', 'confirmed', 'in_progress'])
+                ->pluck('scheduled_at')
+                ->toArray();
 
-        // Generate available slots
-        $slots = [];
-        $currentTime = $workStart;
+            // Generate available slots
+            $slots = [];
+            $currentTime = $workStart;
 
-        while ($currentTime->isBefore($workEnd)) {
-            $slotEnd = $currentTime->clone()->addMinutes($slotDurationMinutes);
+            while ($currentTime->isBefore($workEnd)) {
+                $slotEnd = $currentTime->clone()->addMinutes($slotDurationMinutes);
 
-            // Check if slot is free
-            $isFree = true;
-            foreach ($bookedAppointments as $bookedTime) {
-                $booked = Carbon::parse($bookedTime);
-                if ($currentTime->lte($booked) && $slotEnd->gt($booked)) {
-                    $isFree = false;
-                    break;
+                // Check if slot is free
+                $isFree = true;
+                foreach ($bookedAppointments as $bookedTime) {
+                    $booked = Carbon::parse($bookedTime);
+                    if ($currentTime->lte($booked) && $slotEnd->gt($booked)) {
+                        $isFree = false;
+                        break;
+                    }
                 }
+
+                if ($isFree) {
+                    $slots[] = $currentTime->format('Y-m-d H:i:s');
+                }
+
+                $currentTime->addMinutes($slotDurationMinutes);
             }
 
-            if ($isFree) {
-                $slots[] = $currentTime->format('Y-m-d H:i:s');
-            }
-
-            $currentTime->addMinutes($slotDurationMinutes);
-        }
-
-        return $slots;
+            return $slots;
+        });
     }
 
     /**
