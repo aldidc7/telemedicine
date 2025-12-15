@@ -226,4 +226,27 @@ class ActivityLog extends Model
         $nama = $this->pengguna->name ?? 'Sistem';
         return "{$nama} melakukan {$this->aksi} pada model {$this->tipe_model} (ID: {$this->id_model})";
     }
+
+    // ============ STATIC HELPER METHODS ============
+
+    /**
+     * Create activity log entry
+     * 
+     * Gunakan:
+     * ActivityLog::log(1, 'login', 'User logged in')
+     * ActivityLog::log(null, 'login_failed', 'Email: admin@test.com')
+     * 
+     * @param int|null $userId - User ID (null untuk system events)
+     * @param string $action - Action name (login, logout, create, update, delete, etc)
+     * @param string $description - Detailed description
+     * @return ActivityLog
+     */
+    public static function log(?int $userId, string $action, string $description = ''): self
+    {
+        return self::create([
+            'user_id' => $userId,
+            'aksi' => $action,
+            'deskripsi' => $description,
+        ]);
+    }
 }
