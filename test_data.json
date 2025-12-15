@@ -1,9 +1,0 @@
-{
-  "name": "Pasien Test",
-  "email": "pasientest@test.com",
-  "nik": "1234567890123456",
-  "phone": "081234567890",
-  "password": "password123",
-  "password_confirmation": "password123",
-  "role": "pasien"
-}
