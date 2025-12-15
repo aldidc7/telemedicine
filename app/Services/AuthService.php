@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\User;
 use App\Models\Pasien;
 use App\Models\Dokter;
+use App\Models\ActivityLog;
 use App\Mail\VerifyEmailMail;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -40,6 +41,7 @@ class AuthService
                 'is_active' => true,
                 'last_login_at' => now(),
                 'email_verification_token' => $verificationToken,
+                'email_verification_expires_at' => now()->addHours(24),  // Token expires in 24 hours
             ]);
 
             // Create role-specific data
@@ -100,16 +102,22 @@ class AuthService
         $user = User::where('email', $email)->first();
 
         if (!$user || !Hash::check($password, $user->password)) {
+            // Log failed login attempt
+            ActivityLog::log(null, 'login_failed', 'Email: ' . $email);
             return null;
         }
 
         // Check if user is active
         if (!$user->is_active) {
+            ActivityLog::log($user->id, 'login_failed', 'User is inactive');
             return null;
         }
 
         // Update last login
         $user->update(['last_login_at' => now()]);
+
+        // Log successful login
+        ActivityLog::log($user->id, 'login', 'User logged in');
 
         // Generate token using Sanctum
         $token = $user->createToken('api-token')->plainTextToken;
@@ -136,6 +144,9 @@ class AuthService
         $user = Auth::user();
         
         if ($user) {
+            // Log logout
+            ActivityLog::log($user->id, 'logout', 'User logged out');
+            
             // Revoke all tokens
             $user->tokens()->delete();
             return true;
@@ -209,12 +220,16 @@ class AuthService
     public function changePassword(User $user, string $currentPassword, string $newPassword): bool
     {
         if (!Hash::check($currentPassword, $user->password)) {
+            ActivityLog::log($user->id, 'password_change_failed', 'Current password is incorrect');
             return false;
         }
 
         $user->update([
             'password' => Hash::make($newPassword),
         ]);
+
+        // Log password change
+        ActivityLog::log($user->id, 'password_changed', 'User changed password');
 
         // Revoke all tokens untuk security
         $user->tokens()->delete();
@@ -236,9 +251,15 @@ class AuthService
             return false;
         }
 
+        // Check if token has expired
+        if ($user->email_verification_expires_at && $user->email_verification_expires_at->isPast()) {
+            return false;
+        }
+
         $user->update([
             'email_verified_at' => now(),
             'email_verification_token' => null,
+            'email_verification_expires_at' => null,
         ]);
 
         return true;
@@ -322,6 +343,9 @@ class AuthService
                 'password_reset_token' => null,
                 'password_reset_expires_at' => null,
             ]);
+
+            // Log password reset
+            ActivityLog::log($user->id, 'password_reset', 'User reset password via token');
 
             // Revoke all tokens untuk security
             $user->tokens()->delete();
