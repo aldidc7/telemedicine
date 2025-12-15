@@ -73,15 +73,16 @@ class AuthService
     }
 
     /**
-     * Login user dengan email atau NIK
+     * Login user dengan email, username, atau NIK
      *
-     * @param string $identifier (Email atau NIK)
+     * @param string $identifier (Email, username, atau NIK)
      * @param string $password
      * @return array|null
      */
     public function login(string $identifier, string $password): ?array
     {
         $user = User::where('email', $identifier)
+            ->orWhere('email', 'like', $identifier)  // Support username login
             ->orWhereHas('pasien', function ($query) use ($identifier) {
                 $query->where('nik', $identifier);
             })
