@@ -309,7 +309,10 @@ const dateRangeData = ref(null)
 const topHealthIssues = ref({})
 
 // Component lifecycle tracking
-let isMounted = false
+const isMounted = ref(false)
+
+// Request cancellation
+let abortController = null
 
 // Real-time update settings
 const autoRefreshEnabled = ref(true)
@@ -329,28 +332,36 @@ const formattedLastUpdated = computed(() => {
 })
 
 onMounted(() => {
-  isMounted = true
+  isMounted.value = true
+  abortController = new AbortController()
   fetchAnalytics()
   initializeAutoRefresh()
 })
 
 onUnmounted(() => {
-  isMounted = false
+  isMounted.value = false
+  if (abortController) abortController.abort()
   stopAutoRefresh()
 })
 
 const fetchAnalytics = async () => {
   try {
-    if (!isMounted) return
+    if (!isMounted.value) return
+    
+    // Cancel previous request if still pending
+    if (abortController) abortController.abort()
+    abortController = new AbortController()
     
     updateStatus.value = 'updating'
-    const response = await client.get('/analytics/overview')
+    const response = await client.get('/analytics/overview', {
+      signal: abortController.signal
+    })
     
-    if (!isMounted) return
+    if (!isMounted.value) return
     
     const data = response.data?.data || response.data || {}
     
-    if (!isMounted) return
+    if (!isMounted.value) return
     
     // Safely assign with defaults
     consultationMetrics.value = {
@@ -363,23 +374,26 @@ const fetchAnalytics = async () => {
     revenueByDoctor.value = data.revenue?.revenue_by_doctor || []
     topHealthIssues.value = data.health_trends?.top_health_issues || {}
     
-    if (isMounted) {
+    if (isMounted.value) {
       lastUpdated.value = new Date()
       updateStatus.value = 'idle'
     }
   } catch (error) {
-    if (!isMounted) return
+    // Ignore abort errors (expected when component unmounts)
+    if (error.name === 'AbortError') return
+    
+    if (!isMounted.value) return
     
     console.error('Failed to fetch analytics:', error)
     updateStatus.value = 'error'
     
     setTimeout(() => { 
-      if (isMounted) {
+      if (isMounted.value) {
         updateStatus.value = 'idle'
       }
     }, 3000)
   } finally {
-    if (isMounted) {
+    if (isMounted.value) {
       loading.value = false
     }
   }
@@ -399,7 +413,7 @@ const initializeAutoRefresh = () => {
   
   autoRefreshTimer = setInterval(() => {
     // Check if component is still mounted before fetching
-    if (isMounted && autoRefreshEnabled.value) {
+    if (isMounted.value && autoRefreshEnabled.value) {
       fetchAnalytics()
     }
   }, autoRefreshInterval.value * 1000)
@@ -434,15 +448,26 @@ const fetchDateRangeAnalytics = async () => {
   if (!dateRangeStart.value || !dateRangeEnd.value) return
   
   try {
+    if (!isMounted.value) return
+    
     const response = await client.get('/analytics/range', {
+      signal: abortController?.signal,
       params: {
         start_date: dateRangeStart.value,
         end_date: dateRangeEnd.value,
         metrics: 'consultations,revenue'
       }
     })
+    
+    if (!isMounted.value) return
+    
     dateRangeData.value = response.data.data
   } catch (error) {
+    if (error.name === 'AbortError') return
+    if (!isMounted.value) return
+    console.error('Failed to fetch date range analytics:', error)
+  }
+}
     console.error('Failed to fetch date range analytics:', error)
   }
 }
