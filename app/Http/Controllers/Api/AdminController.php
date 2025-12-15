@@ -115,7 +115,7 @@ class AdminController extends Controller
                 ->with('dokter')
                 ->get()
                 ->groupBy(function ($k) {
-                    return $k->dokter?->spesialisasi ?? 'Tidak Ada';
+                    return $k->dokter?->specialization ?? 'Tidak Ada';
                 })
                 ->map(function ($group) {
                     return count($group);
@@ -368,7 +368,7 @@ class AdminController extends Controller
                 $dokter = $pengguna->dokter;
                 $data['profile'] = [
                     'type' => 'dokter',
-                    'spesialisasi' => $dokter->spesialisasi,
+                    'specialization' => $dokter->specialization,
                     'no_lisensi' => $dokter->no_lisensi,
                     'no_telepon' => $dokter->no_telepon,
                     'tersedia' => $dokter->tersedia,

@@ -37,9 +37,9 @@ class DokterService
             })->orWhere('nip', 'like', "%{$search}%");
         }
 
-        // Filter by spesialisasi
+        // Filter by specialization
         if ($spesialisasi) {
-            $query->where('spesialisasi', $spesialisasi);
+            $query->where('specialization', $spesialisasi);
         }
 
         // Filter by status
@@ -99,12 +99,10 @@ class DokterService
             // Create dokter record
             $dokter = Dokter::create([
                 'user_id' => $user->id,
-                'nip' => $data['nip'],
-                'spesialisasi' => $data['spesialisasi'],
-                'alamat' => $data['alamat'] ?? null,
-                'no_telepon' => $data['no_telepon'] ?? null,
-                'jam_praktik' => $data['jam_praktik'] ?? null,
-                'hari_praktik' => $data['hari_praktik'] ?? null,
+                'license_number' => $data['nip'],
+                'specialization' => $data['spesialisasi'],
+                'address' => $data['alamat'] ?? null,
+                'phone_number' => $data['no_telepon'] ?? null,
             ]);
 
             return $dokter->load('pengguna');
@@ -131,7 +129,7 @@ class DokterService
 
             // Update dokter data
             $dokterData = [];
-            $fields = ['spesialisasi', 'alamat', 'no_telepon', 'jam_praktik', 'hari_praktik'];
+            $fields = ['specialization', 'address', 'phone_number'];
             
             foreach ($fields as $field) {
                 if (isset($data[$field])) {

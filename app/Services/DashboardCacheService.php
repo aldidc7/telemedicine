@@ -86,16 +86,16 @@ class DashboardCacheService
         return Cache::remember(self::KEY_DOCTOR_STATS, self::getCacheTTL('medium'), function () {
             $totalDokter = Dokter::count();
             $dokterTersedia = Dokter::where('is_available', true)->count();
-            $dokterBySpesialisasi = Dokter::selectRaw('spesialisasi, COUNT(*) as count')
-                ->groupBy('spesialisasi')
-                ->pluck('count', 'spesialisasi')
+            $dokterBySpesialisasi = Dokter::selectRaw('specialization, COUNT(*) as count')
+                ->groupBy('specialization')
+                ->pluck('count', 'specialization')
                 ->toArray();
 
             return [
                 'total' => $totalDokter,
                 'tersedia' => $dokterTersedia,
                 'tidak_tersedia' => $totalDokter - $dokterTersedia,
-                'by_spesialisasi' => $dokterBySpesialisasi,
+                'by_specialization' => $dokterBySpesialisasi,
             ];
         });
     }

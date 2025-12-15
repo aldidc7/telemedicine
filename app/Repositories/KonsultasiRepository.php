@@ -23,7 +23,7 @@ class KonsultasiRepository
         return Konsultasi::with([
             'pasien:id,user_id,no_identitas,nama_lengkap,tanggal_lahir,no_telepon',
             'pasien.user:id,name,email',
-            'dokter:id,user_id,no_lisensi,spesialisasi,jam_mulai_praktik,jam_selesai_praktik',
+            'dokter:id,user_id,license_number,specialization',
             'dokter.user:id,name,email',
             'pesanChat' => function ($query) {
                 $query->latest()->limit(1);
@@ -42,7 +42,7 @@ class KonsultasiRepository
         return Konsultasi::with([
             'pasien:id,user_id,no_identitas,nama_lengkap,tanggal_lahir,no_telepon,alamat,jenis_kelamin,golongan_darah,alergi',
             'pasien.user:id,name,email,phone',
-            'dokter:id,user_id,no_lisensi,spesialisasi,jam_mulai_praktik,jam_selesai_praktik,status_ketersediaan',
+            'dokter:id,user_id,license_number,specialization',
             'dokter.user:id,name,email,phone',
             'pesanChat' => function ($query) {
                 $query->with('pengirim:id,name')->latest();
@@ -59,7 +59,7 @@ class KonsultasiRepository
     public function getByPasienId($pasienId, $perPage = 15)
     {
         return Konsultasi::with([
-            'dokter:id,user_id,spesialisasi',
+            'dokter:id,user_id,specialization',
             'dokter.user:id,name',
             'pesanChat' => function ($query) {
                 $query->where('dibaca', false)->count();

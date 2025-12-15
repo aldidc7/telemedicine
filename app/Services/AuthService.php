@@ -201,7 +201,7 @@ class AuthService
         }
 
         if (isset($data['spesialisasi']) && $user->role === 'dokter') {
-            $updateData['spesialisasi'] = $data['spesialisasi'];
+            $updateData['specialization'] = $data['spesialisasi'];
         }
 
         $user->update($updateData);
