@@ -13,6 +13,14 @@
     <!-- Navbar - Unauthenticated (Landing) -->
     <LandingNavbar v-else-if="!authStore.isAuthenticated && authStore.initialized" />
 
+    <!-- WebSocket Status Indicator -->
+    <div v-if="authStore.isAuthenticated && authStore.initialized" class="fixed top-4 left-4 z-40">
+      <WebSocketStatus />
+    </div>
+
+    <!-- Real-time Notifications -->
+    <RealtimeNotifications v-if="authStore.isAuthenticated && authStore.initialized" />
+
     <!-- Main Content -->
     <main v-if="authStore.initialized" :class="['transition-all', authStore.isAuthenticated ? 'p-4 md:p-8' : '']">
       <div :class="[authStore.isAuthenticated ? 'max-w-7xl mx-auto' : '']">
@@ -27,6 +35,8 @@ import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 import Navbar from '@/components/Navbar.vue'
 import LandingNavbar from '@/components/LandingNavbar.vue'
+import WebSocketStatus from '@/components/WebSocketStatus.vue'
+import RealtimeNotifications from '@/components/RealtimeNotifications.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
