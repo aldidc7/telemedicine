@@ -585,25 +585,40 @@ const saveProfile = async () => {
     // untuk menangani file upload dengan benar
     const data = new FormData()
     
-    // Append semua field KECUALI profile_photo
+    // List of fields yang TIDAK boleh di-append ke FormData
+    const skipFields = ['profile_photo', 'dokter_id']
+    
+    // Append semua field YANG BOLEH
     Object.keys(editForm.value).forEach(key => {
-      // CRITICAL: Skip profile_photo field - hanya kirim saat ada file baru
-      if (key !== 'profile_photo') {
-        const value = editForm.value[key]
-        // Only append non-empty values to reduce payload
-        if (value !== null && value !== undefined && value !== '') {
-          data.append(key, value)
-        }
+      // Skip fields yang tidak boleh dikirim
+      if (skipFields.includes(key)) {
+        console.log(`Skipping field: ${key}`)
+        return
+      }
+      
+      const value = editForm.value[key]
+      // Only append non-empty values to reduce payload
+      if (value !== null && value !== undefined && value !== '') {
+        data.append(key, value)
       }
     })
     
-    // Append file HANYA jika ada file baru
+    // Append file HANYA jika ada file baru yang dipilih
     if (photoFile.value) {
       data.append('profile_photo', photoFile.value)
-      console.log('Appending photo file:', photoFile.value.name, photoFile.value.size, 'bytes')
-    } else {
-      console.log('No new photo file to upload')
+      console.log('Appending new photo file:', photoFile.value.name, photoFile.value.size, 'bytes')
     }
+    
+    // Debug: Log FormData contents
+    console.log('=== FormData contents being sent ===')
+    for (let pair of data.entries()) {
+      if (pair[0] === 'profile_photo' && pair[1] instanceof File) {
+        console.log(pair[0], ': File -', pair[1].name)
+      } else {
+        console.log(pair[0], ':', pair[1])
+      }
+    }
+    console.log('====================================')
     
     const response = await dokterAPI.update(profile.value.dokter_id, data)
 

@@ -33,8 +33,8 @@ class DokterRequest extends FormRequest
             'is_available' => ['sometimes', 'boolean'],
             'tersedia' => ['sometimes', 'boolean'],
             
-            // File upload
-            'profile_photo' => ['sometimes', 'file', 'image', 'max:5120'], // max 5MB
+            // File upload - only validate if actually a file is being sent
+            'profile_photo' => ['nullable', 'file', 'image', 'max:5120'], // max 5MB
         ];
     }
 
