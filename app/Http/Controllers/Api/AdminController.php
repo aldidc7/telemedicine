@@ -111,31 +111,77 @@ class AdminController extends Controller
                 });
 
             // ===== CONSULTATION BY SPECIALTY =====
-            $konsultasiPerSpesialisasi = Konsultasi::where('status', 'closed')
-                ->with('dokter')
-                ->get()
-                ->groupBy(function ($k) {
-                    return $k->dokter?->specialization ?? 'Tidak Ada';
-                })
-                ->map(function ($group) {
-                    return count($group);
-                });
+            $konsultasiPerSpesialisasi = [];
+            try {
+                $konsultasiPerSpesialisasi = Konsultasi::where('status', 'closed')
+                    ->with('dokter')
+                    ->get()
+                    ->groupBy(function ($k) {
+                        return $k->dokter?->specialization ?? 'Tidak Ada';
+                    })
+                    ->map(function ($group) {
+                        return count($group);
+                    })
+                    ->toArray();
+            } catch (\Exception $e) {
+                \Log::error('Error calculating consultation by specialty: ' . $e->getMessage());
+                $konsultasiPerSpesialisasi = [];
+            }
 
             // ===== RECENT CONSULTATIONS =====
-            $konsultasiTerbaru = Konsultasi::with('pasien.user', 'dokter.user')
-                ->orderBy('created_at', 'desc')
-                ->limit(5)
-                ->get();
+            $konsultasiTerbaru = [];
+            try {
+                $konsultasiTerbaru = Konsultasi::with('pasien.user', 'dokter.user')
+                    ->orderBy('created_at', 'desc')
+                    ->limit(5)
+                    ->get()
+                    ->map(function ($k) {
+                        return [
+                            'id' => $k->id,
+                            'pasien' => $k->pasien?->user?->name ?? 'N/A',
+                            'dokter' => $k->dokter?->user?->name ?? 'Belum ditugaskan',
+                            'jenis_keluhan' => $k->complaint_type ?? '',
+                            'status' => $k->status,
+                            'created_at' => $k->created_at?->toIso8601String() ?? null,
+                        ];
+                    })
+                    ->toArray();
+            } catch (\Exception $e) {
+                \Log::error('Error fetching recent consultations: ' . $e->getMessage());
+                $konsultasiTerbaru = [];
+            }
 
             // ===== RECENT ACTIVITIES =====
-            $aktivitasTerbaru = ActivityLog::with('user')
-                ->orderBy('created_at', 'desc')
-                ->limit(10)
-                ->get();
+            $aktivitasTerbaru = [];
+            try {
+                $aktivitasTerbaru = ActivityLog::with('user')
+                    ->orderBy('created_at', 'desc')
+                    ->limit(10)
+                    ->get()
+                    ->map(function ($a) {
+                        return [
+                            'id' => $a->id,
+                            'user' => $a->user?->name ?? 'Unknown',
+                            'action' => $a->action ?? '',
+                            'description' => $a->description ?? '',
+                            'ip_address' => $a->ip_address ?? '',
+                            'created_at' => $a->created_at?->toIso8601String() ?? null,
+                        ];
+                    })
+                    ->toArray();
+            } catch (\Exception $e) {
+                \Log::error('Error fetching activity logs: ' . $e->getMessage());
+                $aktivitasTerbaru = [];
+            }
 
             // ===== SYSTEM HEALTH =====
             $totalPesan = PesanChat::count();
-            $totalRekamMedis = \App\Models\RekamMedis::count();
+            $totalRekamMedis = 0;
+            try {
+                $totalRekamMedis = \App\Models\RekamMedis::count();
+            } catch (\Exception $e) {
+                \Log::error('Error counting medical records: ' . $e->getMessage());
+            }
             $totalActivityLogs = ActivityLog::count();
 
             return response()->json([
@@ -197,27 +243,8 @@ class AdminController extends Controller
                     ],
 
                     // Recent Data
-                    'recent_consultations' => $konsultasiTerbaru->map(function ($k) {
-                        return [
-                            'id' => $k->id,
-                            'pasien' => $k->pasien?->user?->name ?? 'N/A',
-                            'dokter' => $k->dokter?->user?->name ?? 'Belum ditugaskan',
-                            'jenis_keluhan' => $k->complaint_type ?? '',
-                            'status' => $k->status,
-                            'created_at' => $k->created_at?->toIso8601String() ?? null,
-                        ];
-                    })->toArray(),
-
-                    'recent_activities' => $aktivitasTerbaru->map(function ($a) {
-                        return [
-                            'id' => $a->id,
-                            'user' => $a->user?->name ?? 'Unknown',
-                            'action' => $a->action ?? '',
-                            'description' => $a->description ?? '',
-                            'ip_address' => $a->ip_address ?? '',
-                            'created_at' => $a->created_at?->toIso8601String() ?? null,
-                        ];
-                    })->toArray(),
+                    'recent_consultations' => $konsultasiTerbaru,
+                    'recent_activities' => $aktivitasTerbaru,
                 ],
             ], 200);
         } catch (\Exception $e) {
