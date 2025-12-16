@@ -18,6 +18,13 @@ client.interceptors.request.use(
       config.headers.Authorization = `Bearer ${authStore.token}`
     }
     
+    // IMPORTANT: For FormData (file uploads), let axios set Content-Type automatically
+    // with proper multipart/form-data and boundary
+    if (config.data instanceof FormData) {
+      // Delete Content-Type so axios can set it with correct boundary
+      delete config.headers['Content-Type']
+    }
+    
     // Add request timestamp untuk tracking
     config.metadata = { startTime: performance.now() }
     
