@@ -29,6 +29,7 @@
               </router-link>
               <router-link
                 to="/cari-dokter"
+                @click="showUserMenu = false; showMobileMenu = false"
                 :class="['px-4 py-2 rounded-lg text-sm font-semibold transition',
                   isActive('/cari-dokter') ? 'bg-indigo-100 text-indigo-600' : 'text-gray-700 hover:bg-gray-100']"
               >
@@ -236,7 +237,7 @@
               <router-link to="/dashboard" class="block px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-indigo-50 rounded transition">
                 Dashboard
               </router-link>
-              <router-link to="/cari-dokter" class="block px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-indigo-50 rounded transition">
+              <router-link to="/cari-dokter" @click="showMobileMenu = false" class="block px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-indigo-50 rounded transition">
                 Cari Dokter
               </router-link>
               <router-link to="/konsultasi" class="block px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-indigo-50 rounded transition">
