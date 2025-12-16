@@ -99,7 +99,7 @@ class AuthService
      */
     public function login(string $email, string $password): ?array
     {
-        $user = User::where('email', $email)->first();
+        $user = User::where('email', $email)->with(['dokter', 'pasien'])->first();
 
         if (!$user || !Hash::check($password, $user->password)) {
             // Log failed login attempt
@@ -128,6 +128,8 @@ class AuthService
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->role,
+                'dokter' => $user->dokter,
+                'pasien' => $user->pasien,
             ],
             'token' => $token,
             'token_type' => 'Bearer',
@@ -162,7 +164,7 @@ class AuthService
      */
     public function getCurrentUser(): ?User
     {
-        return Auth::user();
+        return Auth::user()?->load(['dokter', 'pasien']);
     }
 
     /**

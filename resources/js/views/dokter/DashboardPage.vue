@@ -311,16 +311,33 @@ const profile = ref({
 
 
 onMounted(async () => {
-  await loadData()
+  // Load data immediately if dokter ID is already available
+  if (authStore.user?.dokter?.id) {
+    await loadData()
+  }
+})
+
+// Watch for auth store changes and reload data when dokter ID becomes available
+watch(() => authStore.user?.dokter?.id, async (newDokterId) => {
+  if (newDokterId) {
+    await loadData()
+  }
 })
 
 const loadData = async () => {
   try {
+    // Get dokter ID, ensure it exists before making API calls
+    const dokterId = authStore.user?.dokter?.id
+    if (!dokterId) {
+      console.warn('Dokter ID not found in auth store, waiting for auth initialization')
+      return
+    }
+
     // Parallel loading untuk lebih cepat
     const [menuResponse, allResponse, dokterResponse] = await Promise.all([
       konsultasiAPI.getList({ status: 'pending' }),
       konsultasiAPI.getList({}),
-      dokterAPI.getDetail(authStore.user?.dokter?.id)
+      dokterAPI.getDetail(dokterId)
     ])
 
     konsultasiMenunggu.value = menuResponse.data.data
