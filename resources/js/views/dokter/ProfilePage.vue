@@ -447,26 +447,36 @@ const loadProfile = async () => {
   editError.value = null
   fieldErrors.value = {}
   try {
-    // Create timeout promise
-    const timeoutPromise = new Promise((resolve) => {
-      setTimeout(() => {
-        console.warn('Profile load timeout')
-        resolve(null)
-      }, 5000) // 5 second timeout - increased from 3s for more reliable loading
-    })
+    // First, try to use data from authStore (no network call needed)
+    let dokterData = null
+    
+    if (authStore.user?.dokter) {
+      // Data already available from login response - use it immediately
+      console.log('Using dokter data from authStore (instant)')
+      dokterData = authStore.user.dokter
+    } else {
+      // If not in authStore, fetch from API with timeout
+      console.log('Fetching dokter data from API...')
+      const timeoutPromise = new Promise((resolve) => {
+        setTimeout(() => {
+          console.warn('Profile load timeout')
+          resolve(null)
+        }, 5000)
+      })
 
-    const dokterResponse = await Promise.race([
-      dokterAPI.getByUserId(authStore.user.id),
-      timeoutPromise
-    ])
+      const dokterResponse = await Promise.race([
+        dokterAPI.getByUserId(authStore.user.id),
+        timeoutPromise
+      ])
 
-    if (!dokterResponse) {
-      editError.value = 'Gagal memuat profil - Request timeout'
-      loading.value = false
-      return
+      if (!dokterResponse) {
+        editError.value = 'Gagal memuat profil - Request timeout'
+        loading.value = false
+        return
+      }
+
+      dokterData = dokterResponse?.data?.data
     }
-
-    const dokterData = dokterResponse?.data?.data
 
     if (!dokterData || !dokterData.id) {
       editError.value = 'Data dokter tidak valid atau tidak ditemukan'
@@ -494,7 +504,8 @@ const loadProfile = async () => {
       blood_type: dokterData.blood_type || '',
       marital_status: dokterData.marital_status || '',
       ethnicity: dokterData.ethnicity || '',
-      profile_photo: dokterData.profile_photo || ''
+      profile_photo: dokterData.profile_photo || '',
+      is_available: dokterData.is_available || false
     }
 
     editForm.value = {
