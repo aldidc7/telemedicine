@@ -202,7 +202,7 @@ class AdminController extends Controller
                             'id' => $k->id,
                             'pasien' => $k->pasien?->user?->name ?? 'N/A',
                             'dokter' => $k->dokter?->user?->name ?? 'Belum ditugaskan',
-                            'jenis_keluhan' => $k->jenis_keluhan,
+                            'jenis_keluhan' => $k->complaint_type,
                             'status' => $k->status,
                             'created_at' => $k->created_at->toIso8601String(),
                         ];
