@@ -10,6 +10,17 @@ export const useDokterAvailability = defineStore('dokterAvailability', () => {
 
   const authStore = useAuthStore()
 
+  // Initialize availability from auth store
+  const initializeFromAuthStore = () => {
+    const dokterData = authStore.user?.dokter
+    if (dokterData) {
+      isAvailable.value = dokterData.is_available || dokterData.tersedia || false
+      console.log('Initialized availability from authStore:', isAvailable.value)
+      return true
+    }
+    return false
+  }
+
   // Update availability status
   const updateAvailability = async (newStatus) => {
     if (!authStore.isDokter) return
@@ -41,9 +52,14 @@ export const useDokterAvailability = defineStore('dokterAvailability', () => {
     }
   }
 
-  // Fetch current availability status
+  // Fetch current availability status - try from authStore first, then API
   const fetchAvailability = async () => {
     if (!authStore.isDokter) return
+    
+    // Try to get from authStore first (faster, no API call)
+    if (initializeFromAuthStore()) {
+      return
+    }
     
     isLoading.value = true
     try {
@@ -53,12 +69,12 @@ export const useDokterAvailability = defineStore('dokterAvailability', () => {
         return
       }
 
-      // Create timeout promise
+      // Create timeout promise with longer timeout (5 seconds instead of 2)
       const timeoutPromise = new Promise((resolve) => {
         setTimeout(() => {
-          console.warn('Fetch availability timeout')
+          console.warn('Fetch availability timeout after 5 seconds')
           resolve(null)
-        }, 2000) // 2 second timeout
+        }, 5000) // 5 second timeout - more reasonable
       })
 
       const response = await Promise.race([
@@ -68,6 +84,7 @@ export const useDokterAvailability = defineStore('dokterAvailability', () => {
 
       if (response?.data?.data) {
         isAvailable.value = response.data.data.tersedia || response.data.data.is_available || false
+        console.log('Fetched availability from API:', isAvailable.value)
       }
     } catch (err) {
       console.error('Error fetching availability:', err)
@@ -91,6 +108,7 @@ export const useDokterAvailability = defineStore('dokterAvailability', () => {
     isAvailable,
     isLoading,
     error,
+    initializeFromAuthStore,
     updateAvailability,
     fetchAvailability,
     toggleAvailability
