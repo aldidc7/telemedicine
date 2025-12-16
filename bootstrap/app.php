@@ -29,6 +29,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'validate-upload' => \App\Http\Middleware\ValidateFileUpload::class,
             'security-headers' => \App\Http\Middleware\AddSecurityHeaders::class,
         ]);
+
+        // Redirect unauthenticated API requests to 401 instead of /login
+        $middleware->redirectGuestsTo('/login');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
