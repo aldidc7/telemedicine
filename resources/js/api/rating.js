@@ -57,4 +57,4 @@ export const ratingAPI = {
     }
   }
 }
-export default api
+export default ratingAPI
