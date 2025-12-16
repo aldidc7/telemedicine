@@ -29,9 +29,29 @@ class ValidateFileUpload
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Debug: Log request details BEFORE attempting to access request body
+        // Note: We intentionally avoid accessing $request->all() or $request->files
+        // before the request is fully handled to prevent stream consumption
+        
+        \Log::info('ValidateFileUpload middleware - request incoming', [
+            'method' => $request->getMethod(),
+            'path' => $request->getPathInfo(),
+            'content_type' => $request->header('Content-Type'),
+            'content_length' => $request->header('Content-Length'),
+        ]);
+        
         // Check jika request mengandung file
-        if ($request->hasFile('photo') || $request->hasFile('file') || $request->hasFile('document') || $request->hasFile('profile_photo')) {
+        // This is safe - hasFile() just checks headers, doesn't consume body
+        $hasAnyFile = $request->hasFile('photo') || 
+                      $request->hasFile('file') || 
+                      $request->hasFile('document') || 
+                      $request->hasFile('profile_photo');
+        
+        if ($hasAnyFile) {
+            \Log::info('ValidateFileUpload - file input detected, validating...');
             $this->validateFiles($request);
+        } else {
+            \Log::info('ValidateFileUpload - no file inputs detected');
         }
 
         return $next($request);

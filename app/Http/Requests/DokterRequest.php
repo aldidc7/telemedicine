@@ -10,6 +10,19 @@ class DokterRequest extends FormRequest
     {
         return $this->user() !== null;
     }
+    
+    protected function prepareForValidation()
+    {
+        // Log incoming request data
+        \Log::info('DokterRequest - raw input', [
+            'all' => $this->all(),
+            'files' => $this->files->all(),
+            'has_profile_photo_file' => $this->hasFile('profile_photo'),
+        ]);
+        
+        // If place_of_birth is a string date, keep it as is (Laravel will validate)
+        // date validation will accept string dates
+    }
 
     public function rules(): array
     {
@@ -25,7 +38,7 @@ class DokterRequest extends FormRequest
             'address' => ['sometimes', 'string', 'max:500'],
             'gender' => ['sometimes', 'in:male,female,other'],
             'birthplace_city' => ['sometimes', 'string', 'max:100'],
-            'place_of_birth' => ['sometimes', 'date'],
+            'place_of_birth' => ['sometimes', 'nullable', 'date'],
             'blood_type' => ['sometimes', 'in:A,B,AB,O'],
             'marital_status' => ['sometimes', 'in:single,married,divorced,widowed'],
             'ethnicity' => ['sometimes', 'string', 'max:100'],
