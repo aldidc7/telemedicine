@@ -256,42 +256,54 @@ class DokterController extends Controller
      */
     public function update($id, DokterRequest $request)
     {
-        $dokter = Dokter::find($id);
+        try {
+            $dokter = Dokter::find($id);
 
-        if (!$dokter) {
-            return $this->notFoundResponse('Dokter tidak ditemukan');
+            if (!$dokter) {
+                return $this->notFoundResponse('Dokter tidak ditemukan');
+            }
+
+            // Authorization check - dokter hanya bisa update diri sendiri, admin bisa update semua
+            $user = Auth::user();
+            if ($user && $user->isDokter() && $user->id !== $dokter->user_id) {
+                return $this->forbiddenResponse('Anda tidak berhak mengupdate data dokter lain');
+            }
+
+            $dokter = $this->dokterService->updateDokter($dokter, $request->validated());
+
+            return $this->successResponse(
+                [
+                    'id' => $dokter->id,
+                    'name' => $dokter->user->name,
+                    'email' => $dokter->user->email,
+                    'phone_number' => $dokter->phone_number,
+                    'specialization' => $dokter->specialization,
+                    'license_number' => $dokter->license_number,
+                    'max_concurrent_consultations' => $dokter->max_concurrent_consultations,
+                    'is_available' => $dokter->is_available,
+                    'profile_photo' => $dokter->profile_photo,
+                    'address' => $dokter->address,
+                    'place_of_birth' => $dokter->place_of_birth,
+                    'birthplace_city' => $dokter->birthplace_city,
+                    'marital_status' => $dokter->marital_status,
+                    'gender' => $dokter->gender,
+                    'blood_type' => $dokter->blood_type,
+                    'ethnicity' => $dokter->ethnicity,
+                    'updated_at' => $dokter->updated_at,
+                ],
+                'Data dokter berhasil diupdate'
+            );
+        } catch (\Throwable $e) {
+            \Log::error('Error updating dokter profile: ' . $e->getMessage(), [
+                'dokter_id' => $id,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return $this->errorResponse(
+                'Gagal mengupdate data dokter: ' . $e->getMessage(),
+                500
+            );
         }
-
-        // Authorization check - dokter hanya bisa update diri sendiri, admin bisa update semua
-        $user = Auth::user();
-        if ($user && $user->isDokter() && $user->id !== $dokter->user_id) {
-            return $this->forbiddenResponse('Anda tidak berhak mengupdate data dokter lain');
-        }
-
-        $dokter = $this->dokterService->updateDokter($dokter, $request->validated());
-
-        return $this->successResponse(
-            [
-                'id' => $dokter->id,
-                'name' => $dokter->user->name,
-                'email' => $dokter->user->email,
-                'phone_number' => $dokter->phone_number,
-                'specialization' => $dokter->specialization,
-                'license_number' => $dokter->license_number,
-                'max_concurrent_consultations' => $dokter->max_concurrent_consultations,
-                'is_available' => $dokter->is_available,
-                'profile_photo' => $dokter->profile_photo,
-                'address' => $dokter->address,
-                'place_of_birth' => $dokter->place_of_birth,
-                'birthplace_city' => $dokter->birthplace_city,
-                'marital_status' => $dokter->marital_status,
-                'gender' => $dokter->gender,
-                'blood_type' => $dokter->blood_type,
-                'ethnicity' => $dokter->ethnicity,
-                'updated_at' => $dokter->updated_at,
-            ],
-            'Data dokter berhasil diupdate'
-        );
     }
 
     /**

@@ -142,17 +142,26 @@ class DokterService
             // Handle profile photo upload
             if (isset($data['profile_photo'])) {
                 if ($data['profile_photo'] instanceof \Illuminate\Http\UploadedFile) {
-                    // Delete old photo if exists
-                    if ($dokter->profile_photo) {
-                        $oldPath = str_replace('/storage/', '', $dokter->profile_photo);
-                        if (file_exists(storage_path('app/public/' . $oldPath))) {
-                            unlink(storage_path('app/public/' . $oldPath));
+                    try {
+                        // Delete old photo if exists
+                        if ($dokter->profile_photo) {
+                            $oldPath = str_replace('/storage/', '', $dokter->profile_photo);
+                            $fullPath = storage_path('app/public/' . $oldPath);
+                            if (file_exists($fullPath)) {
+                                @unlink($fullPath); // Suppress warnings if file doesn't exist
+                            }
                         }
+                        
+                        // Store new photo
+                        $path = $data['profile_photo']->store('dokter-profiles', 'public');
+                        if (!$path) {
+                            throw new \Exception('Failed to store profile photo');
+                        }
+                        $data['profile_photo'] = '/storage/' . $path;
+                    } catch (\Exception $e) {
+                        \Log::error('Profile photo upload failed: ' . $e->getMessage());
+                        throw $e;
                     }
-                    
-                    // Store new photo
-                    $path = $data['profile_photo']->store('dokter-profiles', 'public');
-                    $data['profile_photo'] = '/storage/' . $path;
                 }
             }
 
