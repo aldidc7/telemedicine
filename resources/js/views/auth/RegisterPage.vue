@@ -72,24 +72,8 @@
             />
           </div>
 
-          <!-- Spesialisasi (Dokter) -->
-          <div v-if="userType === 'dokter'">
-            <label class="block text-sm font-semibold text-gray-900 mb-2">Spesialisasi</label>
-            <select
-              v-model="form.specialization"
-              required
-              class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition bg-gray-50 hover:bg-white"
-            >
-              <option value="">Pilih spesialisasi</option>
-              <option value="Umum">Dokter Umum</option>
-              <option value="Jantung">Jantung</option>
-              <option value="Paru">Paru</option>
-              <option value="Gigi">Gigi</option>
-              <option value="Mata">Mata</option>
-              <option value="Saraf">Saraf</option>
-              <option value="Kulit">Kulit</option>
-            </select>
-          </div>
+          <!-- Spesialisasi (Optional - akan diisi di profile nanti) -->
+          <!-- Spesialisasi field removed from registration, will be filled in profile edit -->
 
           <!-- Phone -->
           <div>
@@ -264,14 +248,10 @@ const handleRegister = async () => {
     }
   }
 
-  // Validate dokter SIP and specialization
+  // Validate dokter SIP only (spesialisasi bisa diisi nanti)
   if (userType.value === 'dokter') {
     if (!form.value.sip || form.value.sip.trim() === '') {
       error.value = 'Nomor SIP harus diisi'
-      return
-    }
-    if (!form.value.specialization || form.value.specialization === '') {
-      error.value = 'Spesialisasi harus dipilih'
       return
     }
   }
@@ -297,7 +277,7 @@ const handleRegister = async () => {
       payload.role = 'pasien'
     } else {
       payload.sip = form.value.sip
-      payload.specialization = form.value.specialization
+      // spesialisasi akan diisi nanti di profile edit, tidak perlu saat register
       payload.role = 'dokter'
     }
 

@@ -60,7 +60,7 @@ class AuthService
             } elseif ($user->role === 'dokter') {
                 Dokter::create([
                     'user_id' => $user->id,
-                    'specialization' => $data['specialization'] ?? '',
+                    'specialization' => $data['specialization'] ?? null,  // Optional, dapat diisi di profile edit
                     'license_number' => $data['sip'] ?? '',
                     'phone_number' => $data['phone'] ?? null,
                     'is_available' => true,

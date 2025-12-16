@@ -471,23 +471,32 @@ const loadProfile = async () => {
       return
     }
 
-    profile.value = authStore.user || {}
-    profile.value.dokter_id = dokterData.id
-    profile.value.specialization = dokterData.specialization
-    profile.value.license_number = dokterData.license_number
-    profile.value.phone_number = dokterData.phone_number
-    profile.value.address = dokterData.address
-    profile.value.gender = dokterData.gender
-    profile.value.birthplace_city = dokterData.birthplace_city
-    profile.value.place_of_birth = dokterData.place_of_birth
-    profile.value.blood_type = dokterData.blood_type
-    profile.value.marital_status = dokterData.marital_status
-    profile.value.ethnicity = dokterData.ethnicity
-    profile.value.profile_photo = dokterData.profile_photo
+    // Properly merge user data dan dokter data
+    profile.value = {
+      // User data
+      id: authStore.user?.id,
+      name: authStore.user?.name || '',
+      email: authStore.user?.email || '',
+      role: authStore.user?.role || 'dokter',
+      
+      // Dokter data
+      dokter_id: dokterData.id,
+      specialization: dokterData.specialization || 'Belum diisi',
+      license_number: dokterData.license_number || '-',
+      phone_number: dokterData.phone_number || '-',
+      address: dokterData.address || '',
+      gender: dokterData.gender || '',
+      birthplace_city: dokterData.birthplace_city || '',
+      place_of_birth: dokterData.place_of_birth || '',
+      blood_type: dokterData.blood_type || '',
+      marital_status: dokterData.marital_status || '',
+      ethnicity: dokterData.ethnicity || '',
+      profile_photo: dokterData.profile_photo || ''
+    }
 
     editForm.value = {
-      name: profile.value.name || '',
-      email: profile.value.email || '',
+      name: profile.value.name,
+      email: profile.value.email,
       phone_number: profile.value.phone_number || '',
       gender: profile.value.gender || '',
       birthplace_city: profile.value.birthplace_city || '',
