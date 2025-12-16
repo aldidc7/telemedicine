@@ -165,7 +165,10 @@
             <p class="text-amber-50 text-sm">Penilaian dari pasien yang telah berkonsultasi</p>
           </div>
           <div class="p-10">
-            <RatingDisplay :dokter_id="profile.id" />
+            <RatingDisplay v-if="profile.dokter_id" :dokter_id="profile.dokter_id" />
+            <div v-else class="text-center py-8 text-gray-500">
+              <p>Memuat data rating...</p>
+            </div>
           </div>
         </div>
       </div>
@@ -449,7 +452,7 @@ const loadProfile = async () => {
       setTimeout(() => {
         console.warn('Profile load timeout')
         resolve(null)
-      }, 3000) // 3 second timeout
+      }, 5000) // 5 second timeout - increased from 3s for more reliable loading
     })
 
     const dokterResponse = await Promise.race([

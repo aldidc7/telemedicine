@@ -132,28 +132,59 @@ class DokterService
     {
         return DB::transaction(function () use ($dokter, $data) {
             // Update user data if provided
-            if (isset($data['nama']) || isset($data['email'])) {
-                $dokter->pengguna->update([
-                    'name' => $data['nama'] ?? $dokter->pengguna->name,
-                    'email' => $data['email'] ?? $dokter->pengguna->email,
+            if (isset($data['name']) || isset($data['email'])) {
+                $dokter->user->update([
+                    'name' => $data['name'] ?? $dokter->user->name,
+                    'email' => $data['email'] ?? $dokter->user->email,
                 ]);
             }
 
-            // Update dokter data
-            $dokterData = [];
-            $fields = ['specialization', 'address', 'phone_number'];
+            // Handle profile photo upload
+            if (isset($data['profile_photo'])) {
+                if ($data['profile_photo'] instanceof \Illuminate\Http\UploadedFile) {
+                    // Delete old photo if exists
+                    if ($dokter->profile_photo) {
+                        $oldPath = str_replace('/storage/', '', $dokter->profile_photo);
+                        if (file_exists(storage_path('app/public/' . $oldPath))) {
+                            unlink(storage_path('app/public/' . $oldPath));
+                        }
+                    }
+                    
+                    // Store new photo
+                    $path = $data['profile_photo']->store('dokter-profiles', 'public');
+                    $data['profile_photo'] = '/storage/' . $path;
+                }
+            }
+
+            // Update dokter data - all fields except user_id and timestamps
+            $dokterFields = [
+                'specialization', 'address', 'phone_number', 'license_number',
+                'gender', 'birthplace_city', 'place_of_birth', 'blood_type',
+                'marital_status', 'ethnicity', 'max_concurrent_consultations',
+                'is_available', 'tersedia', 'profile_photo'
+            ];
             
-            foreach ($fields as $field) {
+            $dokterData = [];
+            foreach ($dokterFields as $field) {
                 if (isset($data[$field])) {
                     $dokterData[$field] = $data[$field];
                 }
+            }
+
+            // Handle is_available and tersedia as synonyms
+            if (isset($data['is_available']) && !isset($data['tersedia'])) {
+                $dokterData['tersedia'] = $data['is_available'];
+                $dokterData['is_available'] = $data['is_available'];
+            } elseif (isset($data['tersedia']) && !isset($data['is_available'])) {
+                $dokterData['is_available'] = $data['tersedia'];
+                $dokterData['tersedia'] = $data['tersedia'];
             }
 
             if (!empty($dokterData)) {
                 $dokter->update($dokterData);
             }
 
-            return $dokter->fresh(['pengguna']);
+            return $dokter->fresh(['user']);
         });
     }
 
