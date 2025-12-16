@@ -86,13 +86,13 @@ class AdminController extends Controller
                 ->whereYear('created_at', $tahunIni)
                 ->count();
             $konsultasiSelesaiBulanIni = Konsultasi::where('status', 'closed')
-                ->whereMonth('waktu_selesai', $bulanIni)
-                ->whereYear('waktu_selesai', $tahunIni)
+                ->whereMonth('end_time', $bulanIni)
+                ->whereYear('end_time', $tahunIni)
                 ->count();
 
             // ===== DOCTOR AVAILABILITY =====
-            $dokterTersedia = Dokter::where('tersedia', true)->count();
-            $dokterTidakTersedia = Dokter::where('tersedia', false)->count();
+            $dokterTersedia = Dokter::where('is_available', true)->count();
+            $dokterTidakTersedia = Dokter::where('is_available', false)->count();
 
             // ===== USER ACTIVITY =====
             $userAktif = User::where('is_active', true)->count();
@@ -100,12 +100,12 @@ class AdminController extends Controller
 
             // ===== CONSULTATION METRICS =====
             $rataRataDurasiSelesai = Konsultasi::where('status', 'closed')
-                ->whereNotNull('waktu_mulai')
-                ->whereNotNull('waktu_selesai')
+                ->whereNotNull('start_time')
+                ->whereNotNull('end_time')
                 ->get()
                 ->avg(function ($k) {
-                    if ($k->waktu_mulai && $k->waktu_selesai) {
-                        return $k->waktu_mulai->diffInMinutes($k->waktu_selesai);
+                    if ($k->start_time && $k->end_time) {
+                        return $k->start_time->diffInMinutes($k->end_time);
                     }
                     return 0;
                 });
@@ -369,15 +369,15 @@ class AdminController extends Controller
                 $data['profile'] = [
                     'type' => 'dokter',
                     'specialization' => $dokter->specialization,
-                    'no_lisensi' => $dokter->no_lisensi,
-                    'no_telepon' => $dokter->no_telepon,
-                    'tersedia' => $dokter->tersedia,
-                    'maks_konsultasi_simultan' => $dokter->maks_konsultasi_simultan,
+                    'license_number' => $dokter->license_number,
+                    'phone_number' => $dokter->phone_number,
+                    'is_available' => $dokter->is_available,
+                    'max_concurrent_consultations' => $dokter->max_concurrent_consultations,
                 ];
                 $data['stats'] = [
                     'total_konsultasi' => $dokter->konsultasi()->count(),
-                    'konsultasi_aktif' => $dokter->konsultasi()->where('status', 'aktif')->count(),
-                    'konsultasi_selesai' => $dokter->konsultasi()->where('status', 'selesai')->count(),
+                    'konsultasi_aktif' => $dokter->konsultasi()->where('status', 'active')->count(),
+                    'konsultasi_selesai' => $dokter->konsultasi()->where('status', 'closed')->count(),
                 ];
             } elseif ($pengguna->isAdmin()) {
                 $admin = $pengguna->admin;
