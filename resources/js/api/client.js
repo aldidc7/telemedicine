@@ -41,17 +41,22 @@ client.interceptors.response.use(
       return Promise.reject(error)
     }
 
-    // Log error
-    const duration = error.config?.metadata 
-      ? performance.now() - error.config.metadata.startTime 
-      : 0
+    // Log error - skip Pusher/broadcasting errors in development
+    const isWebSocketError = error.config?.url?.includes('pusher') || 
+                           error.config?.url?.includes('broadcasting')
     
-    if (import.meta.env.DEV) {
-      console.error(`[ERROR] ${error.config?.method?.toUpperCase()} ${error.config?.url}`, {
-        status: error.response?.status,
-        message: error.message,
-        duration: `${duration.toFixed(2)}ms`,
-      })
+    if (!isWebSocketError || import.meta.env.PROD) {
+      const duration = error.config?.metadata 
+        ? performance.now() - error.config.metadata.startTime 
+        : 0
+      
+      if (import.meta.env.DEV && !isWebSocketError) {
+        console.error(`[ERROR] ${error.config?.method?.toUpperCase()} ${error.config?.url}`, {
+          status: error.response?.status,
+          message: error.message,
+          duration: `${duration.toFixed(2)}ms`,
+        })
+      }
     }
 
     // Attach error handler to error object

@@ -48,11 +48,17 @@ const offlineQueue = reactive({
 function initializeEcho() {
   if (echoInstance) return echoInstance
 
+  // Skip initialization if Pusher key is not configured (for development without WebSocket)
+  if (!import.meta.env.VITE_PUSHER_APP_KEY || import.meta.env.VITE_PUSHER_APP_KEY === 'local_key_12345') {
+    console.debug('ℹ️ WebSocket disabled - Pusher not configured for this environment')
+    return null
+  }
+
   try {
     window.Pusher = Pusher
     echoInstance = new Echo({
       broadcaster: 'pusher',
-      key: import.meta.env.VITE_PUSHER_APP_KEY || '',
+      key: import.meta.env.VITE_PUSHER_APP_KEY,
       cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER || 'mt1',
       encrypted: true,
       enableStats: false,
@@ -70,17 +76,26 @@ function initializeEcho() {
 
     echoInstance.connector.pusher.connection.bind('disconnected', () => {
       globalConnectionState.isConnected = false
-      console.log('🔴 WebSocket disconnected')
+      // Only log in dev mode to avoid console spam
+      if (import.meta.env.DEV) {
+        console.debug('🔴 WebSocket disconnected')
+      }
     })
 
     echoInstance.connector.pusher.connection.bind('error', (error) => {
       globalConnectionState.lastError = error
-      console.error('❌ WebSocket error:', error)
+      // Only log in dev mode to avoid console spam
+      if (import.meta.env.DEV) {
+        console.debug('⚠️ WebSocket error (this is OK if Pusher is not configured):', error)
+      }
     })
 
     return echoInstance
   } catch (error) {
-    console.error('Failed to initialize Echo:', error)
+    // Silently fail if Pusher is not available - application should work without it
+    if (import.meta.env.DEV) {
+      console.debug('ℹ️ WebSocket initialization skipped:', error.message)
+    }
     globalConnectionState.lastError = error.message
     return null
   }
@@ -119,13 +134,18 @@ export function useWebSocket() {
    * Initialize WebSocket connection on component mount
    */
   const initializeConnection = () => {
-    if (!import.meta.env.VITE_PUSHER_APP_KEY) {
-      console.warn('⚠️ Pusher app key not configured. WebSocket disabled.')
+    if (!import.meta.env.VITE_PUSHER_APP_KEY || import.meta.env.VITE_PUSHER_APP_KEY === 'local_key_12345') {
+      // Silently skip WebSocket for development without Pusher configured
       return
     }
 
     globalConnectionState.isConnecting = true
-    initializeEcho()
+    const echo = initializeEcho()
+    
+    if (!echo) {
+      globalConnectionState.isConnecting = false
+      return
+    }
 
     // Subscribe to private channels after initialization
     setTimeout(() => {
