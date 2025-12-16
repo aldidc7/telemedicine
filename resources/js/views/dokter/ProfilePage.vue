@@ -570,7 +570,9 @@ const getPhotoUrl = (photoPath) => {
     console.log('Invalid photo path:', photoPath, typeof photoPath)
     return ''
   }
-  const url = `/storage/${photoPath}`
+  // Photo path dari API sudah include /storage/ prefix
+  // Jangan add prefix lagi kalau sudah ada
+  const url = photoPath.startsWith('/storage/') ? photoPath : `/storage/${photoPath}`
   console.log('Photo URL:', url)
   return url
 }
