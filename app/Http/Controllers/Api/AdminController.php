@@ -790,19 +790,31 @@ class AdminController extends Controller
             $sort = $request->get('sort', 'created_at');
             $order = $request->get('order', 'desc');
 
-            $query = ActivityLog::with('user');
+            // Validate pagination parameters
+            $perPage = intval($perPage) > 0 ? intval($perPage) : 20;
+            $days = intval($days) > 0 ? intval($days) : 7;
+            
+            // Whitelist sort fields to prevent injection
+            $allowedSorts = ['created_at', 'id', 'user_id', 'action'];
+            $sort = in_array($sort, $allowedSorts) ? $sort : 'created_at';
+            $order = strtolower($order) === 'asc' ? 'asc' : 'desc';
+
+            $query = ActivityLog::query();
+
+            // Add user relationship with safety
+            try {
+                $query->with('user');
+            } catch (\Exception $e) {
+                \Log::warning('Could not load user relationship: ' . $e->getMessage());
+            }
 
             // Filters
-            if ($userId) {
-                $query->where('user_id', $userId);
+            if ($userId && is_numeric($userId)) {
+                $query->where('user_id', intval($userId));
             }
 
-            if ($aksi) {
-                $query->where('action', $aksi);
-            }
-
-            if ($tipeModel) {
-                // Note: tipe_model filtering removed - column not in schema
+            if ($aksi && !empty(trim($aksi))) {
+                $query->where('action', trim($aksi));
             }
 
             // Date filter
@@ -814,10 +826,25 @@ class AdminController extends Controller
             // Paginate
             $logs = $query->paginate($perPage);
 
+            // Map data to ensure proper structure
+            $logsData = $logs->items();
+            $mappedLogs = [];
+            foreach ($logsData as $log) {
+                $mappedLogs[] = [
+                    'id' => $log->id,
+                    'user_id' => $log->user_id,
+                    'user' => $log->user?->name ?? 'Unknown User',
+                    'action' => $log->action ?? '',
+                    'description' => $log->description ?? '',
+                    'ip_address' => $log->ip_address ?? '',
+                    'created_at' => $log->created_at?->toIso8601String() ?? null,
+                ];
+            }
+
             return response()->json([
                 'success' => true,
                 'pesan' => 'Log aktivitas berhasil diambil',
-                'data' => $logs->items(),
+                'data' => $mappedLogs,
                 'pagination' => [
                     'total' => $logs->total(),
                     'per_page' => $logs->perPage(),
