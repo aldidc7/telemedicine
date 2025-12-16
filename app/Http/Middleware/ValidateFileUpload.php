@@ -30,7 +30,7 @@ class ValidateFileUpload
     public function handle(Request $request, Closure $next): Response
     {
         // Check jika request mengandung file
-        if ($request->hasFile('photo') || $request->hasFile('file') || $request->hasFile('document')) {
+        if ($request->hasFile('photo') || $request->hasFile('file') || $request->hasFile('document') || $request->hasFile('profile_photo')) {
             $this->validateFiles($request);
         }
 
@@ -42,7 +42,7 @@ class ValidateFileUpload
      */
     private function validateFiles(Request $request): void
     {
-        $fileInputs = ['photo', 'file', 'document'];
+        $fileInputs = ['photo', 'file', 'document', 'profile_photo'];
 
         foreach ($fileInputs as $inputName) {
             if ($request->hasFile($inputName)) {
