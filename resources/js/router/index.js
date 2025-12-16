@@ -205,8 +205,8 @@ router.beforeEach(async (to, from, next) => {
       authStore.initialized = true
     }
   } else {
-    // Jika masih belum initialized dan route butuh auth, tunggu dengan timeout
-    if ((to.meta.requiresAuth || to.meta.requiresRole) && !authStore.initialized) {
+    // Jika masih belum initialized dan route butuh auth/guest, tunggu dengan timeout
+    if ((to.meta.requiresAuth || to.meta.requiresRole || to.meta.requiresGuest) && !authStore.initialized) {
       let waitCount = 0
       while (!authStore.initialized && waitCount < 50) {
         await new Promise(resolve => setTimeout(resolve, 100))
