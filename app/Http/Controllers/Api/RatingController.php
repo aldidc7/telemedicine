@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
 use App\Models\Rating;
 use App\Models\Konsultasi;
@@ -213,3 +213,4 @@ class RatingController extends Controller
         return $this->successResponse(['message' => 'Rating berhasil dihapus']);
     }
 }
+?>
