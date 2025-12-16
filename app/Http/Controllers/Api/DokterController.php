@@ -183,45 +183,59 @@ class DokterController extends Controller
      */
     public function show($id)
     {
-        $dokter = $this->dokterService->getDokterById($id);
+        try {
+            $dokter = $this->dokterService->getDokterById($id);
 
-        if (!$dokter) {
-            return $this->notFoundResponse('Dokter tidak ditemukan');
+            if (!$dokter) {
+                return $this->notFoundResponse('Dokter tidak ditemukan');
+            }
+
+            $jmlKonsultasiAktif = $dokter->konsultasi()
+                ->where('status', 'aktif')
+                ->count();
+
+            // Get rating statistics
+            $ratingStats = \App\Models\Rating::where('dokter_id', $dokter->id)
+                ->selectRaw('COUNT(*) as total_reviews, AVG(rating) as average_rating')
+                ->first();
+
+            return $this->successResponse(
+                [
+                    'id' => $dokter->id,
+                    'user_id' => $dokter->user_id,
+                    'nama' => $dokter->user->name,
+                    'email' => $dokter->user->email,
+                    'specialization' => $dokter->specialization,
+                    'license_number' => $dokter->license_number,
+                    'phone_number' => $dokter->phone_number,
+                    'is_available' => $dokter->is_available,
+                    'tersedia' => $dokter->tersedia ?? $dokter->is_available,
+                    'max_concurrent_consultations' => $dokter->max_concurrent_consultations,
+                    'konsultasi_aktif_sekarang' => $jmlKonsultasiAktif,
+                    'status_aktif' => $dokter->user->is_active,
+                    'rating' => round($ratingStats->average_rating ?? 0, 2),
+                    'total_reviews' => (int)($ratingStats->total_reviews ?? 0),
+                    'review_count' => (int)($ratingStats->total_reviews ?? 0),
+                    'created_at' => $dokter->created_at,
+                    'updated_at' => $dokter->updated_at,
+                    // Statistics
+                    'stats' => [
+                        'total_konsultasi' => $dokter->konsultasi()->count(),
+                        'konsultasi_menunggu' => $dokter->konsultasi()->where('status', 'menunggu')->count(),
+                        'konsultasi_aktif' => $jmlKonsultasiAktif,
+                        'konsultasi_selesai' => $dokter->konsultasi()->where('status', 'selesai')->count(),
+                        'konsultasi_selesai_bulan_ini' => $dokter->konsultasi()
+                            ->where('status', 'selesai')
+                            ->whereMonth('waktu_selesai', now()->month)
+                            ->count(),
+                    ]
+                ],
+                'Detail dokter berhasil diambil'
+            );
+        } catch (\Exception $e) {
+            \Log::error('Error in DokterController.show: ' . $e->getMessage());
+            return $this->errorResponse('Gagal mengambil detail dokter: ' . $e->getMessage(), 500);
         }
-
-        $jmlKonsultasiAktif = $dokter->konsultasi()
-            ->where('status', 'aktif')
-            ->count();
-
-        return $this->successResponse(
-            [
-                'id' => $dokter->id,
-                'user_id' => $dokter->user_id,
-                'nama' => $dokter->user->name,
-                'email' => $dokter->user->email,
-                'specialization' => $dokter->specialization,
-                'license_number' => $dokter->license_number,
-                'phone_number' => $dokter->phone_number,
-                'is_available' => $dokter->is_available,
-                'max_concurrent_consultations' => $dokter->max_concurrent_consultations,
-                'konsultasi_aktif_sekarang' => $jmlKonsultasiAktif,
-                'status_aktif' => $dokter->user->is_active,
-                'created_at' => $dokter->created_at,
-                'updated_at' => $dokter->updated_at,
-                // Statistics
-                'stats' => [
-                    'total_konsultasi' => $dokter->konsultasi()->count(),
-                    'konsultasi_menunggu' => $dokter->konsultasi()->where('status', 'menunggu')->count(),
-                    'konsultasi_aktif' => $jmlKonsultasiAktif,
-                    'konsultasi_selesai' => $dokter->konsultasi()->where('status', 'selesai')->count(),
-                    'konsultasi_selesai_bulan_ini' => $dokter->konsultasi()
-                        ->where('status', 'selesai')
-                        ->whereMonth('waktu_selesai', now()->month)
-                        ->count(),
-                ]
-            ],
-            'Detail dokter berhasil diambil'
-        );
     }
 
     /**
@@ -407,35 +421,45 @@ class DokterController extends Controller
      */
     public function updateKetersediaan($id, Request $request)
     {
-        $dokter = Dokter::find($id);
+        try {
+            $dokter = Dokter::find($id);
 
-        if (!$dokter) {
-            return $this->notFoundResponse('Dokter tidak ditemukan');
+            if (!$dokter) {
+                return $this->notFoundResponse('Dokter tidak ditemukan');
+            }
+
+            // Authorization check - dokter hanya bisa update diri sendiri
+            $user = Auth::user();
+            if ($user && $user->isDokter() && $user->id !== $dokter->user_id) {
+                return $this->forbiddenResponse('Anda tidak berhak mengupdate ketersediaan dokter lain');
+            }
+
+            // Validation - accept both 'tersedia' and 'is_available' from frontend
+            $validated = $request->validate([
+                'tersedia' => 'nullable|boolean',
+                'is_available' => 'nullable|boolean',
+            ]);
+
+            // Get the value from either field
+            $newStatus = $validated['tersedia'] ?? $validated['is_available'] ?? false;
+
+            $dokter = $this->dokterService->updateKetersediaan($dokter, ['tersedia' => $newStatus]);
+
+            return $this->successResponse(
+                [
+                    'id' => $dokter->id,
+                    'nama' => $dokter->user->name,
+                    'tersedia' => $dokter->is_available,
+                    'is_available' => $dokter->is_available,
+                    'status_text' => $dokter->is_available ? 'Online & Tersedia' : 'Offline / Sedang Istirahat',
+                    'updated_at' => $dokter->updated_at,
+                ],
+                'Status ketersediaan berhasil diupdate'
+            );
+        } catch (\Exception $e) {
+            \Log::error('Error updating dokter availability: ' . $e->getMessage());
+            return $this->errorResponse('Gagal mengupdate ketersediaan: ' . $e->getMessage(), 500);
         }
-
-        // Authorization check - dokter hanya bisa update diri sendiri
-        $user = Auth::user();
-        if ($user && $user->isDokter() && $user->id !== $dokter->user_id) {
-            return $this->forbiddenResponse('Anda tidak berhak mengupdate ketersediaan dokter lain');
-        }
-
-        // Validation - accept 'tersedia' from frontend, map to 'is_available' in database
-        $validated = $request->validate([
-            'tersedia' => 'required|boolean',
-        ]);
-
-        $dokter = $this->dokterService->updateKetersediaan($dokter, $validated);
-
-        return $this->successResponse(
-            [
-                'id' => $dokter->id,
-                'nama' => $dokter->user->name,
-                'tersedia' => $dokter->is_available,
-                'status_text' => $dokter->is_available ? 'Online & Tersedia' : 'Offline / Sedang Istirahat',
-                'updated_at' => $dokter->updated_at,
-            ],
-            'Status ketersediaan berhasil diupdate'
-        );
     }
 
     /**

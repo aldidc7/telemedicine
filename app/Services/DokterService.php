@@ -182,9 +182,24 @@ class DokterService
      */
     public function updateKetersediaan(Dokter $dokter, array $data)
     {
-        return $this->updateDokter($dokter, [
-            'jam_praktik' => $data['jam_praktik'] ?? $dokter->jam_praktik,
-            'hari_praktik' => $data['hari_praktik'] ?? $dokter->hari_praktik,
-        ]);
+        $updateData = [];
+        
+        // Handle 'tersedia' or 'is_available' field
+        if (isset($data['tersedia']) || isset($data['is_available'])) {
+            $isAvailable = $data['tersedia'] ?? $data['is_available'] ?? false;
+            $updateData['is_available'] = $isAvailable;
+        }
+        
+        // Handle jam_praktik if provided
+        if (isset($data['jam_praktik'])) {
+            $updateData['jam_praktik'] = $data['jam_praktik'];
+        }
+        
+        // Handle hari_praktik if provided
+        if (isset($data['hari_praktik'])) {
+            $updateData['hari_praktik'] = $data['hari_praktik'];
+        }
+
+        return $this->updateDokter($dokter, $updateData);
     }
 }
