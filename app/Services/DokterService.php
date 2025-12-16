@@ -24,6 +24,8 @@ class DokterService
         $search = $filters['search'] ?? null;
         $spesialisasi = $filters['spesialisasi'] ?? null;
         $status = $filters['status'] ?? null;
+        $isVerified = $filters['is_verified'] ?? null;
+        $tersedia = $filters['tersedia'] ?? null;
         $sort = $filters['sort'] ?? 'created_at';
         $order = $filters['order'] ?? 'desc';
 
@@ -47,6 +49,16 @@ class DokterService
             $query->whereHas('user', function ($q) use ($status) {
                 $q->where('is_active', $status === 'aktif');
             });
+        }
+
+        // Filter by verification status
+        if ($isVerified !== null) {
+            $query->where('is_verified', $isVerified);
+        }
+
+        // Filter by availability
+        if ($tersedia !== null) {
+            $query->where('tersedia', $tersedia);
         }
 
         // Sort

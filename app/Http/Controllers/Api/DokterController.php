@@ -61,11 +61,10 @@ class DokterController extends Controller
      */
     public function index(Request $request)
     {
-        // Authorization check - hanya admin
-        if (!Auth::user()?->isAdmin()) {
-            return $this->forbiddenResponse('Anda tidak berhak mengakses data dokter');
-        }
-
+        // Get user role
+        $user = Auth::user();
+        $isAdmin = $user?->isAdmin();
+        
         $filters = [
             'per_page' => $request->get('per_page', 15),
             'search' => $request->get('search'),
@@ -74,6 +73,12 @@ class DokterController extends Controller
             'sort' => $request->get('sort', 'created_at'),
             'order' => $request->get('order', 'desc'),
         ];
+
+        // Non-admin users (pasien/dokter) hanya bisa lihat dokter yang verified dan tersedia
+        if (!$isAdmin) {
+            $filters['is_verified'] = true;
+            $filters['tersedia'] = true;
+        }
 
         $dokter = $this->dokterService->getAllDokter($filters);
 
