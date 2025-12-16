@@ -202,29 +202,36 @@ class AdminController extends Controller
                             'id' => $k->id,
                             'pasien' => $k->pasien?->user?->name ?? 'N/A',
                             'dokter' => $k->dokter?->user?->name ?? 'Belum ditugaskan',
-                            'jenis_keluhan' => $k->complaint_type,
+                            'jenis_keluhan' => $k->complaint_type ?? '',
                             'status' => $k->status,
-                            'created_at' => $k->created_at->toIso8601String(),
+                            'created_at' => $k->created_at?->toIso8601String() ?? null,
                         ];
-                    }),
+                    })->toArray(),
 
                     'recent_activities' => $aktivitasTerbaru->map(function ($a) {
                         return [
                             'id' => $a->id,
                             'user' => $a->user?->name ?? 'Unknown',
-                            'action' => $a->action,
-                            'description' => $a->description,
-                            'ip_address' => $a->ip_address,
-                            'created_at' => $a->created_at->toIso8601String(),
+                            'action' => $a->action ?? '',
+                            'description' => $a->description ?? '',
+                            'ip_address' => $a->ip_address ?? '',
+                            'created_at' => $a->created_at?->toIso8601String() ?? null,
                         ];
-                    }),
+                    })->toArray(),
                 ],
             ], 200);
         } catch (\Exception $e) {
+            \Log::error('Dashboard error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'success' => false,
                 'pesan' => 'Error mengambil dashboard',
                 'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
             ], 500);
         }
     }
@@ -792,10 +799,17 @@ class AdminController extends Controller
                 ],
             ], 200);
         } catch (\Exception $e) {
+            \Log::error('LogAktivitas error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'success' => false,
                 'pesan' => 'Error mengambil log aktivitas',
                 'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
             ], 500);
         }
     }
