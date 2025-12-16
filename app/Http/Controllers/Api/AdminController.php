@@ -803,9 +803,9 @@ class AdminController extends Controller
 
             // Add user relationship with safety
             try {
-                $query->with('user');
+                $query->with('pengguna');
             } catch (\Exception $e) {
-                \Log::warning('Could not load user relationship: ' . $e->getMessage());
+                \Log::warning('Could not load pengguna relationship: ' . $e->getMessage());
             }
 
             // Filters
@@ -833,7 +833,7 @@ class AdminController extends Controller
                 $mappedLogs[] = [
                     'id' => $log->id,
                     'user_id' => $log->user_id,
-                    'user' => $log->user?->name ?? 'Unknown User',
+                    'user' => $log->pengguna?->name ?? 'Unknown User',
                     'action' => $log->action ?? '',
                     'description' => $log->description ?? '',
                     'ip_address' => $log->ip_address ?? '',
