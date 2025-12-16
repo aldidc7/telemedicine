@@ -257,6 +257,15 @@ class DokterController extends Controller
     public function update($id, DokterRequest $request)
     {
         try {
+            // Debug logging
+            \Log::info('Dokter update request', [
+                'dokter_id' => $id,
+                'has_file' => $request->hasFile('profile_photo'),
+                'file_size' => $request->hasFile('profile_photo') ? $request->file('profile_photo')->getSize() : null,
+                'file_mime' => $request->hasFile('profile_photo') ? $request->file('profile_photo')->getMimeType() : null,
+                'request_keys' => array_keys($request->all()),
+            ]);
+            
             $dokter = Dokter::find($id);
 
             if (!$dokter) {
