@@ -47,7 +47,7 @@ class PasienObserver
         // Log patient creation untuk audit trail
         \App\Models\AuditLog::logPatientAccess(
             auth()->id() ?? null,
-            $pasien->id,
+            (int) $pasien->id,
             'create',
             "Patient baru dibuat: {$pasien->medical_record_number}"
         );
@@ -86,7 +86,7 @@ class PasienObserver
         if (!empty($changes)) {
             \App\Models\AuditLog::logPatientAccess(
                 auth()->id() ?? null,
-                $pasien->id,
+                (int) $pasien->id,
                 'update',
                 "Patient diupdate: " . json_encode(array_keys($changes))
             );
@@ -100,7 +100,7 @@ class PasienObserver
     {
         \App\Models\AuditLog::logPatientAccess(
             auth()->id() ?? null,
-            $pasien->id,
+            (int) $pasien->id,
             'delete',
             "Patient dihapus: {$pasien->medical_record_number}"
         );

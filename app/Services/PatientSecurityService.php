@@ -58,7 +58,7 @@ class PatientSecurityService
      * @param string $nik - Raw NIK
      * @return string Encrypted NIK
      */
-    public static function encryptNIK($nik): string
+    public static function encryptNIK($nik): ?string
     {
         if (empty($nik)) {
             return null;
@@ -66,8 +66,8 @@ class PatientSecurityService
         
         try {
             return Crypt::encryptString($nik);
-        } catch (\Exception $e) {
-            \Log::error('Failed to encrypt NIK: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            \Log::error('Failed to encrypt NIK: ' . ($e instanceof \Exception ? $e->getMessage() : 'Unknown error'));
             throw $e;
         }
     }
@@ -87,7 +87,7 @@ class PatientSecurityService
         try {
             return Crypt::decryptString($encryptedNIK);
         } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
-            \Log::warning('Failed to decrypt NIK: ' . $e->getMessage());
+            \Log::warning('Failed to decrypt NIK: ' . ($e instanceof \Exception ? $e->getMessage() : 'Decryption failed'));
             return null;
         }
     }
