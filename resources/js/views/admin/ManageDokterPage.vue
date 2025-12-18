@@ -34,6 +34,8 @@
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8 hover:shadow-lg transition">
       <div class="flex flex-col md:flex-row gap-4">
         <input
+          id="search-dokter"
+          name="search"
           v-model="search"
           type="text"
           placeholder="Cari nama atau email..."
@@ -41,6 +43,8 @@
           @keyup.enter="loadData"
         />
         <select
+          id="filter-spesialisasi"
+          name="specialization"
           v-model="filterSpesialisasi"
           class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-indigo-500 transition text-gray-700"
         >
