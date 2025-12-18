@@ -37,7 +37,7 @@
       <!-- Main Card -->
       <div class="bg-white rounded-lg shadow-md overflow-hidden">
         <!-- Profile Header -->
-        <div class="bg-gradient-to-r from-green-500 to-green-600 px-6 py-8 text-white">
+        <div class="bg-linear-to-r from-green-500 to-green-600 px-6 py-8 text-white">
           <div class="flex items-start justify-between">
             <div>
               <h2 class="text-2xl font-bold">{{ pasien.pengguna?.name }}</h2>
