@@ -145,12 +145,33 @@
                 </span>
               </td>
               <td class="px-8 py-5 text-center">
-                <div class="flex gap-2 justify-center">
+                <div class="flex gap-2 justify-center flex-wrap">
+                  <button
+                    @click="goToProfile(dokter.id)"
+                    class="px-3 py-2 rounded-lg text-xs font-bold bg-indigo-100 text-indigo-800 hover:bg-indigo-200 transition flex items-center gap-1"
+                    title="Lihat profil dokter"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    Lihat
+                  </button>
+                  <button
+                    @click="goToEdit(dokter.id)"
+                    class="px-3 py-2 rounded-lg text-xs font-bold bg-blue-100 text-blue-800 hover:bg-blue-200 transition flex items-center gap-1"
+                    title="Edit data dokter"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Edit
+                  </button>
                   <button
                     @click="handleToggleStatus(dokter.id, dokter.is_active)"
                     :disabled="toggleStatus.isLoading.value"
                     :class="[
-                      'px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1',
+                      'px-3 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1',
                       toggleStatus.isLoading.value ? 'opacity-50 cursor-not-allowed' : '',
                       dokter.is_active
                         ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
@@ -170,7 +191,7 @@
                   </button>
                   <button
                     @click="hapus(dokter.id)"
-                    class="px-4 py-2 rounded-lg text-xs font-bold bg-red-100 text-red-800 hover:bg-red-200 transition flex items-center gap-1"
+                    class="px-3 py-2 rounded-lg text-xs font-bold bg-red-100 text-red-800 hover:bg-red-200 transition flex items-center gap-1"
                   >
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-9l-1 1H5v2h14V4z" />
@@ -370,5 +391,19 @@ const handleToggleStatus = async (dokterId, isActive) => {
     successMessage.value = null
     errorMessage.value = ErrorHandler.getUserMessage(error)
   }
+}
+
+/**
+ * Navigate to doctor profile view
+ */
+const goToProfile = (dokterId) => {
+  window.location.href = `/admin/dokter/${dokterId}`
+}
+
+/**
+ * Navigate to doctor edit page
+ */
+const goToEdit = (dokterId) => {
+  window.location.href = `/admin/dokter/${dokterId}/edit`
 }
 </script>

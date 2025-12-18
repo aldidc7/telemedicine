@@ -14,22 +14,47 @@
 
     <!-- Search & Filter -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8 hover:shadow-lg transition">
-      <div class="flex flex-col md:flex-row gap-4">
-        <input
-          v-model="search"
-          type="text"
-          placeholder="Cari nama, email, atau telepon..."
+      <div class="flex flex-col md:flex-row gap-4 items-end">
+        <!-- Search Input with Live Search Indicator -->
+        <div class="flex-1 relative">
+          <input
+            id="search-pasien"
+            name="search"
+            v-model="search"
+            type="text"
+            placeholder="Cari nama, email, MRN (real-time)..."
+            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-indigo-500 transition text-gray-700"
+            @keyup.enter="loadData"
+          />
+          <!-- Search Indicator -->
+          <div v-if="searching" class="absolute right-3 top-3 flex items-center gap-1">
+            <div class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+            <span class="text-xs text-indigo-600 font-medium">Searching...</span>
+          </div>
+        </div>
+
+        <!-- Filter Status -->
+        <select
+          id="filter-status"
+          name="status"
+          v-model="filterStatus"
           class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-indigo-500 transition text-gray-700"
-          @keyup.enter="loadData"
-        />
-        <button
-          @click="loadData"
-          class="px-8 py-3 bg-linear-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition font-semibold flex items-center gap-2"
         >
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M15.5 1h-8C6.12 1 5 2.12 5 3.5v17C5 21.88 6.12 23 7.5 23h8c1.38 0 2.5-1.12 2.5-2.5v-17C18 2.12 16.88 1 15.5 1zm-4 21c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4.5-4H7V4h9v14z"/>
+          <option value="">Semua Status</option>
+          <option value="active">Aktif</option>
+          <option value="inactive">Nonaktif</option>
+        </select>
+
+        <!-- Clear Button -->
+        <button
+          @click="clearFilters"
+          :disabled="!search && !filterStatus"
+          class="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition font-semibold flex items-center gap-2"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
-          Cari
+          Clear
         </button>
       </div>
     </div>
@@ -56,7 +81,7 @@
         <table class="w-full">
           <thead class="bg-linear-to-r from-indigo-50 to-purple-50 border-b border-gray-200">
             <tr>
-              <th class="px-8 py-4 text-left text-sm font-bold text-gray-700">Nama Pasien</th>
+              <th class="px-8 py-4 text-left text-sm font-bold text-gray-700">MRN / Nama</th>
               <th class="px-8 py-4 text-left text-sm font-bold text-gray-700">Email</th>
               <th class="px-8 py-4 text-left text-sm font-bold text-gray-700">Telepon</th>
               <th class="px-8 py-4 text-center text-sm font-bold text-gray-700">Status</th>
@@ -65,16 +90,19 @@
           </thead>
           <tbody class="divide-y divide-gray-100">
             <tr v-for="pasien in pasienList" :key="pasien.id" class="hover:bg-indigo-50 transition">
-              <td class="px-8 py-5 text-sm font-semibold text-gray-900">
-                <div class="flex items-center gap-2">
-                  <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 12a3 3 0 110-6 3 3 0 010 6zm0 0a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6z" />
-                  </svg>
-                  {{ pasien.pengguna?.name || pasien.nama }}
+              <td class="px-8 py-5">
+                <div class="flex flex-col gap-1">
+                  <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 12a3 3 0 110-6 3 3 0 010 6zm0 0a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6z" />
+                    </svg>
+                    <span class="font-semibold text-gray-900">{{ pasien.pengguna?.name || pasien.nama }}</span>
+                  </div>
+                  <span class="text-xs text-indigo-600 font-mono ml-7">{{ pasien.medical_record_number || 'N/A' }}</span>
                 </div>
               </td>
               <td class="px-8 py-5 text-sm text-gray-600">{{ pasien.pengguna?.email || pasien.email }}</td>
-              <td class="px-8 py-5 text-sm text-gray-600">{{ pasien.no_telepon || '-' }}</td>
+              <td class="px-8 py-5 text-sm text-gray-600">{{ pasien.phone_number || '-' }}</td>
               <td class="px-8 py-5 text-center">
                 <span :class="[
                   'px-3 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1',
@@ -92,11 +120,22 @@
                 </span>
               </td>
               <td class="px-8 py-5 text-center">
-                <div class="flex gap-2 justify-center">
+                <div class="flex gap-2 justify-center flex-wrap">
+                  <button
+                    @click="goToProfile(pasien.id)"
+                    class="px-3 py-2 rounded-lg text-xs font-bold bg-indigo-100 text-indigo-800 hover:bg-indigo-200 transition flex items-center gap-1"
+                    title="Lihat profil pasien"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    Lihat
+                  </button>
                   <button
                     @click="toggleStatus(pasien, pasien.pengguna?.is_active)"
                     :class="[
-                      'px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1',
+                      'px-3 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1',
                       pasien.pengguna?.is_active
                         ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
                         : 'bg-green-100 text-green-800 hover:bg-green-200'
@@ -112,7 +151,7 @@
                   </button>
                   <button
                     @click="hapus(pasien.id)"
-                    class="px-4 py-2 rounded-lg text-xs font-bold bg-red-100 text-red-800 hover:bg-red-200 transition flex items-center gap-1"
+                    class="px-3 py-2 rounded-lg text-xs font-bold bg-red-100 text-red-800 hover:bg-red-200 transition flex items-center gap-1"
                   >
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-9l-1 1H5v2h14V4z" />
@@ -130,30 +169,88 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { adminAPI } from '@/api/admin'
 import { pasienAPI } from '@/api/pasien'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
-import EmptyState from '@/components/EmptyState.vue'
+import ErrorAlert from '@/components/ErrorAlert.vue'
+import SuccessAlert from '@/components/SuccessAlert.vue'
+
+/**
+ * Debounce utility - delay function execution
+ */
+function debounce(func, wait) {
+  let timeout
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout)
+      func(...args)
+    }
+    clearTimeout(timeout)
+    timeout = setTimeout(later, wait)
+  }
+}
 
 const loading = ref(false)
+const searching = ref(false)
 const search = ref('')
+const filterStatus = ref('')
 const pasienList = ref([])
+const errorMessage = ref(null)
+const successMessage = ref(null)
 
 onMounted(() => {
   loadData()
 })
 
+/**
+ * Debounced search function - triggers after 500ms of inactivity
+ */
+const debouncedSearch = debounce(async () => {
+  await loadData()
+}, 500)
+
+/**
+ * Clear all filters and reset
+ */
+const clearFilters = async () => {
+  search.value = ''
+  filterStatus.value = ''
+  await loadData()
+}
+
 const loadData = async () => {
   loading.value = true
   try {
-    const response = await pasienAPI.getList({ search: search.value })
+    searching.value = true
+    const response = await pasienAPI.getList({ 
+      search: search.value,
+      status: filterStatus.value
+    })
     pasienList.value = response.data.data
+    searching.value = false
   } catch (error) {
+    searching.value = false
+    errorMessage.value = 'Gagal memuat data pasien'
     console.error('Error loading pasien:', error)
   } finally {
     loading.value = false
   }
+}
+
+// Watch for search changes - live search with debounce
+watch(search, () => {
+  debouncedSearch()
+})
+
+// Watch for filter changes - immediate search
+watch(filterStatus, async () => {
+  await loadData()
+})
+
+const goToProfile = (pasienId) => {
+  // Navigate to pasien detail page
+  window.location.href = `/admin/pasien/${pasienId}`
 }
 
 const toggleStatus = async (pasienData, isActive) => {
@@ -163,23 +260,24 @@ const toggleStatus = async (pasienData, isActive) => {
     } else {
       await adminAPI.activateUser(pasienData.user_id)
     }
+    successMessage.value = 'Status pasien berhasil diubah'
     await loadData()
   } catch (error) {
+    errorMessage.value = 'Gagal mengubah status pasien'
     console.error('Error toggling status:', error)
-    alert('Gagal mengubah status')
   }
 }
 
 const hapus = async (pasienId) => {
-  if (!confirm('Yakin ingin menghapus pasien ini?')) return
+  if (!confirm('Yakin ingin menghapus pasien ini? Data tidak bisa dipulihkan.')) return
 
   try {
     await pasienAPI.delete(pasienId)
+    successMessage.value = 'Pasien berhasil dihapus'
     await loadData()
-    alert('Pasien berhasil dihapus')
   } catch (error) {
+    errorMessage.value = 'Gagal menghapus pasien'
     console.error('Error deleting pasien:', error)
-    alert('Gagal menghapus pasien')
   }
 }
 </script>
