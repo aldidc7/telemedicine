@@ -130,9 +130,33 @@ const routes = [
     meta: { requiresAuth: true, requiresRole: 'admin' }
   },
   {
+    path: '/admin/pasien/:id',
+    name: 'admin-pasien-profile',
+    component: () => import('@/views/admin/PasienProfilePage.vue'),
+    meta: { requiresAuth: true, requiresRole: 'admin' }
+  },
+  {
+    path: '/admin/pasien/:id/edit',
+    name: 'admin-pasien-edit',
+    component: () => import('@/views/admin/PasienEditPage.vue'),
+    meta: { requiresAuth: true, requiresRole: 'admin' }
+  },
+  {
     path: '/admin/dokter',
     name: 'admin-dokter',
     component: () => import('@/views/admin/ManageDokterPage.vue'),
+    meta: { requiresAuth: true, requiresRole: 'admin' }
+  },
+  {
+    path: '/admin/dokter/:id',
+    name: 'admin-dokter-profile',
+    component: () => import('@/views/admin/DokterProfilePage.vue'),
+    meta: { requiresAuth: true, requiresRole: 'admin' }
+  },
+  {
+    path: '/admin/dokter/:id/edit',
+    name: 'admin-dokter-edit',
+    component: () => import('@/views/admin/DokterEditPage.vue'),
     meta: { requiresAuth: true, requiresRole: 'admin' }
   },
   {
