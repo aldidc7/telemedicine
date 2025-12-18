@@ -184,6 +184,20 @@ const routes = [
     meta: { requiresAuth: true, requiresRole: 'admin' }
   },
 
+  // ===== SUPERADMIN ROUTES =====
+  {
+    path: '/superadmin/system-logs',
+    name: 'superadmin-system-logs',
+    component: () => import('@/views/superadmin/SystemLogsPage.vue'),
+    meta: { requiresAuth: true, requiresRole: 'superadmin' }
+  },
+  {
+    path: '/superadmin/manage-users',
+    name: 'superadmin-manage-users',
+    component: () => import('@/views/superadmin/ManageUserPage.vue'),
+    meta: { requiresAuth: true, requiresRole: 'superadmin' }
+  },
+
   // ===== DEBUG ROUTES =====
   {
     path: '/diagnostic',

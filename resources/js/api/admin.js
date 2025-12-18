@@ -35,5 +35,16 @@ export const adminAPI = {
 
   getStatistik() {
     return client.get('/admin/statistik')
+  },
+
+  /**
+   * Superadmin API methods
+   */
+  getSystemLogs(params = {}) {
+    return client.get('/superadmin/system-logs', { params })
+  },
+
+  updateUserStatus(id, data) {
+    return client.put(`/admin/pengguna/${id}/status`, data)
   }
 }
