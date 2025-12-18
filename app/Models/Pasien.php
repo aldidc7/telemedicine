@@ -13,19 +13,23 @@ use Illuminate\Database\Eloquent\Model;
  * Model ini merepresentasikan tabel 'patients' di database.
  * Menyimpan data demografi dan informasi medis dasar pasien.
  * 
+ * KEAMANAN DATA:
+ * - NIK dienkripsi sebagai PII (Personally Identifiable Information)
+ * - MRN (Medical Record Number) adalah identifier klinis
+ * - User ID adalah identifier sistem internal
+ * 
  * @property int $id - ID pasien
  * @property int $user_id - Foreign key ke users
- * @property string $nik - Nomor Identitas Kependudukan
- * @property \Date $tgl_lahir - Tanggal lahir
- * @property string $jenis_kelamin - Jenis kelamin
- * @property string $alamat - Alamat tinggal
- * @property string $no_telepon - Nomor telepon
- * @property string $nama_kontak_darurat - Nama kontak darurat
- * @property string $no_kontak_darurat - No. kontak darurat
- * @property string $golongan_darah - Golongan darah
+ * @property string $medical_record_number - MRN (format: RM-YYYY-XXXXX)
+ * @property string $encrypted_nik - Nomor Identitas Kependudukan (Encrypted)
+ * @property \Date $date_of_birth - Tanggal lahir
+ * @property string $gender - Jenis kelamin
+ * @property string $address - Alamat tinggal
+ * @property string $phone_number - Nomor telepon
+ * @property string $blood_type - Golongan darah
  * 
  * @author Aplikasi Telemedicine RSUD dr. R. Soedarsono
- * @version 1.0
+ * @version 2.0
  */
 class Pasien extends Model
 {
@@ -45,7 +49,8 @@ class Pasien extends Model
      */
     protected $fillable = [
         'user_id',
-        'nik',
+        'medical_record_number',
+        'encrypted_nik',
         'date_of_birth',
         'place_of_birth',
         'gender',
@@ -69,6 +74,15 @@ class Pasien extends Model
         'date_of_birth' => 'date',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+    ];
+
+    /**
+     * Hidden attributes (jangan include dalam API response default)
+     * 
+     * @var array
+     */
+    protected $hidden = [
+        'encrypted_nik',  // NIK never expose di API response
     ];
 
     // ============ RELATIONSHIPS (RELASI) ============
@@ -112,6 +126,20 @@ class Pasien extends Model
     public function rekamMedis()
     {
         return $this->hasMany(RekamMedis::class, 'patient_id');
+    }
+
+    /**
+     * Relasi ke model MedicalRecord (Pasien punya medical records)
+     * 
+     * Gunakan:
+     * $pasien->medicalRecords  // Ambil semua medical records pasien
+     * $pasien->medicalRecords()->recent()->get()
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function medicalRecords()
+    {
+        return $this->hasMany(MedicalRecord::class, 'patient_id');
     }
 
     // ============ HELPER METHODS ============

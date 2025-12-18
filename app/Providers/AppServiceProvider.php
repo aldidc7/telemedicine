@@ -20,6 +20,7 @@ use App\Services\PasienService;
 use App\Services\DokterService;
 use App\Services\PesanChatService;
 use App\Services\RatingService;
+use App\Observers\PasienObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -59,14 +60,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Register Policies
+        // ===== Register Model Observers =====
+        Pasien::observe(PasienObserver::class);
+
+        // ===== Register Policies =====
         Gate::policy(Pasien::class, PasienPolicy::class);
         Gate::policy(Dokter::class, DokterPolicy::class);
         Gate::policy(Konsultasi::class, KonsultasiPolicy::class);
         Gate::policy(PesanChat::class, PesanChatPolicy::class);
         Gate::policy(User::class, AdminPolicy::class);
 
-        // Define custom gates untuk role-based access
+        // ===== Define custom gates untuk role-based access =====
         Gate::define('is-admin', function (User $user) {
             return $user->role === 'admin';
         });
