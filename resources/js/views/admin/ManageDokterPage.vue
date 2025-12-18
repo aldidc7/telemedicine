@@ -32,16 +32,26 @@
 
     <!-- Search & Filter -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8 hover:shadow-lg transition">
-      <div class="flex flex-col md:flex-row gap-4">
-        <input
-          id="search-dokter"
-          name="search"
-          v-model="search"
-          type="text"
-          placeholder="Cari nama atau email..."
-          class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-indigo-500 transition text-gray-700"
-          @keyup.enter="loadData"
-        />
+      <div class="flex flex-col md:flex-row gap-4 items-end">
+        <!-- Search Input with Live Search Indicator -->
+        <div class="flex-1 relative">
+          <input
+            id="search-dokter"
+            name="search"
+            v-model="search"
+            type="text"
+            placeholder="Cari nama atau email (real-time)..."
+            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-indigo-500 transition text-gray-700"
+            @keyup.enter="loadData"
+          />
+          <!-- Search Indicator -->
+          <div v-if="searching" class="absolute right-3 top-3 flex items-center gap-1">
+            <div class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+            <span class="text-xs text-indigo-600 font-medium">Searching...</span>
+          </div>
+        </div>
+        
+        <!-- Filter Spesialisasi -->
         <select
           id="filter-spesialisasi"
           name="specialization"
@@ -58,14 +68,17 @@
           <option value="Kulit">Kulit</option>
           <option value="Ortopedi">Ortopedi</option>
         </select>
+        
+        <!-- Clear Button -->
         <button
-          @click="loadData"
-          class="px-8 py-3 bg-linear-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition font-semibold flex items-center gap-2"
+          @click="clearFilters"
+          :disabled="!search && !filterSpesialisasi"
+          class="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition font-semibold flex items-center gap-2"
         >
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M15.5 1h-8C6.12 1 5 2.12 5 3.5v17C5 21.88 6.12 23 7.5 23h8c1.38 0 2.5-1.12 2.5-2.5v-17C18 2.12 16.88 1 15.5 1zm-4 21c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4.5-4H7V4h9v14z"/>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
-          Cari
+          Clear
         </button>
       </div>
     </div>
@@ -210,7 +223,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { dokterAPI } from '@/api/dokter'
 import { adminAPI } from '@/api/admin'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
@@ -222,12 +235,28 @@ import { usePagination } from '@/utils/usePagination'
 import ErrorHandler from '@/utils/ErrorHandler'
 import { Sanitizer } from '@/utils/Validation'
 
+/**
+ * Debounce utility - delay function execution
+ */
+function debounce(func, wait) {
+  let timeout
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout)
+      func(...args)
+    }
+    clearTimeout(timeout)
+    timeout = setTimeout(later, wait)
+  }
+}
+
 // Loading states
 const { isLoading: generalLoading } = useLoadingState()
 const search = ref('')
 const filterSpesialisasi = ref('')
 const errorMessage = ref(null)
 const successMessage = ref(null)
+const searching = ref(false)
 
 // Pagination
 const {
@@ -241,14 +270,17 @@ const {
   changePerPage
 } = usePagination(async (config) => {
   try {
+    searching.value = true
     const response = await dokterAPI.getList({
       page: config.page,
       per_page: config.per_page,
       search: search.value ? Sanitizer.trim(search.value) : undefined,
       specialization: filterSpesialisasi.value || undefined,
     })
+    searching.value = false
     return response.data
   } catch (err) {
+    searching.value = false
     errorMessage.value = ErrorHandler.getUserMessage(err)
     throw err
   }
@@ -260,10 +292,36 @@ onMounted(() => {
   fetchPage(1)
 })
 
+/**
+ * Debounced search function - triggers after 500ms of inactivity
+ */
+const debouncedSearch = debounce(async () => {
+  await fetchPage(1)
+}, 500)
+
+/**
+ * Clear all filters and reset
+ */
+const clearFilters = async () => {
+  search.value = ''
+  filterSpesialisasi.value = ''
+  await fetchPage(1)
+}
+
 const loadData = async () => {
   errorMessage.value = null
   await fetchPage(1)
 }
+
+// Watch for search changes - live search with debounce
+watch(search, () => {
+  debouncedSearch()
+})
+
+// Watch for filter changes - immediate search
+watch(filterSpesialisasi, async () => {
+  await fetchPage(1)
+})
 
 const toggleStatus = useAsyncOperation(async (dokterId, isActive) => {
   const dokterData = dokterList.value.find(d => d.id === dokterId)
