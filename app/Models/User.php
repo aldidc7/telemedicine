@@ -290,6 +290,19 @@ class User extends Authenticatable
     }
 
     /**
+     * Cek apakah user adalah superadmin
+     * 
+     * Gunakan:
+     * if ($user->isSuperAdmin()) { ... }
+     * 
+     * @return bool true jika role = 'superadmin'
+     */
+    public function isSuperAdmin()
+    {
+        return $this->role === 'superadmin';
+    }
+
+    /**
      * Cek apakah user sedang aktif
      * 
      * Gunakan:
