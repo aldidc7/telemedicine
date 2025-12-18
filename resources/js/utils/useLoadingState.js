@@ -60,10 +60,20 @@ export function useAsyncOperation(operation) {
     setLoading(true)
     try {
       const result = await operation(...args)
-      setSuccess(result.message || 'Operation successful')
+      setSuccess(result?.message || 'Operation successful')
       return result
     } catch (err) {
-      const message = err.response?.data?.pesan || err.message || 'An error occurred'
+      // Safely extract error message from various error sources
+      let message = 'An error occurred'
+      
+      if (err?.response?.data?.pesan) {
+        message = err.response.data.pesan
+      } else if (err?.response?.data?.message) {
+        message = err.response.data.message
+      } else if (err?.message) {
+        message = err.message
+      }
+      
       setError(message)
       throw err
     } finally {

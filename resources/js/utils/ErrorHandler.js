@@ -58,6 +58,11 @@ class ErrorHandler {
    * Get user-friendly error message (Pesan error yang ramah ke pengguna)
    */
   static getUserMessage(error) {
+    // Handle null/undefined error
+    if (!error) {
+      return 'Terjadi kesalahan. Silakan coba lagi.'
+    }
+
     const { status, message } = this.handle(error)
 
     const messages = {

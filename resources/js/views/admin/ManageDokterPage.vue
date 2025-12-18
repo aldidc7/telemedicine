@@ -293,8 +293,11 @@ const hapus = async (dokterId) => {
 
 const handleToggleStatus = async (dokterId, isActive) => {
   try {
+    errorMessage.value = null
     await toggleStatus.execute(dokterId, isActive)
+    successMessage.value = `Status dokter berhasil diubah`
   } catch (error) {
+    successMessage.value = null
     errorMessage.value = ErrorHandler.getUserMessage(error)
   }
 }
