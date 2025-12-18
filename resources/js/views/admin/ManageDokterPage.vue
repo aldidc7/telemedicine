@@ -131,20 +131,25 @@
                 <div class="flex gap-2 justify-center">
                   <button
                     @click="handleToggleStatus(dokter.id, dokter.is_active)"
+                    :disabled="toggleStatus.isLoading.value"
                     :class="[
                       'px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1',
+                      toggleStatus.isLoading.value ? 'opacity-50 cursor-not-allowed' : '',
                       dokter.is_active
                         ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
                         : 'bg-green-100 text-green-800 hover:bg-green-200'
                     ]"
                   >
-                    <svg v-if="!dokter.is_active" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <svg v-if="toggleStatus.isLoading.value" class="w-4 h-4 animate-spin" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" />
+                    </svg>
+                    <svg v-else-if="!dokter.is_active" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M8 5v14l11-7z" />
                     </svg>
                     <svg v-else class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
                     </svg>
-                    {{ dokter.is_active ? 'Nonaktif' : 'Aktif' }}
+                    {{ toggleStatus.isLoading.value ? 'Memproses...' : (dokter.is_active ? 'Nonaktif' : 'Aktif') }}
                   </button>
                   <button
                     @click="hapus(dokter.id)"
@@ -293,10 +298,13 @@ const hapus = async (dokterId) => {
 
 const handleToggleStatus = async (dokterId, isActive) => {
   try {
+    console.log('🔄 Toggle status:', { dokterId, isActive, userId: dokterList.value.find(d => d.id === dokterId)?.user_id })
     errorMessage.value = null
     await toggleStatus.execute(dokterId, isActive)
+    console.log('✅ Toggle status berhasil')
     successMessage.value = `Status dokter berhasil diubah`
   } catch (error) {
+    console.error('❌ Toggle status error:', error)
     successMessage.value = null
     errorMessage.value = ErrorHandler.getUserMessage(error)
   }
