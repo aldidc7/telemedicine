@@ -4,8 +4,8 @@
     <!-- Header -->
     <div class="mb-10">
       <div class="flex items-center gap-3 mb-2">
-        <svg class="w-11 h-11 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/>
+        <svg class="w-11 h-11 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
         </svg>
         <h1 class="text-4xl font-bold text-gray-900">Statistik & Analytics</h1>
       </div>
@@ -29,8 +29,8 @@
               <p class="text-xs text-gray-500 mt-2">Pasien + Dokter + Admin</p>
             </div>
             <div class="w-16 h-16 bg-linear-to-br from-blue-100 to-blue-50 rounded-2xl flex items-center justify-center">
-              <svg class="w-10 h-10 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M17 21H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2zM9 6a2 2 0 11-4 0 2 2 0 014 0zm0 8a2 2 0 11-4 0 2 2 0 014 0zm6-6a2 2 0 11-4 0 2 2 0 014 0zm0 8a2 2 0 11-4 0 2 2 0 014 0zm4-2a2 2 0 100 4 2 2 0 000-4z"/>
+              <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M17 20h5v-2a3 3 0 00-5.856-1.487M7 20H2v-2a3 3 0 015.856-1.487M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zM5 7a2 2 0 11-4 0 2 2 0 014 0z"/>
               </svg>
             </div>
           </div>
@@ -45,8 +45,8 @@
               <p class="text-xs text-gray-500 mt-2">Semua waktu</p>
             </div>
             <div class="w-16 h-16 bg-linear-to-br from-green-100 to-green-50 rounded-2xl flex items-center justify-center">
-              <svg class="w-10 h-10 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+              <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
             </div>
           </div>
@@ -61,8 +61,8 @@
               <p class="text-xs text-gray-500 mt-2">Sedang berlangsung</p>
             </div>
             <div class="w-16 h-16 bg-linear-to-br from-yellow-100 to-yellow-50 rounded-2xl flex items-center justify-center">
-              <svg class="w-10 h-10 text-yellow-600" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+              <svg class="w-10 h-10 text-yellow-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
               </svg>
             </div>
           </div>
@@ -77,8 +77,8 @@
               <p class="text-xs text-gray-500 mt-2">Bulan ini</p>
             </div>
             <div class="w-16 h-16 bg-linear-to-br from-purple-100 to-purple-50 rounded-2xl flex items-center justify-center">
-              <svg class="w-10 h-10 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+              <svg class="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M9 12l2 2 4-4M7 20H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-5l-4 4z"/>
               </svg>
             </div>
           </div>
@@ -88,8 +88,8 @@
       <!-- User Breakdown -->
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 hover:shadow-lg transition">
         <div class="flex items-center gap-3 mb-8">
-          <svg class="w-7 h-7 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
+          <svg class="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M12 4.354a4 4 0 110 5.292M15 21H3a6 6 0 016-6h6a6 6 0 016 6h-2a4 4 0 00-4-4h-6a4 4 0 00-4 4H3z"/>
           </svg>
           <h2 class="text-2xl font-bold text-gray-900">Breakdown Pengguna</h2>
         </div>
@@ -97,8 +97,8 @@
           <!-- Total Pasien -->
           <div class="bg-linear-to-br from-blue-50 to-blue-100 p-6 rounded-2xl border-2 border-blue-200">
             <div class="text-center">
-              <svg class="w-12 h-12 text-blue-600 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
+              <svg class="w-12 h-12 text-blue-600 mx-auto mb-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
               <p class="text-gray-700 text-sm font-semibold">Total Pasien</p>
               <p class="text-4xl font-bold text-blue-600 mt-3">{{ stats.totalPasien }}</p>
@@ -108,8 +108,8 @@
           <!-- Total Dokter -->
           <div class="bg-linear-to-br from-green-50 to-green-100 p-6 rounded-2xl border-2 border-green-200">
             <div class="text-center">
-              <svg class="w-12 h-12 text-green-600 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
+              <svg class="w-12 h-12 text-green-600 mx-auto mb-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
               </svg>
               <p class="text-gray-700 text-sm font-semibold">Total Dokter</p>
               <p class="text-4xl font-bold text-green-600 mt-3">{{ stats.totalDokter }}</p>
@@ -119,8 +119,8 @@
           <!-- Dokter Tersedia -->
           <div class="bg-linear-to-br from-yellow-50 to-yellow-100 p-6 rounded-2xl border-2 border-yellow-200">
             <div class="text-center">
-              <svg class="w-12 h-12 text-yellow-600 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
+              <svg class="w-12 h-12 text-yellow-600 mx-auto mb-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
               <p class="text-gray-700 text-sm font-semibold">Dokter Tersedia</p>
               <p class="text-4xl font-bold text-yellow-600 mt-3">{{ stats.dokterTersedia }}</p>
@@ -132,8 +132,8 @@
       <!-- Konsultasi Status -->
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 hover:shadow-lg transition">
         <div class="flex items-center gap-3 mb-8">
-          <svg class="w-7 h-7 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+          <svg class="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"/>
           </svg>
           <h2 class="text-2xl font-bold text-gray-900">Status Konsultasi</h2>
         </div>
@@ -163,8 +163,8 @@
           <!-- Selesai -->
           <div class="bg-linear-to-br from-blue-50 to-blue-100 p-6 rounded-2xl border-2 border-blue-200">
             <div class="text-center">
-              <svg class="w-10 h-10 text-blue-600 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+              <svg class="w-10 h-10 text-blue-600 mx-auto mb-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M5 13l4 4L19 7"/>
               </svg>
               <p class="text-gray-700 text-sm font-semibold">Selesai</p>
               <p class="text-4xl font-bold text-blue-600 mt-3">{{ stats.statusSelesai }}</p>
@@ -187,8 +187,8 @@
       <!-- Age Group Distribution (untuk pasien) -->
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 hover:shadow-lg transition">
         <div class="flex items-center gap-3 mb-8">
-          <svg class="w-7 h-7 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M17 21H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2zM9 6a2 2 0 11-4 0 2 2 0 014 0zm0 8a2 2 0 11-4 0 2 2 0 014 0zm6-6a2 2 0 11-4 0 2 2 0 014 0zm0 8a2 2 0 11-4 0 2 2 0 014 0zm4-2a2 2 0 100 4 2 2 0 000-4z"/>
+          <svg class="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
           </svg>
           <h2 class="text-2xl font-bold text-gray-900">Distribusi Usia Pasien</h2>
         </div>
@@ -196,8 +196,8 @@
           <!-- Anak-anak -->
           <div class="bg-linear-to-br from-pink-50 to-pink-100 p-6 rounded-2xl border-2 border-pink-200">
             <div class="text-center">
-              <svg class="w-10 h-10 text-pink-600 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 9a3 3 0 110-6 3 3 0 010 6zm6.15 1A6.002 6.002 0 006 15v1h12v-1a6 6 0 00-6-6z" />
+              <svg class="w-10 h-10 text-pink-600 mx-auto mb-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2.757-1.351a1 1 0 00-.946 0L14 7m6 0l-2.757 1.351a1 1 0 00-.946 0L10 7m0 0L7.243 5.649a1 1 0 00-.946 0L4 7m6 0v2.5M4 7v2.5M12 13v2.5M4 13v2.5"/>
               </svg>
               <p class="text-gray-700 text-sm font-semibold">Anak-anak</p>
               <p class="text-4xl font-bold text-pink-600 mt-3">{{ stats.ageAnakAnak }}</p>
@@ -207,8 +207,8 @@
           <!-- Remaja -->
           <div class="bg-linear-to-br from-purple-50 to-purple-100 p-6 rounded-2xl border-2 border-purple-200">
             <div class="text-center">
-              <svg class="w-10 h-10 text-purple-600 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 9a3 3 0 110-6 3 3 0 010 6zm12 0a3 3 0 110-6 3 3 0 010 6zm-4.5 13.5a9 9 0 01-9-9v-5H8v5a9 9 0 01-9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+              <svg class="w-10 h-10 text-purple-600 mx-auto mb-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
               </svg>
               <p class="text-gray-700 text-sm font-semibold">Remaja</p>
               <p class="text-4xl font-bold text-purple-600 mt-3">{{ stats.ageRemaja }}</p>
@@ -218,8 +218,8 @@
           <!-- Dewasa -->
           <div class="bg-linear-to-br from-orange-50 to-orange-100 p-6 rounded-2xl border-2 border-orange-200">
             <div class="text-center">
-              <svg class="w-10 h-10 text-orange-600 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 12a3 3 0 110-6 3 3 0 010 6zm0 0a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6z" />
+              <svg class="w-10 h-10 text-orange-600 mx-auto mb-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
               </svg>
               <p class="text-gray-700 text-sm font-semibold">Dewasa</p>
               <p class="text-4xl font-bold text-orange-600 mt-3">{{ stats.ageDewasa }}</p>
@@ -229,8 +229,8 @@
           <!-- Lansia -->
           <div class="bg-linear-to-br from-gray-50 to-gray-100 p-6 rounded-2xl border-2 border-gray-200">
             <div class="text-center">
-              <svg class="w-10 h-10 text-gray-600 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 11a4 4 0 110-8 4 4 0 010 8zm7 7a6 6 0 01-12 0H3v2a2 2 0 002 2h14a2 2 0 002-2v-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+              <svg class="w-10 h-10 text-gray-600 mx-auto mb-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M12 8c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm0 2c-2.761 0-5 2.239-5 5v2a1 1 0 001 1h8a1 1 0 001-1v-2c0-2.761-2.239-5-5-5z"/>
               </svg>
               <p class="text-gray-700 text-sm font-semibold">Lansia</p>
               <p class="text-4xl font-bold text-gray-600 mt-3">{{ stats.ageLansia }}</p>
@@ -242,8 +242,8 @@
       <!-- Spesialisasi Distribution -->
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 hover:shadow-lg transition">
         <div class="flex items-center gap-3 mb-8">
-          <svg class="w-7 h-7 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M5 13l4 4L19 7"/>
+          <svg class="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
           </svg>
           <h2 class="text-2xl font-bold text-gray-900">Distribusi Spesialisasi Dokter</h2>
         </div>
