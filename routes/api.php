@@ -161,6 +161,15 @@ Route::prefix('v1')->group(function () {
         Route::get('/admin/log-aktivitas', [AdminController::class, 'logAktivitas']);
         Route::get('/admin/statistik', [AdminController::class, 'statistik']);
 
+        // ========== SUPERADMIN ROUTES ==========
+        /**
+         * Superadmin Management
+         * GET /api/v1/superadmin/system-logs - View all system audit logs (Superadmin only)
+         * PUT /api/v1/admin/pengguna/{id}/status - Update user status
+         */
+        Route::get('/superadmin/system-logs', [AdminController::class, 'getSystemLogs']);
+        Route::put('/admin/pengguna/{id}/status', [AdminController::class, 'updateUserStatus']);
+
         // ========== DOCTOR VERIFICATION ROUTES (Admin only) ==========
         /**
          * Doctor Verification Management

@@ -10,6 +10,7 @@ use App\Models\Admin;
 use App\Models\Konsultasi;
 use App\Models\PesanChat;
 use App\Models\ActivityLog;
+use App\Models\SystemLog;
 use App\Services\DashboardCacheService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -1150,6 +1151,136 @@ class AdminController extends Controller
             return response()->json([
                 'success' => false,
                 'pesan' => 'Error saat menolak dokter',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get system audit logs (Superadmin only)
+     * 
+     * GET /api/v1/superadmin/system-logs
+     */
+    public function getSystemLogs(Request $request)
+    {
+        try {
+            $user = $this->getAuthUser();
+
+            // Check if superadmin
+            if (!$user->isSuperAdmin()) {
+                return response()->json([
+                    'success' => false,
+                    'pesan' => 'Hanya superadmin yang bisa mengakses system logs',
+                ], 403);
+            }
+
+            $query = SystemLog::with('admin')->recent();
+
+            // Apply filters
+            if ($request->filled('search')) {
+                $search = $request->input('search');
+                $query->where(function ($q) use ($search) {
+                    $q->where('action', 'like', "%$search%")
+                      ->orWhere('resource', 'like', "%$search%")
+                      ->orWhere('ip_address', 'like', "%$search%");
+                });
+            }
+
+            if ($request->filled('action')) {
+                $query->byAction($request->input('action'));
+            }
+
+            if ($request->filled('resource')) {
+                $query->byResource($request->input('resource'));
+            }
+
+            if ($request->filled('status')) {
+                $query->byStatus($request->input('status'));
+            }
+
+            $logs = $query->paginate($request->input('per_page', 25));
+
+            return response()->json([
+                'success' => true,
+                'pesan' => 'System logs berhasil diambil',
+                'data' => $logs->items(),
+                'current_page' => $logs->currentPage(),
+                'last_page' => $logs->lastPage(),
+                'total' => $logs->total(),
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('Error getting system logs: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'pesan' => 'Error mengambil system logs',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Update user status (activate/deactivate)
+     * 
+     * PUT /api/v1/admin/pengguna/{id}/status
+     */
+    public function updateUserStatus(Request $request, $id)
+    {
+        try {
+            $user = $this->getAuthUser();
+
+            // Check if admin or superadmin
+            if (!$user->isAdmin() && !$user->isSuperAdmin()) {
+                return response()->json([
+                    'success' => false,
+                    'pesan' => 'Anda tidak memiliki hak akses',
+                ], 403);
+            }
+
+            $validate = $request->validate([
+                'is_active' => 'required|boolean',
+            ]);
+
+            $targetUser = User::find($id);
+            if (!$targetUser) {
+                return response()->json([
+                    'success' => false,
+                    'pesan' => 'User tidak ditemukan',
+                ], 404);
+            }
+
+            $targetUser->update(['is_active' => $validate['is_active']]);
+
+            // Log the action
+            SystemLog::logAction(
+                $user->id,
+                'update',
+                'user',
+                $id,
+                $request->ip(),
+                ['is_active' => $validate['is_active']],
+                $request->userAgent(),
+                'success'
+            );
+
+            return response()->json([
+                'success' => true,
+                'pesan' => 'Status user berhasil diubah',
+                'data' => [
+                    'id' => $targetUser->id,
+                    'is_active' => $targetUser->is_active,
+                ],
+            ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'pesan' => 'Validasi gagal',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Error updating user status: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'pesan' => 'Error mengubah status user',
                 'error' => $e->getMessage(),
             ], 500);
         }
