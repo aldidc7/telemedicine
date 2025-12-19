@@ -1,0 +1,468 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Telemedicine API",
+    "description": "REST API untuk aplikasi telemedicine RSUD dr. R. Soedarsono",
+    "version": "2.0.0",
+    "contact": {
+      "name": "API Support",
+      "email": "support@telemedicine.local"
+    },
+    "license": {
+      "name": "MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000/api",
+      "description": "Development server"
+    },
+    {
+      "url": "https://api.telemedicine.local/api",
+      "description": "Production server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "apiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      }
+    },
+    "schemas": {
+      "ApiResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "pesan": {
+            "type": "string",
+            "example": "Success"
+          },
+          "data": {
+            "type": "object"
+          },
+          "error_code": {
+            "type": "string",
+            "example": "GENERAL_ERROR"
+          },
+          "status_code": {
+            "type": "integer",
+            "example": 200
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Ahmad Zaki"
+          },
+          "email": {
+            "type": "string",
+            "example": "ahmad@example.com"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["pasien", "dokter", "admin"],
+            "example": "pasien"
+          },
+          "is_active": {
+            "type": "boolean",
+            "example": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "ahmad@example.com"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "minLength": 8,
+            "example": "password123"
+          }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "pesan": {
+            "type": "string",
+            "example": "Login berhasil"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "user": {
+                "$ref": "#/components/schemas/User"
+              },
+              "token": {
+                "type": "string",
+                "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+              },
+              "expires_in": {
+                "type": "integer",
+                "example": 3600
+              }
+            }
+          }
+        }
+      },
+      "Pasien": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "user_id": {
+            "type": "integer"
+          },
+          "medical_record_number": {
+            "type": "string",
+            "example": "RM-2025-00001"
+          },
+          "encrypted_nik": {
+            "type": "string"
+          },
+          "date_of_birth": {
+            "type": "string",
+            "format": "date"
+          },
+          "gender": {
+            "type": "string",
+            "enum": ["male", "female"]
+          },
+          "address": {
+            "type": "string"
+          },
+          "phone_number": {
+            "type": "string"
+          },
+          "blood_type": {
+            "type": "string",
+            "enum": ["A", "B", "AB", "O"]
+          }
+        }
+      },
+      "Dokter": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "user_id": {
+            "type": "integer"
+          },
+          "license_number": {
+            "type": "string"
+          },
+          "specialization": {
+            "type": "string",
+            "example": "Dokter Umum"
+          },
+          "is_available": {
+            "type": "boolean"
+          },
+          "is_verified": {
+            "type": "boolean"
+          },
+          "years_of_experience": {
+            "type": "integer"
+          },
+          "bio": {
+            "type": "string"
+          }
+        }
+      },
+      "ValidationError": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "pesan": {
+            "type": "string",
+            "example": "Validasi gagal"
+          },
+          "error_code": {
+            "type": "string",
+            "example": "VALIDATION_FAILED"
+          },
+          "errors": {
+            "type": "object",
+            "example": {
+              "email": ["Email harus diisi"],
+              "password": ["Password minimal 8 karakter"]
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/v1/health": {
+      "get": {
+        "summary": "Health check",
+        "description": "Cek apakah API berjalan",
+        "tags": ["System"],
+        "responses": {
+          "200": {
+            "description": "API berjalan normal"
+          }
+        }
+      }
+    },
+    "/v1/auth/login": {
+      "post": {
+        "summary": "Login user",
+        "description": "Authenticate dan dapatkan access token",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login berhasil",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Email atau password tidak valid"
+          },
+          "422": {
+            "description": "Validasi gagal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/me": {
+      "get": {
+        "summary": "Get current user",
+        "description": "Dapatkan profil user yang sedang login",
+        "tags": ["Auth"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/pasien": {
+      "get": {
+        "summary": "List patients",
+        "description": "Dapatkan daftar semua pasien (Admin only)",
+        "tags": ["Pasien"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Halaman (default: 1)",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Jumlah data per halaman (default: 15)",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Cari berdasarkan nama atau email",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar pasien"
+          },
+          "403": {
+            "description": "Forbidden - hanya admin"
+          }
+        }
+      }
+    },
+    "/v1/dokter": {
+      "get": {
+        "summary": "List doctors",
+        "description": "Dapatkan daftar dokter (public)",
+        "tags": ["Dokter"],
+        "parameters": [
+          {
+            "name": "specialization",
+            "in": "query",
+            "description": "Filter berdasarkan spesialisasi",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "is_available",
+            "in": "query",
+            "description": "Filter berdasarkan ketersediaan",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar dokter"
+          }
+        }
+      }
+    },
+    "/v1/konsultasi": {
+      "get": {
+        "summary": "List consultations",
+        "description": "Dapatkan daftar konsultasi user",
+        "tags": ["Konsultasi"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar konsultasi"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create consultation",
+        "description": "Buat konsultasi baru (Pasien only)",
+        "tags": ["Konsultasi"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["doctor_id", "complaint_type", "description"],
+                "properties": {
+                  "doctor_id": {
+                    "type": "integer"
+                  },
+                  "complaint_type": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Konsultasi berhasil dibuat"
+          }
+        }
+      }
+    },
+    "/v1/admin/dashboard": {
+      "get": {
+        "summary": "Admin dashboard",
+        "description": "Dashboard stats untuk admin",
+        "tags": ["Admin"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dashboard data"
+          },
+          "403": {
+            "description": "Forbidden - hanya admin"
+          }
+        }
+      }
+    }
+  }
+}
