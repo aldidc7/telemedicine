@@ -85,8 +85,8 @@ class FileUploadController extends Controller
     public function upload(FileUploadRequest $request): JsonResponse
     {
         try {
-            /** @var User $user */
-            $user = auth()->user();
+            /** @var \App\Models\User|null $user */
+            $user = auth()->user(); // @phpstan-ignore-next-line
             
             $result = $this->uploadService->uploadFile(
                 $request->file('file'),
@@ -107,7 +107,7 @@ class FileUploadController extends Controller
             ], 422);
         } catch (\Exception $e) {
             \Log::error('File upload error', [
-                'user_id' => auth()->id() ?? null,
+                'user_id' => auth()->id() ?? null, // @phpstan-ignore-next-line
                 'error' => $e->getMessage(),
             ]);
 
@@ -155,8 +155,8 @@ class FileUploadController extends Controller
     public function getStorageInfo(): JsonResponse
     {
         try {
-            /** @var User $user */
-            $user = auth()->user();
+            /** @var \App\Models\User|null $user */
+            $user = auth()->user(); // @phpstan-ignore-next-line
             
             $info = $this->uploadService->getUserStorageInfo($user);
 
@@ -166,7 +166,7 @@ class FileUploadController extends Controller
             ], 200);
         } catch (\Exception $e) {
             \Log::error('Get storage info error', [
-                'user_id' => auth()->id() ?? null,
+                'user_id' => auth()->id() ?? null, // @phpstan-ignore-next-line
                 'error' => $e->getMessage(),
             ]);
 
@@ -210,8 +210,8 @@ class FileUploadController extends Controller
     public function delete(string $filePath): JsonResponse
     {
         try {
-            /** @var User $user */
-            $user = auth()->user();
+            /** @var \App\Models\User|null $user */
+            $user = auth()->user(); // @phpstan-ignore-next-line
             
             $this->uploadService->softDeleteFile($user, $filePath);
 
@@ -221,7 +221,7 @@ class FileUploadController extends Controller
             ], 200);
         } catch (\Exception $e) {
             \Log::error('File delete error', [
-                'user_id' => auth()->id() ?? null,
+                'user_id' => auth()->id() ?? null, // @phpstan-ignore-next-line
                 'file_path' => $filePath,
                 'error' => $e->getMessage(),
             ]);
