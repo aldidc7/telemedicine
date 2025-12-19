@@ -21,4 +21,18 @@ class DokterFactory extends Factory
             'max_concurrent_consultations' => 5,
         ];
     }
+
+    public function available(): self
+    {
+        return $this->state([
+            'is_available' => true,
+        ]);
+    }
+
+    public function unavailable(): self
+    {
+        return $this->state([
+            'is_available' => false,
+        ]);
+    }
 }

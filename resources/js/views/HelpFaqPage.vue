@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 md:p-8">
+  <div class="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 p-4 md:p-8">
     <!-- Header -->
     <div class="mb-12 text-center">
       <h1 class="text-4xl font-bold text-gray-900 mb-4">Bantuan & FAQ</h1>
@@ -52,7 +52,7 @@
           </div>
           <svg 
             :class="[expandedFaq === faq.id ? 'rotate-180' : '']"
-            class="w-6 h-6 text-blue-600 transition-transform ml-4 flex-shrink-0" 
+            class="w-6 h-6 text-blue-600 transition-transform ml-4 shrink-0" 
             fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>

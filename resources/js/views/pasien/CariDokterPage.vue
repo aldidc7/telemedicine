@@ -329,8 +329,8 @@ const loadDokter = async () => {
     })
 
     // Apply rating filter
-    if (filter.value.ratingMin) {
-      dokterData = dokterData.filter(d => d.avg_rating >= parseFloat(filter.value.ratingMin))
+    if (filter.ratingMin) {
+      dokterData = dokterData.filter(d => d.avg_rating >= parseFloat(filter.ratingMin))
     }
 
     dokterList.value = dokterData

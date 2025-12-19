@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 md:p-8">
+  <div class="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 p-4 md:p-8">
     <!-- Header -->
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-gray-900 mb-2">Analitik Penghasilan</h1>

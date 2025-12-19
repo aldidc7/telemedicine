@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\DokterController;
 use App\Http\Controllers\Api\KonsultasiController;
 use App\Http\Controllers\Api\PesanChatController;
 use App\Http\Controllers\Api\MessageController;
+use App\Http\Controllers\Api\KonsultasiSummaryController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\RatingController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\Api\DoctorVerificationController;
 use App\Http\Controllers\Api\AppointmentController;
 use App\Http\Controllers\Api\PrescriptionController;
 use App\Http\Controllers\Api\BroadcastingController;
+use App\Http\Controllers\Api\FileUploadController;
 use App\Http\Controllers\SimrsApi\SimrsPasienController;
 use App\Http\Controllers\SimrsApi\SimrsDokterController;
 use App\Http\Controllers\SimrsApi\SimrsRekamMedisController;
@@ -119,6 +121,23 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
         Route::post('/konsultasi/{id}/tolak', [KonsultasiController::class, 'tolak']);
         Route::post('/konsultasi/{id}/selesaikan', [KonsultasiController::class, 'selesaikan']);
 
+        // ========== KONSULTASI SUMMARY ENDPOINTS ==========
+        /**
+         * Consultation Summary Management
+         * POST /api/v1/consultations/{id}/summary - Dokter create summary
+         * GET /api/v1/consultations/{id}/summary - Get summary (Pasien/Dokter/Admin)
+         * PUT /api/v1/consultations/{id}/summary - Update summary (Dokter only)
+         * PUT /api/v1/consultations/{id}/summary/acknowledge - Pasien acknowledge summary
+         * GET /api/v1/patient/summaries - List pasien summaries
+         * GET /api/v1/doctor/summaries - List dokter summaries
+         */
+        Route::post('/consultations/{id}/summary', [KonsultasiSummaryController::class, 'store']);
+        Route::get('/consultations/{id}/summary', [KonsultasiSummaryController::class, 'show']);
+        Route::put('/consultations/{id}/summary', [KonsultasiSummaryController::class, 'update']);
+        Route::put('/consultations/{id}/summary/acknowledge', [KonsultasiSummaryController::class, 'acknowledge']);
+        Route::get('/patient/summaries', [KonsultasiSummaryController::class, 'patientSummaries']);
+        Route::get('/doctor/summaries', [KonsultasiSummaryController::class, 'doctorSummaries']);
+
         // ========== PESAN CHAT ENDPOINTS ==========
         /**
          * Chat Messages Management
@@ -194,6 +213,19 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
         Route::post('/admin/doctors/{id}/approve', [DoctorVerificationController::class, 'approvDoctor']);
         Route::post('/admin/doctors/{id}/reject', [DoctorVerificationController::class, 'rejectDoctor']);
         Route::get('/admin/doctors/{id}/status', [DoctorVerificationController::class, 'getDoctorStatus']);
+
+        // ========== FILE UPLOAD ENDPOINTS ==========
+        /**
+         * File Upload Management
+         * POST /api/v1/files/upload - Upload file dengan batasan ukuran
+         * GET /api/v1/files/storage-info - Get storage usage info
+         * DELETE /api/v1/files/{id} - Delete file (soft delete)
+         * GET /api/v1/files/size-limits - Get size limits untuk setiap kategori
+         */
+        Route::post('/files/upload', [FileUploadController::class, 'upload']);
+        Route::get('/files/storage-info', [FileUploadController::class, 'getStorageInfo']);
+        Route::delete('/files/{filePath}', [FileUploadController::class, 'delete']);
+        Route::get('/files/size-limits', [FileUploadController::class, 'getSizeLimits']);
     });
 
     // ============ SIMRS API ROUTES (Token-based, Separated) ============
