@@ -77,6 +77,18 @@ const routes = [
     component: () => import('@/views/pasien/SettingsPage.vue'),
     meta: { requiresAuth: true }
   },
+  {
+    path: '/riwayat-konsultasi',
+    name: 'riwayat-konsultasi',
+    component: () => import('@/views/pasien/RiwayatKonsultasiPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/rating-review',
+    name: 'rating-review',
+    component: () => import('@/views/pasien/RatingReviewPage.vue'),
+    meta: { requiresAuth: true }
+  },
 
   // ===== DOKTER ROUTES =====
   {
