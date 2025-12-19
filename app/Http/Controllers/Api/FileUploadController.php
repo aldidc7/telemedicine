@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Exceptions\FileUploadException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\FileUploadRequest;
+use App\Models\User;
 use App\Services\FileUploadService;
 use Illuminate\Http\JsonResponse;
 
@@ -84,10 +85,13 @@ class FileUploadController extends Controller
     public function upload(FileUploadRequest $request): JsonResponse
     {
         try {
+            /** @var User $user */
+            $user = auth()->user();
+            
             $result = $this->uploadService->uploadFile(
                 $request->file('file'),
                 $request->input('category'),
-                auth()->user()
+                $user
             );
 
             return response()->json([
@@ -98,12 +102,12 @@ class FileUploadController extends Controller
         } catch (FileUploadException $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => $e->getMessage() ?? 'File upload gagal',
                 'error_code' => 'FILE_UPLOAD_ERROR',
             ], 422);
         } catch (\Exception $e) {
             \Log::error('File upload error', [
-                'user_id' => auth()->id(),
+                'user_id' => auth()->id() ?? null,
                 'error' => $e->getMessage(),
             ]);
 
@@ -151,7 +155,10 @@ class FileUploadController extends Controller
     public function getStorageInfo(): JsonResponse
     {
         try {
-            $info = $this->uploadService->getUserStorageInfo(auth()->user());
+            /** @var User $user */
+            $user = auth()->user();
+            
+            $info = $this->uploadService->getUserStorageInfo($user);
 
             return response()->json([
                 'success' => true,
@@ -159,7 +166,7 @@ class FileUploadController extends Controller
             ], 200);
         } catch (\Exception $e) {
             \Log::error('Get storage info error', [
-                'user_id' => auth()->id(),
+                'user_id' => auth()->id() ?? null,
                 'error' => $e->getMessage(),
             ]);
 
@@ -203,7 +210,10 @@ class FileUploadController extends Controller
     public function delete(string $filePath): JsonResponse
     {
         try {
-            $this->uploadService->softDeleteFile(auth()->user(), $filePath);
+            /** @var User $user */
+            $user = auth()->user();
+            
+            $this->uploadService->softDeleteFile($user, $filePath);
 
             return response()->json([
                 'success' => true,
@@ -211,7 +221,7 @@ class FileUploadController extends Controller
             ], 200);
         } catch (\Exception $e) {
             \Log::error('File delete error', [
-                'user_id' => auth()->id(),
+                'user_id' => auth()->id() ?? null,
                 'file_path' => $filePath,
                 'error' => $e->getMessage(),
             ]);

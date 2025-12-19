@@ -8,7 +8,7 @@ class FileUploadRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->check();
+        return (bool) auth()->check();
     }
 
     public function rules(): array

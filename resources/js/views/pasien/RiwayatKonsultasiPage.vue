@@ -68,7 +68,7 @@
             <div class="flex-1 min-w-0">
               <div class="flex items-start gap-4">
                 <!-- Doctor Avatar -->
-                <div class="flex-shrink-0">
+                <div class="shrink-0">
                   <div class="w-12 h-12 bg-linear-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
                     {{ getInitials(konsultasi.dokter?.name) }}
                   </div>

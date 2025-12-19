@@ -1102,12 +1102,8 @@ class AdminController extends Controller
                 'verification_notes' => $request->notes ?? '',
             ]);
 
-            // Send approval email
-            try {
-                \Illuminate\Support\Facades\Mail::to($doctor->user->email)->send(new \App\Mail\DoctorApprovedMail($doctor));
-            } catch (\Exception $e) {
-                \Log::error('Failed to send doctor approval email: ' . $e->getMessage());
-            }
+            // Email notification removed - focus on chat system only
+            // Doctor approval notification goes through chat system
 
             return response()->json([
                 'success' => true,
@@ -1169,12 +1165,8 @@ class AdminController extends Controller
                 'verification_notes' => 'REJECTED: ' . $request->reason,
             ]);
 
-            // Send rejection email
-            try {
-                \Illuminate\Support\Facades\Mail::to($doctor->user->email)->send(new \App\Mail\DoctorRejectedMail($doctor, $request->reason));
-            } catch (\Exception $e) {
-                \Log::error('Failed to send doctor rejection email: ' . $e->getMessage());
-            }
+            // Email notification removed - focus on chat system only
+            // Doctor rejection notification goes through chat system
 
             return response()->json([
                 'success' => true,

@@ -126,7 +126,7 @@ class KonsultasiSummaryController extends Controller
                 'medications_count' => count($validated['medications'] ?? []),
                 'has_follow_up' => !empty($validated['follow_up_date']),
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Logger::logError($e, 'KonsultasiSummaryController@store', [
                 'consultation_id' => $konsultasi->id,
             ]);

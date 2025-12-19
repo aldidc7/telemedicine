@@ -312,6 +312,6 @@ class ComprehensiveRoleTest extends TestCase
             ->get('/api/v1/broadcasting/config');
         
         // Should be either 200 or 403/401
-        $this->assertIn($response->status(), [200, 401, 403]);
+        $this->assertTrue(in_array($response->status(), [200, 401, 403]));
     }
 }

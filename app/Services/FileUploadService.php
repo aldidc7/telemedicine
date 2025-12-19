@@ -42,12 +42,21 @@ class FileUploadService
 
         return [
             'path' => $path,
-            'url' => Storage::disk('public')->url($path),
+            'url' => $this->getFileUrl($path),
             'filename' => $file->getClientOriginalName(),
             'size' => $file->getSize(),
             'mime_type' => $file->getMimeType(),
             'uploaded_at' => now()->toIso8601String(),
         ];
+    }
+
+    /**
+     * Get file URL from storage
+     */
+    private function getFileUrl(string $path): string
+    {
+        $url = Storage::disk('public')->url($path);
+        return $url ?? $path;
     }
 
     /**
@@ -131,7 +140,8 @@ class FileUploadService
     {
         $size = 0;
         $files = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($directory)
+            new \RecursiveDirectoryIterator($directory),
+            \RecursiveIteratorIterator::SELF_FIRST
         );
 
         foreach ($files as $file) {

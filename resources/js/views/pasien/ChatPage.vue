@@ -52,7 +52,7 @@
           <!-- Message Bubble -->
           <div
             :class="[
-              'px-4 py-3 rounded-2xl text-sm break-words',
+              'px-4 py-3 rounded-2xl text-sm break-all',
               msg.pengirim_id === authStore.user?.id
                 ? 'bg-linear-to-r from-indigo-500 to-purple-600 text-white rounded-br-none shadow-md'
                 : 'bg-gray-100 text-gray-900 rounded-bl-none shadow-sm'
@@ -101,7 +101,7 @@
     <div class="border-t border-gray-200 bg-white p-4 space-y-3">
       <!-- File Upload Preview -->
       <div v-if="selectedFile" class="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-        <svg class="w-5 h-5 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+        <svg class="w-5 h-5 text-blue-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M8 16.5a1 1 0 11-2 0 1 1 0 012 0zM15 7a2 2 0 11-4 0 2 2 0 014 0zM3.5 5a2.5 2.5 0 100 5A2.5 2.5 0 003.5 5z" />
         </svg>
         <div class="flex-1 min-w-0">
