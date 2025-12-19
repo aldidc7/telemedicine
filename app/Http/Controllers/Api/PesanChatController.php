@@ -11,6 +11,8 @@ use App\Services\PesanChatService;
 use App\Traits\ApiResponse;
 use Illuminate\Support\Facades\Auth;
 use App\Logging\Logger;
+use App\Events\MessageSent;
+use App\Events\MessageRead;
 use App\Events\PesanChatSent;
 use App\Events\PesanChatDibaca;
 
@@ -191,7 +193,9 @@ class PesanChatController extends Controller
             'konsultasi_id' => $konsultasi->id,
         ], $user->id);
 
-        // 🚀 BROADCAST EVENT - Real-time delivery via WebSocket
+        // 🚀 BROADCAST EVENTS - Real-time delivery via WebSocket
+        $senderType = $user->isPasien() ? 'pasien' : 'dokter';
+        broadcast(new MessageSent($pesanChat, $konsultasi->id, $senderType))->toOthers();
         broadcast(new PesanChatSent($pesanChat, $konsultasi))->toOthers();
 
         return $this->createdResponse($pesanChat, 'Pesan berhasil dikirim');
@@ -299,7 +303,8 @@ class PesanChatController extends Controller
         // Mark as read using service
         $updated = $this->pesanChatService->markAsRead($pesan);
 
-        // 🚀 BROADCAST EVENT - Real-time read receipt
+        // 🚀 BROADCAST EVENTS - Real-time read receipt
+        broadcast(new MessageRead($updated, $konsultasi->id, $user->id))->toOthers();
         broadcast(new PesanChatDibaca($updated, $konsultasi->id))->toOthers();
 
         return $this->successResponse($updated, 'Pesan berhasil ditandai sebagai dibaca');

@@ -11,25 +11,25 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
 /**
- * Event untuk mengirim pesan chat secara real-time
- * Dipicu ketika ada pesan baru di konsultasi
+ * Event untuk menandai pesan sebagai telah dibaca
+ * Dipicu ketika pengguna membuka/membaca pesan
  */
-class MessageSent implements ShouldBroadcast
+class MessageRead implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public PesanChat $message;
     public int $consultationId;
-    public string $senderType;
+    public int $readById;
 
     /**
      * Create a new event instance.
      */
-    public function __construct(PesanChat $message, int $consultationId, string $senderType = 'pasien')
+    public function __construct(PesanChat $message, int $consultationId, int $readById)
     {
         $this->message = $message;
         $this->consultationId = $consultationId;
-        $this->senderType = $senderType;
+        $this->readById = $readById;
     }
 
     /**
@@ -50,15 +50,8 @@ class MessageSent implements ShouldBroadcast
         return [
             'id' => $this->message->id,
             'consultation_id' => $this->consultationId,
-            'sender_id' => $this->message->pengirim_id,
-            'sender_type' => $this->senderType,
-            'sender_name' => $this->message->pengirim->nama ?? 'Unknown',
-            'message' => $this->message->pesan,
-            'message_type' => $this->message->tipe_pesan ?? 'text',
-            'file_url' => $this->message->file_url,
-            'is_read' => $this->message->dibaca ?? false,
-            'created_at' => $this->message->created_at,
-            'timestamp' => now()->toIso8601String(),
+            'read_by' => $this->readById,
+            'read_at' => now()->toIso8601String(),
         ];
     }
 
@@ -67,6 +60,6 @@ class MessageSent implements ShouldBroadcast
      */
     public function broadcastAs(): string
     {
-        return 'message.sent';
+        return 'message.read';
     }
 }

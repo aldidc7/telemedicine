@@ -10,6 +10,9 @@ use App\Models\Konsultasi;
 use App\Models\Pasien;
 use App\Models\Dokter;
 use App\Models\User;
+use App\Events\ConsultationStarted;
+use App\Events\ConsultationEnded;
+use App\Events\ConsultationStatusChanged;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -143,9 +146,14 @@ class KonsultasiController extends Controller
             return $this->errorResponse('Konsultasi tidak dalam status menunggu', 400);
         }
         
+        $oldStatus = $konsultasi->status;
         $updated = $this->consultationService->updateConsultation($konsultasi, [
             'status' => 'active',
         ]);
+        
+        // 🚀 BROADCAST EVENTS - Konsultasi status change
+        broadcast(new ConsultationStarted($updated))->toOthers();
+        broadcast(new ConsultationStatusChanged($updated, $oldStatus, 'active'))->toOthers();
         
         return $this->successResponse($updated, 'Konsultasi berhasil diterima');
     }
@@ -173,10 +181,14 @@ class KonsultasiController extends Controller
             return $this->errorResponse('Konsultasi tidak dalam status menunggu', 400);
         }
         
+        $oldStatus = $konsultasi->status;
         $updated = $this->consultationService->completeConsultation($konsultasi, [
             'status' => 'cancelled',
             'closing_notes' => $request->input('alasan', 'Ditolak oleh dokter'),
         ]);
+        
+        // 🚀 BROADCAST EVENT - Konsultasi rejection
+        broadcast(new ConsultationStatusChanged($updated, $oldStatus, 'cancelled'))->toOthers();
         
         return $this->successResponse($updated, 'Konsultasi berhasil ditolak');
     }
@@ -204,11 +216,16 @@ class KonsultasiController extends Controller
             return $this->errorResponse('Konsultasi tidak dalam status aktif', 400);
         }
         
+        $oldStatus = $konsultasi->status;
         $updated = $this->consultationService->completeConsultation($konsultasi, [
             'status' => 'closed',
             'end_time' => now(),
             'closing_notes' => $request->input('catatan_penutup'),
         ]);
+        
+        // 🚀 BROADCAST EVENTS - Konsultasi ending
+        broadcast(new ConsultationEnded($updated))->toOthers();
+        broadcast(new ConsultationStatusChanged($updated, $oldStatus, 'closed'))->toOthers();
         
         return $this->successResponse($updated, 'Konsultasi berhasil diselesaikan');
     }

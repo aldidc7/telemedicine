@@ -2,18 +2,15 @@
 
 namespace Tests\Feature;
 
+use Tests\TestCase;
 use App\Models\User;
 use App\Models\Dokter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+use Laravel\Sanctum\Sanctum;
 
 class DokterControllerTest extends TestCase
 {
     use RefreshDatabase;
-
-    private User $adminUser;
-    private User $dokterUser;
-    private Dokter $dokter;
 
     protected function setUp(): void
     {

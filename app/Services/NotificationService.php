@@ -481,5 +481,161 @@ class NotificationService
             "/appointments/{$appointmentId}"
         );
     }
+
+    /**
+     * ============================================
+     * REAL-TIME NOTIFICATION METHODS
+     * ============================================
+     */
+
+    /**
+     * Broadcast real-time notification untuk konsultasi baru
+     */
+    public function broadcastNewConsultation($konsultasi)
+    {
+        $dokter = $konsultasi->dokter->user;
+        
+        $notification = [
+            'type' => 'new_consultation',
+            'konsultasi_id' => $konsultasi->id,
+            'pasien_name' => $konsultasi->pasien->user->nama,
+            'pasien_id' => $konsultasi->pasien_id,
+            'message' => "Konsultasi baru dari " . $konsultasi->pasien->user->nama,
+            'created_at' => now()->toIso8601String(),
+        ];
+        
+        $this->create(
+            $dokter->id,
+            self::TYPE_CONSULTATION,
+            $notification['message'],
+            "/consultations/{$konsultasi->id}"
+        );
+        
+        \Log::info('New consultation broadcast sent', ['konsultasi_id' => $konsultasi->id]);
+    }
+
+    /**
+     * Broadcast real-time notification untuk pesan baru
+     */
+    public function broadcastNewMessage($message, $konsultasi)
+    {
+        $sender = $message->pengirim;
+        $senderType = $sender->role === 'dokter' ? 'dokter' : 'pasien';
+        
+        // Tentukan penerima
+        if ($senderType === 'dokter') {
+            $recipient = $konsultasi->pasien->user;
+        } else {
+            $recipient = $konsultasi->dokter->user;
+        }
+        
+        $notification = [
+            'type' => 'new_message',
+            'konsultasi_id' => $konsultasi->id,
+            'message_id' => $message->id,
+            'sender_name' => $sender->nama,
+            'sender_type' => $senderType,
+            'message_preview' => substr($message->pesan, 0, 100),
+            'created_at' => now()->toIso8601String(),
+        ];
+        
+        $this->create(
+            $recipient->id,
+            self::TYPE_MESSAGE,
+            "Pesan baru dari {$sender->nama}",
+            "/consultations/{$konsultasi->id}/messages"
+        );
+        
+        \Log::info('New message broadcast sent', ['message_id' => $message->id]);
+    }
+
+    /**
+     * Broadcast perubahan status konsultasi
+     */
+    public function broadcastConsultationStatusChange($konsultasi, $oldStatus, $newStatus)
+    {
+        $statusMessages = [
+            'pending' => 'Menunggu',
+            'active' => 'Berlangsung',
+            'closed' => 'Selesai',
+            'cancelled' => 'Dibatalkan',
+        ];
+        
+        $message = "Status konsultasi berubah dari " . 
+                   ($statusMessages[$oldStatus] ?? $oldStatus) . " menjadi " . 
+                   ($statusMessages[$newStatus] ?? $newStatus);
+        
+        // Notify both parties
+        $this->create(
+            $konsultasi->pasien->user_id,
+            self::TYPE_CONSULTATION,
+            $message,
+            "/consultations/{$konsultasi->id}"
+        );
+        
+        $this->create(
+            $konsultasi->dokter->user_id,
+            self::TYPE_CONSULTATION,
+            $message,
+            "/consultations/{$konsultasi->id}"
+        );
+        
+        \Log::info('Consultation status change broadcast sent', [
+            'konsultasi_id' => $konsultasi->id,
+            'old_status' => $oldStatus,
+            'new_status' => $newStatus,
+        ]);
+    }
+
+    /**
+     * Broadcast konsultasi diterima
+     */
+    public function broadcastConsultationAccepted($konsultasi)
+    {
+        $this->create(
+            $konsultasi->pasien->user_id,
+            self::TYPE_CONSULTATION,
+            "Konsultasi Anda diterima oleh " . $konsultasi->dokter->user->nama,
+            "/consultations/{$konsultasi->id}"
+        );
+        
+        \Log::info('Consultation accepted broadcast sent', ['konsultasi_id' => $konsultasi->id]);
+    }
+
+    /**
+     * Broadcast konsultasi ditolak
+     */
+    public function broadcastConsultationRejected($konsultasi, $reason = '')
+    {
+        $message = "Konsultasi Anda ditolak oleh " . $konsultasi->dokter->user->nama;
+        if ($reason) {
+            $message .= ": " . $reason;
+        }
+        
+        $this->create(
+            $konsultasi->pasien->user_id,
+            self::TYPE_CONSULTATION,
+            $message,
+            "/consultations/{$konsultasi->id}"
+        );
+        
+        \Log::info('Consultation rejected broadcast sent', ['konsultasi_id' => $konsultasi->id]);
+    }
+
+    /**
+     * Broadcast konsultasi selesai
+     */
+    public function broadcastConsultationCompleted($konsultasi)
+    {
+        $this->create(
+            $konsultasi->pasien->user_id,
+            self::TYPE_CONSULTATION,
+            "Konsultasi Anda telah selesai. Berikan rating untuk dokter.",
+            "/consultations/{$konsultasi->id}/rating"
+        );
+        
+        \Log::info('Consultation completed broadcast sent', ['konsultasi_id' => $konsultasi->id]);
+    }
 }
+
 

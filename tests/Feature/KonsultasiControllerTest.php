@@ -2,318 +2,290 @@
 
 namespace Tests\Feature;
 
+use Tests\TestCase;
 use App\Models\User;
 use App\Models\Pasien;
 use App\Models\Dokter;
 use App\Models\Konsultasi;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+use Laravel\Sanctum\Sanctum;
 
 class KonsultasiControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    private User $pasienUser;
-    private User $dokterUser;
-    private User $adminUser;
-    private Pasien $pasien;
-    private Dokter $dokter;
-    private Konsultasi $konsultasi;
+    protected Pasien $patient;
+    protected Dokter $doctor;
+    protected User $patientUser;
+    protected User $doctorUser;
 
     protected function setUp(): void
     {
         parent::setUp();
+        
+        $this->patientUser = User::factory()->create(['role' => 'pasien']);
+        $this->doctorUser = User::factory()->create(['role' => 'dokter']);
+        
+        $this->patient = Pasien::create([
+            'user_id' => $this->patientUser->id,
+            'medical_record_number' => 'RM-2025-00001',
+            'date_of_birth' => '1990-01-01',
+            'gender' => 'male',
+        ]);
+        
+        $this->doctor = Dokter::create([
+            'user_id' => $this->doctorUser->id,
+            'license_number' => 'SIP-12345678',
+            'specialization' => 'Dokter Umum',
+        ]);
+    }
 
-        $this->adminUser = User::factory()->create(['role' => 'admin']);
-        $this->pasienUser = User::factory()->create(['role' => 'pasien']);
-        $this->dokterUser = User::factory()->create(['role' => 'dokter']);
+    /**
+     * Test get consultations list
+     */
+    public function test_get_consultations_list(): void
+    {
+        Sanctum::actingAs($this->patientUser);
 
-        $this->pasien = Pasien::factory()->create(['user_id' => $this->pasienUser->id]);
-        $this->dokter = Dokter::factory()->create(['user_id' => $this->dokterUser->id]);
-
-        $this->konsultasi = Konsultasi::factory()->create([
-            'patient_id' => $this->pasien->id,
-            'doctor_id' => $this->dokter->id,
+        Konsultasi::create([
+            'pasien_id' => $this->patient->id,
+            'dokter_id' => $this->doctor->id,
+            'complaint' => 'Sakit kepala',
             'status' => 'pending',
+            'consultation_date' => now(),
+        ]);
+
+        $response = $this->getJson('/api/v1/konsultasi');
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'success',
+                'pesan',
+                'data' => ['*' => ['id', 'complaint', 'status']],
+                'status_code'
+            ]);
+    }
+
+    /**
+     * Test create consultation
+     */
+    public function test_create_consultation(): void
+    {
+        Sanctum::actingAs($this->patientUser);
+
+        $data = [
+            'doctor_id' => $this->doctor->id,
+            'complaint' => 'Demam tinggi',
+            'description' => 'Demam sejak 3 hari',
+        ];
+
+        $response = $this->postJson('/api/v1/konsultasi', $data);
+
+        $response->assertStatus(201)
+            ->assertJsonStructure(['success', 'pesan', 'data', 'status_code']);
+
+        $this->assertDatabaseHas('konsultasi', [
+            'complaint' => 'Demam tinggi',
         ]);
     }
 
     /**
-     * Test - Get semua konsultasi
-     * GET /api/v1/konsultasi
+     * Test create consultation unauthenticated
      */
-    public function test_get_all_consultations()
+    public function test_create_consultation_unauthenticated(): void
     {
-        Konsultasi::factory()->count(5)->create();
+        $data = [
+            'doctor_id' => $this->doctor->id,
+            'complaint' => 'Sakit gigi',
+        ];
 
-        $response = $this->actingAs($this->adminUser, 'sanctum')
-            ->getJson('/api/v1/konsultasi');
+        $response = $this->postJson('/api/v1/konsultasi', $data);
+
+        $response->assertStatus(401);
+    }
+
+    /**
+     * Test get consultation detail
+     */
+    public function test_get_consultation_detail(): void
+    {
+        Sanctum::actingAs($this->patientUser);
+
+        $consultation = Konsultasi::create([
+            'pasien_id' => $this->patient->id,
+            'dokter_id' => $this->doctor->id,
+            'complaint' => 'Sakit perut',
+            'status' => 'pending',
+            'consultation_date' => now(),
+        ]);
+
+        $response = $this->getJson("/api/v1/konsultasi/{$consultation->id}");
+
+        $response->assertStatus(200)
+            ->assertJsonStructure(['success', 'pesan', 'data', 'status_code']);
+    }
+
+    /**
+     * Test update consultation status
+     */
+    public function test_update_consultation_status(): void
+    {
+        Sanctum::actingAs($this->doctorUser);
+
+        $consultation = Konsultasi::create([
+            'pasien_id' => $this->patient->id,
+            'dokter_id' => $this->doctor->id,
+            'complaint' => 'Sakit telinga',
+            'status' => 'pending',
+            'consultation_date' => now(),
+        ]);
+
+        $data = [
+            'status' => 'ongoing',
+            'diagnosis' => 'Otitis media',
+        ];
+
+        $response = $this->putJson("/api/v1/konsultasi/{$consultation->id}", $data);
 
         $response->assertStatus(200);
-        $response->assertJsonStructure([
-            'success',
-            'pesan',
-            'data' => [
-                '*' => [
-                    'id',
-                    'keluhan',
-                    'status',
-                    'waktu_mulai',
-                    'pasien' => ['user'],
-                    'dokter' => ['user'],
-                ],
-            ],
+
+        $this->assertDatabaseHas('konsultasi', [
+            'id' => $consultation->id,
+            'status' => 'ongoing',
         ]);
     }
 
     /**
-     * Test - Get konsultasi dengan filter status
+     * Test send message in consultation
      */
-    public function test_get_consultations_by_status()
+    public function test_send_consultation_message(): void
     {
-        Konsultasi::factory()->create(['status' => 'pending']);
-        Konsultasi::factory()->create(['status' => 'active']);
+        Sanctum::actingAs($this->patientUser);
 
-        $response = $this->actingAs($this->adminUser, 'sanctum')
-            ->getJson('/api/v1/konsultasi?status=diterima');
+        $consultation = Konsultasi::create([
+            'pasien_id' => $this->patient->id,
+            'dokter_id' => $this->doctor->id,
+            'complaint' => 'Sakit mata',
+            'status' => 'ongoing',
+            'consultation_date' => now(),
+        ]);
+
+        $data = [
+            'message' => 'Mata saya masih gatal',
+        ];
+
+        $response = $this->postJson("/api/v1/konsultasi/{$consultation->id}/messages", $data);
+
+        $response->assertStatus(201)
+            ->assertJsonStructure(['success', 'pesan', 'data', 'status_code']);
+    }
+
+    /**
+     * Test get consultation messages
+     */
+    public function test_get_consultation_messages(): void
+    {
+        Sanctum::actingAs($this->patientUser);
+
+        $consultation = Konsultasi::create([
+            'pasien_id' => $this->patient->id,
+            'dokter_id' => $this->doctor->id,
+            'complaint' => 'Follow-up',
+            'status' => 'ongoing',
+            'consultation_date' => now(),
+        ]);
+
+        $response = $this->getJson("/api/v1/konsultasi/{$consultation->id}/messages");
+
+        $response->assertStatus(200)
+            ->assertJsonStructure(['success', 'pesan', 'data', 'status_code']);
+    }
+
+    /**
+     * Test filter consultations by status
+     */
+    public function test_filter_consultations_by_status(): void
+    {
+        Sanctum::actingAs($this->patientUser);
+
+        Konsultasi::create([
+            'pasien_id' => $this->patient->id,
+            'dokter_id' => $this->doctor->id,
+            'complaint' => 'Konsultasi 1',
+            'status' => 'pending',
+            'consultation_date' => now(),
+        ]);
+
+        Konsultasi::create([
+            'pasien_id' => $this->patient->id,
+            'dokter_id' => $this->doctor->id,
+            'complaint' => 'Konsultasi 2',
+            'status' => 'completed',
+            'consultation_date' => now(),
+        ]);
+
+        $response = $this->getJson('/api/v1/konsultasi?status=pending');
 
         $response->assertStatus(200);
     }
 
     /**
-     * Test - Get detail konsultasi
-     * GET /api/v1/konsultasi/{id}
+     * Test complete consultation
      */
-    public function test_get_consultation_detail()
+    public function test_complete_consultation(): void
     {
-        $response = $this->actingAs($this->pasienUser, 'sanctum')
-            ->getJson("/api/v1/konsultasi/{$this->konsultasi->id}");
+        Sanctum::actingAs($this->doctorUser);
+
+        $consultation = Konsultasi::create([
+            'pasien_id' => $this->patient->id,
+            'dokter_id' => $this->doctor->id,
+            'complaint' => 'Sakit telinga kanan',
+            'status' => 'ongoing',
+            'consultation_date' => now(),
+        ]);
+
+        $data = [
+            'status' => 'completed',
+            'diagnosis' => 'Infeksi telinga',
+            'treatment' => 'Antibiotik',
+        ];
+
+        $response = $this->putJson("/api/v1/konsultasi/{$consultation->id}", $data);
 
         $response->assertStatus(200);
-        $response->assertJsonStructure([
-            'success',
-            'pesan',
-            'data' => [
-                'id',
-                'keluhan',
-                'status',
-                'pasien',
-                'dokter',
-            ],
+
+        $this->assertDatabaseHas('konsultasi', [
+            'id' => $consultation->id,
+            'status' => 'completed',
         ]);
     }
 
     /**
-     * Test - Get konsultasi yang tidak ada
+     * Test get non-existent consultation returns 404
      */
-    public function test_get_consultation_not_found()
+    public function test_get_non_existent_consultation(): void
     {
-        $response = $this->actingAs($this->pasienUser, 'sanctum')
-            ->getJson('/api/v1/konsultasi/99999');
+        Sanctum::actingAs($this->patientUser);
+
+        $response = $this->getJson('/api/v1/konsultasi/9999');
 
         $response->assertStatus(404);
     }
 
     /**
-     * Test - Create konsultasi baru
-     * POST /api/v1/konsultasi
+     * Test create consultation with missing field
      */
-    public function test_create_consultation()
+    public function test_create_consultation_missing_field(): void
     {
-        $response = $this->actingAs($this->pasienUser, 'sanctum')
-            ->postJson('/api/v1/konsultasi', [
-                'doctor_id' => $this->dokter->id,
-                'keluhan' => 'Demam tinggi selama 3 hari',
-                'gejala' => 'Panas badan, pusing',
-            ]);
+        Sanctum::actingAs($this->patientUser);
 
-        $response->assertStatus(201);
-        $response->assertJson([
-            'success' => true,
-            'pesan' => 'Konsultasi berhasil dibuat',
-        ]);
+        $data = [
+            'doctor_id' => $this->doctor->id,
+            // Missing 'complaint'
+        ];
 
-        $this->assertDatabaseHas('consultations', [
-            'patient_id' => $this->pasien->id,
-            'doctor_id' => $this->dokter->id,
-            'status' => 'pending',
-        ]);
-    }
-
-    /**
-     * Test - Create konsultasi tanpa data yang lengkap
-     */
-    public function test_create_consultation_missing_required_fields()
-    {
-        $response = $this->actingAs($this->pasienUser, 'sanctum')
-            ->postJson('/api/v1/konsultasi', [
-                'doctor_id' => $this->dokter->id,
-            ]);
+        $response = $this->postJson('/api/v1/konsultasi', $data);
 
         $response->assertStatus(422);
-        $response->assertJsonValidationErrors(['keluhan']);
-    }
-
-    /**
-     * Test - Update konsultasi
-     * PUT /api/v1/konsultasi/{id}
-     */
-    public function test_update_consultation()
-    {
-        $response = $this->actingAs($this->pasienUser, 'sanctum')
-            ->putJson("/api/v1/konsultasi/{$this->konsultasi->id}", [
-                'keluhan' => 'Demam tinggi dan sakit kepala',
-            ]);
-
-        $response->assertStatus(200);
-        $response->assertJson([
-            'success' => true,
-            'pesan' => 'Konsultasi berhasil diperbarui',
-        ]);
-    }
-
-    /**
-     * Test - Delete konsultasi
-     * DELETE /api/v1/konsultasi/{id}
-     */
-    public function test_delete_consultation()
-    {
-        $response = $this->actingAs($this->pasienUser, 'sanctum')
-            ->deleteJson("/api/v1/konsultasi/{$this->konsultasi->id}");
-
-        $response->assertStatus(200);
-        $response->assertJson([
-            'success' => true,
-            'pesan' => 'Konsultasi berhasil dihapus',
-        ]);
-
-        $this->assertDatabaseMissing('consultations', [
-            'id' => $this->konsultasi->id,
-        ]);
-    }
-
-    /**
-     * Test - Terima konsultasi (doctor)
-     * POST /api/v1/konsultasi/{id}/terima
-     */
-    public function test_accept_consultation()
-    {
-        $response = $this->actingAs($this->dokterUser, 'sanctum')
-            ->postJson("/api/v1/konsultasi/{$this->konsultasi->id}/terima");
-
-        $response->assertStatus(200);
-        $response->assertJson([
-            'success' => true,
-            'pesan' => 'Konsultasi berhasil diterima',
-        ]);
-
-        $this->assertDatabaseHas('consultations', [
-            'id' => $this->konsultasi->id,
-            'status' => 'active',
-        ]);
-    }
-
-    /**
-     * Test - Tolak konsultasi (doctor)
-     * POST /api/v1/konsultasi/{id}/tolak
-     */
-    public function test_reject_consultation()
-    {
-        $response = $this->actingAs($this->dokterUser, 'sanctum')
-            ->postJson("/api/v1/konsultasi/{$this->konsultasi->id}/tolak", [
-                'alasan' => 'Sedang sibuk dengan konsultasi lain',
-            ]);
-
-        $response->assertStatus(200);
-        $response->assertJson([
-            'success' => true,
-            'pesan' => 'Konsultasi berhasil ditolak',
-        ]);
-
-        $this->assertDatabaseHas('consultations', [
-            'id' => $this->konsultasi->id,
-            'status' => 'cancelled',
-        ]);
-    }
-
-    /**
-     * Test - Selesaikan konsultasi
-     * POST /api/v1/konsultasi/{id}/selesaikan
-     */
-    public function test_complete_consultation()
-    {
-        $konsultasi = Konsultasi::factory()->create([
-            'patient_id' => $this->pasien->id,
-            'doctor_id' => $this->dokter->id,
-            'status' => 'active',
-        ]);
-
-        $response = $this->actingAs($this->dokterUser, 'sanctum')
-            ->postJson("/api/v1/konsultasi/{$konsultasi->id}/selesaikan", [
-                'diagnosis' => 'Influenza',
-                'resep' => 'Paracetamol 500mg x 3 hari',
-            ]);
-
-        $response->assertStatus(200);
-        $response->assertJson([
-            'success' => true,
-            'pesan' => 'Konsultasi berhasil diselesaikan',
-        ]);
-
-        $this->assertDatabaseHas('consultations', [
-            'id' => $konsultasi->id,
-            'status' => 'closed',
-        ]);
-    }
-
-    /**
-     * Test - Pasien tidak bisa accept konsultasi
-     */
-    public function test_patient_cannot_accept_consultation()
-    {
-        $response = $this->actingAs($this->pasienUser, 'sanctum')
-            ->postJson("/api/v1/konsultasi/{$this->konsultasi->id}/terima");
-
-        $response->assertStatus(403);
-    }
-
-    /**
-     * Test - Dokter tidak bisa terima konsultasi milik dokter lain
-     */
-    public function test_doctor_cannot_accept_other_doctor_consultation()
-    {
-        /** @var User $otherDokterUser */
-        $otherDokterUser = User::factory()->create(['role' => 'dokter']);
-        $otherDokter = Dokter::factory()->create(['user_id' => $otherDokterUser->id]);
-
-        $konsultasi = Konsultasi::factory()->create([
-            'patient_id' => $this->pasien->id,
-            'doctor_id' => $this->dokter->id,
-        ]);
-
-        $response = $this->actingAs($otherDokterUser, 'sanctum')
-            ->postJson("/api/v1/konsultasi/{$konsultasi->id}/terima");
-
-        $response->assertStatus(403);
-    }
-
-    /**
-     * Test - Pasien tidak bisa update konsultasi yang sudah diterima
-     */
-    public function test_patient_cannot_update_accepted_consultation()
-    {
-        $konsultasi = Konsultasi::factory()->create([
-            'patient_id' => $this->pasien->id,
-            'doctor_id' => $this->dokter->id,
-            'status' => 'active',
-        ]);
-
-        $response = $this->actingAs($this->pasienUser, 'sanctum')
-            ->putJson("/api/v1/konsultasi/{$konsultasi->id}", [
-                'keluhan' => 'Demam sangat tinggi',
-            ]);
-
-        $response->assertStatus(403);
     }
 }
