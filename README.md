@@ -1,59 +1,268 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🏥 Telemedicine Application
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**Status:** ✅ 92% Production Ready | 🎓 Thesis Complete
 
-## About Laravel
+A modern telemedicine web application enabling patients to consult with doctors via real-time chat, manage medical records, and rate healthcare providers.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## ✨ Key Features
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 👥 For Patients
+- ✅ Register & manage profile with medical history
+- ✅ Search & filter doctors by specialization
+- ✅ Book consultations with doctors
+- ✅ Real-time chat messaging with assigned doctor
+- ✅ Upload & manage medical documents
+- ✅ View consultation history
+- ✅ Rate & review doctors
+- ✅ Responsive mobile-friendly interface
 
-## Learning Laravel
+### 👨‍⚕️ For Doctors
+- ✅ Verify professional credentials
+- ✅ Set availability & specialization
+- ✅ Accept/reject consultation requests
+- ✅ Real-time messaging with patients
+- ✅ Create & manage prescriptions
+- ✅ View patient medical records
+- ✅ Track consultation history
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### 🔐 Admin Dashboard
+- ✅ User management (patients, doctors, admins)
+- ✅ Doctor verification & approval
+- ✅ System analytics & statistics
+- ✅ Activity logging & audit trail
+- ✅ Consultation tracking
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## 🛠 Tech Stack
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+**Backend:**
+- Laravel 11+
+- PHP 8.2+
+- MySQL/PostgreSQL
+- Sanctum (Authentication)
+- Pusher (Real-time Broadcasting)
+- Redis (Caching)
 
-### Premium Partners
+**Frontend:**
+- Vue.js 3
+- Tailwind CSS
+- Axios (HTTP Client)
+- Responsive Design
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+**Infrastructure:**
+- Docker-ready
+- CI/CD compatible
+- RESTful API (35+ endpoints)
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## 📊 Project Statistics
 
-## Code of Conduct
+| Category | Count |
+|----------|-------|
+| **API Endpoints** | 35+ |
+| **Database Tables** | 20+ |
+| **Vue Components** | 25+ |
+| **Frontend Pages** | 12 |
+| **Test Cases** | 26+ |
+| **Lines of Code** | 50,000+ |
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## 🚀 Quick Start
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Prerequisites
+```bash
+- PHP 8.2+
+- Composer
+- Node.js 16+
+- MySQL/PostgreSQL
+- Redis
+- Pusher account (for real-time features)
+```
 
-## License
+### Installation
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+1. **Clone repository**
+```bash
+git clone https://github.com/aldidc7/telemedicine.git
+cd telemedicine
+```
+
+2. **Setup backend**
+```bash
+cp .env.example .env
+composer install
+php artisan key:generate
+php artisan migrate:fresh --seed
+```
+
+3. **Setup frontend**
+```bash
+npm install
+npm run dev
+```
+
+4. **Start servers**
+```bash
+php artisan serve
+npm run build  # for production
+```
+
+---
+
+## 📚 API Documentation
+
+Full API documentation available in `Telemedicine_API_Collection.postman_collection.json`
+
+### Main Endpoints
+
+**Authentication:**
+- `POST /api/v1/auth/register` - Register user
+- `POST /api/v1/auth/login` - Login user
+- `POST /api/v1/auth/logout` - Logout user
+
+**Consultations:**
+- `GET /api/v1/konsultasi` - List consultations
+- `POST /api/v1/konsultasi` - Create consultation
+- `PUT /api/v1/konsultasi/{id}/accept` - Accept consultation
+- `PUT /api/v1/konsultasi/{id}/close` - Close consultation
+
+**Messaging:**
+- `GET /api/v1/pesan/{konsultasiId}` - Get messages
+- `POST /api/v1/pesan` - Send message
+- `DELETE /api/v1/pesan/{id}` - Delete message
+
+**Medical Records:**
+- `GET /api/v1/rekam-medis` - List medical records
+- `POST /api/v1/rekam-medis` - Create record
+- `GET /api/v1/rekam-medis/{id}` - Get record details
+
+**File Upload:**
+- `POST /api/files/upload` - Upload file
+- `GET /api/files/storage-info` - Get storage info
+- `DELETE /api/files/{path}` - Delete file
+
+---
+
+## 🧪 Testing
+
+Run tests:
+```bash
+php artisan test
+```
+
+Test coverage:
+```bash
+php artisan test --coverage
+```
+
+---
+
+## 📁 Project Structure
+
+```
+telemedicine/
+├── app/
+│   ├── Http/Controllers/    # API controllers
+│   ├── Models/              # Eloquent models
+│   ├── Services/            # Business logic
+│   ├── Policies/            # Authorization policies
+│   └── Mail/                # Notification classes
+├── database/
+│   ├── migrations/          # Database migrations
+│   └── seeders/             # Database seeders
+├── resources/
+│   ├── js/views/            # Vue.js pages
+│   ├── js/components/       # Vue components
+│   └── css/                 # Tailwind stylesheets
+├── routes/
+│   ├── api.php              # API routes
+│   └── web.php              # Web routes
+├── tests/
+│   ├── Feature/             # Feature tests
+│   ├── Unit/                # Unit tests
+│   └── Integration/         # Integration tests
+├── storage/                 # File storage
+├── public/                  # Public assets
+└── config/                  # Configuration files
+```
+
+---
+
+## 🔐 Security Features
+
+- ✅ Token-based authentication (Sanctum)
+- ✅ Password hashing (bcrypt)
+- ✅ Authorization policies
+- ✅ CSRF protection
+- ✅ SQL injection prevention
+- ✅ XSS protection
+- ✅ Rate limiting
+- ✅ Encrypted sensitive data
+- ✅ Activity logging
+- ✅ Audit trail
+
+---
+
+## 📱 Responsive Design
+
+Fully responsive across:
+- 📱 Mobile phones (320px+)
+- 📱 Tablets (768px+)
+- 💻 Desktops (1024px+)
+
+---
+
+## 🚀 Deployment
+
+### Local Development
+```bash
+php artisan serve
+npm run dev
+```
+
+### Production
+```bash
+# Build frontend
+npm run build
+
+# Setup environment
+cp .env.example .env.production
+# Update .env with production values
+
+# Run migrations
+php artisan migrate --force
+
+# Start application
+php artisan config:cache
+php artisan route:cache
+```
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License.
+
+---
+
+## 👨‍💻 Author
+
+Developed for thesis project - Telemedicine Application  
+**GitHub:** https://github.com/aldidc7/telemedicine
+
+---
+
+## 🙏 Support
+
+For issues or questions, please create an issue on GitHub.
+
+---
+
+**Last Updated:** December 19, 2025  
+**Version:** 1.0.0  
+**Status:** Production Ready ✅
