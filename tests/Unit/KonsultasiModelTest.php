@@ -13,6 +13,11 @@ class KonsultasiModelTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected User $patientUser;
+    protected User $doctorUser;
+    protected Pasien $patient;
+    protected Dokter $doctor;
+
     protected function setUp(): void
     {
         parent::setUp();

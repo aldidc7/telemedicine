@@ -7,8 +7,9 @@ use Illuminate\Http\JsonResponse;
 
 class ApiException extends Exception
 {
-    protected $statusCode;
-    protected $errorCode;
+    protected int $statusCode;
+    protected string $errorCode;
+    protected string $message = '';
 
     public function __construct(
         string $message,

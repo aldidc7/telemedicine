@@ -12,6 +12,10 @@ class DokterControllerTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected User $adminUser;
+    protected User $dokterUser;
+    protected Dokter $dokter;
+
     protected function setUp(): void
     {
         parent::setUp();
