@@ -86,7 +86,8 @@ class FileUploadController extends Controller
     {
         try {
             /** @var \App\Models\User|null $user */
-            $user = auth()->user(); // @phpstan-ignore-next-line
+            /** @noinspection PhpUndefinedMethodInspection */
+            $user = auth()->user();
             
             $result = $this->uploadService->uploadFile(
                 $request->file('file'),
@@ -106,8 +107,9 @@ class FileUploadController extends Controller
                 'error_code' => 'FILE_UPLOAD_ERROR',
             ], 422);
         } catch (\Exception $e) {
+            /** @noinspection PhpUndefinedMethodInspection */
             \Log::error('File upload error', [
-                'user_id' => auth()->id() ?? null, // @phpstan-ignore-next-line
+                'user_id' => auth()->id() ?? null,
                 'error' => $e->getMessage(),
             ]);
 
@@ -156,7 +158,8 @@ class FileUploadController extends Controller
     {
         try {
             /** @var \App\Models\User|null $user */
-            $user = auth()->user(); // @phpstan-ignore-next-line
+            /** @noinspection PhpUndefinedMethodInspection */
+            $user = auth()->user();
             
             $info = $this->uploadService->getUserStorageInfo($user);
 
@@ -165,8 +168,9 @@ class FileUploadController extends Controller
                 'data' => $info,
             ], 200);
         } catch (\Exception $e) {
+            /** @noinspection PhpUndefinedMethodInspection */
             \Log::error('Get storage info error', [
-                'user_id' => auth()->id() ?? null, // @phpstan-ignore-next-line
+                'user_id' => auth()->id() ?? null,
                 'error' => $e->getMessage(),
             ]);
 
@@ -211,7 +215,8 @@ class FileUploadController extends Controller
     {
         try {
             /** @var \App\Models\User|null $user */
-            $user = auth()->user(); // @phpstan-ignore-next-line
+            /** @noinspection PhpUndefinedMethodInspection */
+            $user = auth()->user();
             
             $this->uploadService->softDeleteFile($user, $filePath);
 
@@ -220,8 +225,9 @@ class FileUploadController extends Controller
                 'message' => 'File berhasil dihapus',
             ], 200);
         } catch (\Exception $e) {
+            /** @noinspection PhpUndefinedMethodInspection */
             \Log::error('File delete error', [
-                'user_id' => auth()->id() ?? null, // @phpstan-ignore-next-line
+                'user_id' => auth()->id() ?? null,
                 'file_path' => $filePath,
                 'error' => $e->getMessage(),
             ]);
