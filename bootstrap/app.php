@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'throttle' => \App\Http\Middleware\ApiRateLimiter::class,
             'validate-upload' => \App\Http\Middleware\ValidateFileUpload::class,
             'security-headers' => \App\Http\Middleware\AddSecurityHeaders::class,
+            'performance' => \App\Http\Middleware\PerformanceMiddleware::class,
         ]);
 
         // Redirect unauthenticated API requests to 401 instead of /login

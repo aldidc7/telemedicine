@@ -12,18 +12,21 @@ class ConsultationRequest extends ApiRequest
     public function rules(): array
     {
         $rules = [
-            'dokter_id' => 'required|exists:users,id',
-            'keluhan' => 'required|string|min:10|max:1000',
+            'dokter_id' => 'required|exists:doctors,id',
+            'keluhan' => 'required|string|min:10|max:1000|regex:/^[a-zA-Z0-9\s\-.,]+$/i',
             'tipe_layanan' => 'required|in:online,offline',
             'tanggal_konsultasi' => 'nullable|date|after_or_equal:today',
             'waktu_mulai' => 'nullable|date_format:H:i',
+            'urgency_level' => 'nullable|in:normal,urgent,emergency',
+            'description' => 'nullable|string|max:2000',
         ];
 
         // Add status field only if updating (PUT/PATCH)
         if ($this->isMethod('put') || $this->isMethod('patch')) {
             $rules['status'] = 'nullable|in:pending,active,completed,cancelled';
-            $rules['catatan_dokter'] = 'nullable|string|max:1000';
-            $rules['diagnosis'] = 'nullable|string|max:1000';
+            $rules['catatan_dokter'] = 'nullable|string|max:2000';
+            $rules['diagnosis'] = 'nullable|string|max:2000';
+            $rules['closing_notes'] = 'nullable|string|max:1000';
         }
 
         return $rules;

@@ -67,37 +67,75 @@ class AdminController extends Controller
                 ], 403);
             }
 
-            // ===== TOTAL STATS =====
-            $totalPasien = Pasien::count();
-            $totalDokter = Dokter::count();
-            $totalKonsultasi = Konsultasi::count();
-            $konsultasiAktif = Konsultasi::where('status', 'active')->count();
-            $konsultasiMenunggu = Konsultasi::where('status', 'pending')->count();
-            $konsultasiSelesai = Konsultasi::where('status', 'closed')->count();
-            $konsultasiBatalkan = Konsultasi::where('status', 'cancelled')->count();
-            $totalAdmin = Admin::count();
+            // Use aggregation queries to reduce database hits from 15+ to 3-4
+            $stats = \DB::table('pasien')->selectRaw('count(*) as total')->first();
+            $totalPasien = $stats?->total ?? 0;
+
+            $stats = \DB::table('dokter')->selectRaw('count(*) as total')->first();
+            $totalDokter = $stats?->total ?? 0;
+
+            // Aggregate all Konsultasi counts in one query
+            $konsultasiStats = \DB::table('konsultasi')
+                ->selectRaw("
+                    count(*) as total,
+                    sum(case when status = 'active' then 1 else 0 end) as aktif,
+                    sum(case when status = 'pending' then 1 else 0 end) as menunggu,
+                    sum(case when status = 'closed' then 1 else 0 end) as selesai,
+                    sum(case when status = 'cancelled' then 1 else 0 end) as batalkan
+                ")
+                ->first();
+
+            $totalKonsultasi = $konsultasiStats?->total ?? 0;
+            $konsultasiAktif = $konsultasiStats?->aktif ?? 0;
+            $konsultasiMenunggu = $konsultasiStats?->menunggu ?? 0;
+            $konsultasiSelesai = $konsultasiStats?->selesai ?? 0;
+            $konsultasiBatalkan = $konsultasiStats?->batalkan ?? 0;
+
+            $stats = \DB::table('admin')->selectRaw('count(*) as total')->first();
+            $totalAdmin = $stats?->total ?? 0;
 
             // ===== MONTHLY STATS =====
             $bulanIni = now()->month;
             $tahunIni = now()->year;
-            $konsultasiBulanIni = Konsultasi::whereMonth('created_at', $bulanIni)
+
+            $monthlyStats = \DB::table('konsultasi')
+                ->selectRaw("
+                    sum(case when month(created_at) = ? and year(created_at) = ? then 1 else 0 end) as bulanIni,
+                    sum(case when status = 'closed' and month(end_time) = ? and year(end_time) = ? then 1 else 0 end) as selesaibulanini
+                ")
+                ->setBindings([$bulanIni, $tahunIni, $bulanIni, $tahunIni])
+                ->first();
+
+            $konsultasiBulanIni = $monthlyStats?->bulanini ?? 0;
+            $konsultasiSelesaiBulanIni = $monthlyStats?->selesaibulanini ?? 0;
+
+            $pasienStats = \DB::table('pasien')
+                ->whereMonth('created_at', $bulanIni)
                 ->whereYear('created_at', $tahunIni)
                 ->count();
-            $pasienBaru = Pasien::whereMonth('created_at', $bulanIni)
-                ->whereYear('created_at', $tahunIni)
-                ->count();
-            $konsultasiSelesaiBulanIni = Konsultasi::where('status', 'closed')
-                ->whereMonth('end_time', $bulanIni)
-                ->whereYear('end_time', $tahunIni)
-                ->count();
+            $pasienBaru = $pasienStats;
 
             // ===== DOCTOR AVAILABILITY =====
-            $dokterTersedia = Dokter::where('is_available', true)->count();
-            $dokterTidakTersedia = Dokter::where('is_available', false)->count();
+            $dokterStats = \DB::table('dokter')
+                ->selectRaw("
+                    sum(case when is_available = true then 1 else 0 end) as tersedia,
+                    sum(case when is_available = false then 1 else 0 end) as tidaktersedia
+                ")
+                ->first();
+
+            $dokterTersedia = $dokterStats?->tersedia ?? 0;
+            $dokterTidakTersedia = $dokterStats?->tidakttersedia ?? 0;
 
             // ===== USER ACTIVITY =====
-            $userAktif = User::where('is_active', true)->count();
-            $userNonaktif = User::where('is_active', false)->count();
+            $userStats = \DB::table('users')
+                ->selectRaw("
+                    sum(case when is_active = true then 1 else 0 end) as aktif,
+                    sum(case when is_active = false then 1 else 0 end) as nonaktif
+                ")
+                ->first();
+
+            $userAktif = $userStats?->aktif ?? 0;
+            $userNonaktif = $userStats?->nonaktif ?? 0;
 
             // ===== CONSULTATION METRICS =====
             $rataRataDurasiSelesai = Konsultasi::where('status', 'closed')

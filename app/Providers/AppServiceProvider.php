@@ -29,6 +29,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Register middleware aliases
+        $this->app->make(\Illuminate\Contracts\Http\Kernel::class)->pushMiddleware(
+            \App\Http\Middleware\PerformanceMiddleware::class
+        );
+
         // Register singleton services untuk dependency injection
         $this->app->singleton(AuthService::class, function () {
             return new AuthService();
@@ -60,6 +65,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // ===== Register Query Monitoring =====
+        if (config('app.debug') || app()->environment('production')) {
+            \App\Services\QueryMonitoringService::registerListener();
+        }
+
         // ===== Register Model Observers =====
         Pasien::observe(PasienObserver::class);
 

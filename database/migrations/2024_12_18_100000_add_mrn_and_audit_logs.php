@@ -94,13 +94,28 @@ return new class extends Migration
         Schema::dropIfExists('audit_logs');
         
         Schema::table('patients', function (Blueprint $table) {
-            if (Schema::hasColumn('patients', 'medical_record_number')) {
-                $table->dropIndex(['medical_record_number']);
-                $table->dropColumn('medical_record_number');
+            // Drop columns if they exist, ignore errors
+            $columns = Schema::getColumnListing('patients');
+            
+            if (in_array('medical_record_number', $columns)) {
+                try {
+                    $table->dropUnique(['medical_record_number']);
+                } catch (\Exception $e) {
+                    // Index might not exist, that's okay
+                }
+                try {
+                    $table->dropColumn('medical_record_number');
+                } catch (\Exception $e) {
+                    // Column might not exist
+                }
             }
             
-            if (Schema::hasColumn('patients', 'encrypted_nik')) {
-                $table->dropColumn('encrypted_nik');
+            if (in_array('encrypted_nik', $columns)) {
+                try {
+                    $table->dropColumn('encrypted_nik');
+                } catch (\Exception $e) {
+                    // Column might not exist
+                }
             }
         });
     }

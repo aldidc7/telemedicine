@@ -24,7 +24,7 @@ Route::get('/v1/health', function () {
     return response()->json(['status' => 'API is running']);
 });
 
-Route::prefix('v1')->group(function () {
+Route::prefix('v1')->middleware(['performance'])->group(function () {
     // ============ PUBLIC ROUTES (No Auth) ============
 
     // ============ AUTHENTICATION ROUTES ============

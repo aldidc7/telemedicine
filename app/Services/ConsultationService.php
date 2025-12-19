@@ -23,7 +23,8 @@ class ConsultationService
      */
     public function getAllConsultations(array $filters = [], int $perPage = 15)
     {
-        $query = Konsultasi::with(['pasien', 'dokter', 'chats']);
+        $query = Konsultasi::with(['pasien.user', 'dokter.user', 'chats'])
+            ->withCount('chats');
 
         // Filter by status
         if (isset($filters['status']) && $filters['status'] !== 'all') {
@@ -61,7 +62,8 @@ class ConsultationService
      */
     public function getConsultationById(int $id): ?Konsultasi
     {
-        return Konsultasi::with(['pasien', 'dokter', 'chats', 'rekamMedis'])
+        return Konsultasi::with(['pasien.user', 'dokter.user', 'chats', 'rekamMedis'])
+            ->withCount('chats')
             ->find($id);
     }
 
@@ -168,7 +170,8 @@ class ConsultationService
     public function getPatientConsultations(User $pasien, int $perPage = 15)
     {
         return Konsultasi::where('pasien_id', $pasien->id)
-            ->with(['pasien', 'dokter', 'chats'])
+            ->with(['pasien.user', 'dokter.user', 'chats'])
+            ->withCount('chats')
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }
@@ -183,13 +186,14 @@ class ConsultationService
     public function getDoctorConsultations(User $dokter, int $perPage = 15)
     {
         return Konsultasi::where('dokter_id', $dokter->id)
-            ->with(['pasien', 'dokter', 'chats'])
+            ->with(['pasien.user', 'dokter.user', 'chats'])
+            ->withCount('chats')
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }
 
     /**
-     * Get consultation stats
+     * Get consultation stats (cached)
      *
      * @return array
      */
@@ -202,5 +206,85 @@ class ConsultationService
             'completed' => Konsultasi::where('status', 'completed')->count(),
             'cancelled' => Konsultasi::where('status', 'cancelled')->count(),
         ];
+    }
+
+    /**
+     * Get consultation with message count
+     *
+     * @param int $id
+     * @return Konsultasi|null
+     */
+    public function getConsultationWithMessages(int $id): ?Konsultasi
+    {
+        return Konsultasi::with(['pasien', 'dokter', 'chats', 'rekamMedis'])
+            ->withCount('chats')
+            ->find($id);
+    }
+
+    /**
+     * Get urgent consultations
+     *
+     * @return Konsultasi[]
+     */
+    public function getUrgentConsultations()
+    {
+        return Konsultasi::where('status', 'pending')
+            ->where('urgency_level', 'urgent')
+            ->orderBy('created_at', 'asc')
+            ->limit(10)
+            ->get();
+    }
+
+    /**
+     * Get doctor active consultations count
+     *
+     * @param int $dokter_id
+     * @return int
+     */
+    public function getDoctorActiveConsultationCount(int $dokter_id): int
+    {
+        return Konsultasi::where('dokter_id', $dokter_id)
+            ->where('status', 'active')
+            ->count();
+    }
+
+    /**
+     * Check if doctor available based on max concurrent consultations
+     *
+     * @param int $dokter_id
+     * @param int $max_concurrent
+     * @return bool
+     */
+    public function isDoctorAvailable(int $dokter_id, int $max_concurrent = 5): bool
+    {
+        $activeCount = $this->getDoctorActiveConsultationCount($dokter_id);
+        return $activeCount < $max_concurrent;
+    }
+
+    /**
+     * Get consultation response time average (in minutes)
+     *
+     * @param int $dokter_id
+     * @return float|null
+     */
+    public function getConsultationResponseTime(int $dokter_id): ?float
+    {
+        $consultations = Konsultasi::where('dokter_id', $dokter_id)
+            ->where('status', '!=', 'pending')
+            ->get();
+
+        if ($consultations->isEmpty()) {
+            return null;
+        }
+
+        $totalMinutes = 0;
+        foreach ($consultations as $consultation) {
+            if ($consultation->created_at && $consultation->updated_at) {
+                $minutes = $consultation->created_at->diffInMinutes($consultation->updated_at);
+                $totalMinutes += $minutes;
+            }
+        }
+
+        return round($totalMinutes / $consultations->count(), 2);
     }
 }

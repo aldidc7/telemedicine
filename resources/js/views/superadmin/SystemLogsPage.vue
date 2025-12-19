@@ -115,12 +115,12 @@
                     <span class="text-xs text-gray-500">{{ log.admin?.email }}</span>
                   </div>
                 </td>
-                <td class="px-6 py-4 text-sm">
+                <td class="px-6 py-4 text-sm text-gray-900">
                   <span :class="['px-3 py-1 rounded-full text-xs font-semibold', getActionBadgeColor(log.action)]">
                     {{ log.action.toUpperCase() }}
                   </span>
                 </td>
-                <td class="px-6 py-4 text-sm">
+                <td class="px-6 py-4 text-sm text-gray-900">
                   <span :class="['px-3 py-1 rounded-full text-xs font-semibold', getResourceBadgeColor(log.resource)]">
                     {{ log.resource.toUpperCase() }}
                   </span>
@@ -128,7 +128,7 @@
                 <td class="px-6 py-4 text-sm text-gray-900 font-mono">
                   {{ log.resource_id || '-' }}
                 </td>
-                <td class="px-6 py-4 text-sm text-gray-500 font-mono text-xs">
+                <td class="px-6 py-4 text-xs text-gray-500 font-mono">
                   {{ log.ip_address }}
                 </td>
                 <td class="px-6 py-4 text-sm">
@@ -190,7 +190,7 @@
     <!-- Detail Modal -->
     <div v-if="showDetailModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-96 overflow-y-auto">
-        <div class="p-6 border-b border-gray-200">
+        <div class="relative p-6 border-b border-gray-200">
           <h3 class="text-lg font-bold text-gray-900">Detail Perubahan</h3>
           <button
             @click="showDetailModal = false"

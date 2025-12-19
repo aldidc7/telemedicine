@@ -29,7 +29,10 @@ class DokterService
         $sort = $filters['sort'] ?? 'created_at';
         $order = $filters['order'] ?? 'desc';
 
-        $query = Dokter::with('user', 'konsultasi');
+        $query = Dokter::with('user')
+            ->withCount(['konsultasi', 'konsultasi as active_consultations' => function($q) {
+                $q->where('status', 'active');
+            }]);
 
         // Search filter
         if ($search) {
@@ -76,7 +79,11 @@ class DokterService
      */
     public function getDokterById(int $id)
     {
-        return Dokter::with('user', 'konsultasi')->find($id);
+        return Dokter::with('user')
+            ->withCount(['konsultasi', 'konsultasi as active_consultations' => function($q) {
+                $q->where('status', 'active');
+            }])
+            ->find($id);
     }
 
     /**
@@ -87,7 +94,12 @@ class DokterService
      */
     public function getDokterByUserId(int $userId)
     {
-        return Dokter::where('user_id', $userId)->with('user', 'konsultasi')->first();
+        return Dokter::where('user_id', $userId)
+            ->with('user')
+            ->withCount(['konsultasi', 'konsultasi as active_consultations' => function($q) {
+                $q->where('status', 'active');
+            }])
+            ->first();
     }
 
     /**
@@ -241,5 +253,140 @@ class DokterService
         }
 
         return $this->updateDokter($dokter, $updateData);
+    }
+
+    /**
+     * Get doctor performance metrics
+     *
+     * @param int $dokter_id
+     * @return array
+     */
+    public function getDoctorPerformanceMetrics(int $dokter_id): array
+    {
+        $dokter = Dokter::find($dokter_id);
+        
+        if (!$dokter) {
+            return [];
+        }
+
+        $consultations = $dokter->konsultasi()->get();
+        $completedCount = $consultations->where('status', 'completed')->count();
+        $totalCount = $consultations->count();
+
+        return [
+            'doctor_id' => $dokter_id,
+            'name' => $dokter->user->name,
+            'specialization' => $dokter->specialization,
+            'total_consultations' => $totalCount,
+            'completed_consultations' => $completedCount,
+            'completion_rate' => $totalCount > 0 ? round(($completedCount / $totalCount) * 100, 2) : 0,
+            'active_consultations' => $consultations->where('status', 'active')->count(),
+            'is_verified' => $dokter->is_verified,
+            'is_available' => $dokter->is_available,
+        ];
+    }
+
+    /**
+     * Get available doctors with minimal load
+     *
+     * @param string|null $specialization
+     * @param int $maxConsultations
+     * @return mixed
+     */
+    public function getAvailableDoctors(?string $specialization = null, int $maxConsultations = 5)
+    {
+        $query = Dokter::where('is_available', true)
+            ->where('is_verified', true)
+            ->with(['user', 'konsultasi' => function ($q) {
+                $q->where('status', 'active');
+            }]);
+
+        if ($specialization) {
+            $query->where('specialization', $specialization);
+        }
+
+        $doctors = $query->get();
+
+        // Filter doctors with available slots
+        return $doctors->filter(function ($doctor) use ($maxConsultations) {
+            return $doctor->konsultasi->count() < $maxConsultations;
+        })->values();
+    }
+
+    /**
+     * Verify doctor by admin
+     *
+     * @param int $dokter_id
+     * @param int $admin_id
+     * @param string|null $notes
+     * @return Dokter
+     */
+    public function verifyDoctor(int $dokter_id, int $admin_id, ?string $notes = null): Dokter
+    {
+        $dokter = Dokter::find($dokter_id);
+        
+        $dokter->update([
+            'is_verified' => true,
+            'verified_at' => now(),
+            'verified_by_admin_id' => $admin_id,
+            'verification_notes' => $notes,
+        ]);
+
+        return $dokter->fresh();
+    }
+
+    /**
+     * Reject doctor verification
+     *
+     * @param int $dokter_id
+     * @param int $admin_id
+     * @param string|null $reason
+     * @return Dokter
+     */
+    public function rejectDoctor(int $dokter_id, int $admin_id, ?string $reason = null): Dokter
+    {
+        $dokter = Dokter::find($dokter_id);
+        
+        $dokter->update([
+            'is_verified' => false,
+            'verified_at' => null,
+            'verified_by_admin_id' => $admin_id,
+            'verification_notes' => $reason,
+        ]);
+
+        return $dokter->fresh();
+    }
+
+    /**
+     * Get pending verification doctors
+     *
+     * @param int $perPage
+     * @return mixed
+     */
+    public function getPendingVerificationDoctors(int $perPage = 15)
+    {
+        return Dokter::where('is_verified', false)
+            ->with('user')
+            ->orderBy('created_at', 'asc')
+            ->paginate($perPage);
+    }
+
+    /**
+     * Get doctor statistics
+     *
+     * @return array
+     */
+    public function getDoctorStatistics(): array
+    {
+        return [
+            'total_doctors' => Dokter::count(),
+            'verified_doctors' => Dokter::where('is_verified', true)->count(),
+            'pending_doctors' => Dokter::where('is_verified', false)->count(),
+            'available_doctors' => Dokter::where('is_available', true)->count(),
+            'doctors_by_specialization' => Dokter::selectRaw('specialization, COUNT(*) as count')
+                ->groupBy('specialization')
+                ->pluck('count', 'specialization')
+                ->toArray(),
+        ];
     }
 }

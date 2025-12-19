@@ -56,7 +56,7 @@ class MedicalRecord extends Model
     // ===== RELATIONSHIPS =====
 
     /**
-     * Relation to Patient
+     * Relation to Patient (alias: pasien)
      */
     public function patient()
     {
@@ -64,7 +64,15 @@ class MedicalRecord extends Model
     }
 
     /**
-     * Relation to Doctor
+     * Alias for patient() - shorter name
+     */
+    public function pasien()
+    {
+        return $this->belongsTo(Pasien::class, 'patient_id');
+    }
+
+    /**
+     * Relation to Doctor (alias: dokter)
      */
     public function doctor()
     {
@@ -72,9 +80,25 @@ class MedicalRecord extends Model
     }
 
     /**
-     * Relation to Consultation
+     * Alias for doctor() - shorter name
+     */
+    public function dokter()
+    {
+        return $this->belongsTo(Dokter::class, 'doctor_id');
+    }
+
+    /**
+     * Relation to Consultation (alias: konsultasi)
      */
     public function consultation()
+    {
+        return $this->belongsTo(Konsultasi::class, 'consultation_id');
+    }
+
+    /**
+     * Alias for consultation() - shorter name
+     */
+    public function konsultasi()
     {
         return $this->belongsTo(Konsultasi::class, 'consultation_id');
     }
