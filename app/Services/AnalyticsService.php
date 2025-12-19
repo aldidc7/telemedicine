@@ -165,7 +165,6 @@ class AnalyticsService
                     'id',
                     'doctor_id',
                     'fee',
-                    'payment_status',
                     'created_at'
                 );
 
@@ -183,8 +182,6 @@ class AnalyticsService
             $consultations = $query->get();
             
             $totalRevenue = $consultations->sum('fee');
-            $paidRevenue = $consultations->where('payment_status', 'paid')->sum('fee');
-            $pendingRevenue = $consultations->where('payment_status', 'pending')->sum('fee');
             
             // Pre-load all doctors at once to prevent N+1 queries
             $doctorIds = $consultations->pluck('doctor_id')->unique();
@@ -211,9 +208,6 @@ class AnalyticsService
 
             return [
                 'total_revenue' => $totalRevenue,
-                'paid_revenue' => $paidRevenue,
-                'pending_revenue' => $pendingRevenue,
-                'payment_completion_rate' => $totalRevenue > 0 ? ($paidRevenue / $totalRevenue) * 100 : 0,
                 'revenue_by_doctor' => $revenueByDoctor,
                 'period' => $period,
             ];

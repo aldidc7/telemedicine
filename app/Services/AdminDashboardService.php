@@ -317,9 +317,9 @@ class AdminDashboardService
 
     private function calculateRevenue(): float
     {
-        // Implementation depends on payment system
         // Placeholder: count completed consultations × average fee
-        return Consultation::where('status', 'completed')->count() * 50000;
+        // Payment system removed - focus on chat system only
+        return Konsultasi::where('status', 'completed')->count() * 50000;
     }
 
     private function calculateAppointmentCompletionRate($from): float

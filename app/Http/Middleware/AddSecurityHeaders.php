@@ -65,7 +65,6 @@ class AddSecurityHeaders
             'geolocation=(), ' .
             'microphone=(), ' .
             'camera=(), ' .
-            'payment=(), ' .
             'usb=(), ' .
             'magnetometer=(), ' .
             'gyroscope=(), ' .

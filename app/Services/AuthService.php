@@ -6,11 +6,9 @@ use App\Models\User;
 use App\Models\Pasien;
 use App\Models\Dokter;
 use App\Models\ActivityLog;
-use App\Mail\VerifyEmailMail;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 /**
@@ -72,12 +70,7 @@ class AuthService
             return $user;
         });
 
-        // Send email verification
-        try {
-            Mail::to($result->email)->send(new VerifyEmailMail($result));
-        } catch (\Exception $e) {
-            \Log::error('Failed to send verification email: ' . $e->getMessage());
-        }
+        // Email verification removed - focus on chat system only
 
         // Generate token
         $token = $result->createToken('api-token')->plainTextToken;
@@ -303,8 +296,7 @@ class AuthService
                 'password_reset_expires_at' => now()->addHours(2),
             ]);
 
-            // Send reset email
-            Mail::to($user->email)->send(new \App\Mail\PasswordResetMail($user, $resetToken));
+            // Password reset email removed - focus on chat system only
 
             return [
                 'success' => true,

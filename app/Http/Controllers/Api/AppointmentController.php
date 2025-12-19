@@ -31,7 +31,7 @@ class AppointmentController extends Controller
             $validated = $request->validate([
                 'doctor_id' => 'required|integer|exists:users,id',
                 'scheduled_at' => 'required|date|after:now',
-                'type' => 'required|in:text_consultation,video_call,phone_call',
+                'type' => 'required|in:text_consultation',
                 'reason' => 'nullable|string|max:500',
                 'price' => 'nullable|numeric|min:0',
             ]);
