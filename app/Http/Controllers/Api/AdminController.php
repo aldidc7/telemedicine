@@ -68,14 +68,14 @@ class AdminController extends Controller
             }
 
             // Use aggregation queries to reduce database hits from 15+ to 3-4
-            $stats = \DB::table('pasien')->selectRaw('count(*) as total')->first();
+            $stats = \DB::table('patients')->selectRaw('count(*) as total')->first();
             $totalPasien = $stats?->total ?? 0;
 
-            $stats = \DB::table('dokter')->selectRaw('count(*) as total')->first();
+            $stats = \DB::table('doctors')->selectRaw('count(*) as total')->first();
             $totalDokter = $stats?->total ?? 0;
 
             // Aggregate all Konsultasi counts in one query
-            $konsultasiStats = \DB::table('konsultasi')
+            $konsultasiStats = \DB::table('consultations')
                 ->selectRaw("
                     count(*) as total,
                     sum(case when status = 'active' then 1 else 0 end) as aktif,
@@ -91,14 +91,14 @@ class AdminController extends Controller
             $konsultasiSelesai = $konsultasiStats?->selesai ?? 0;
             $konsultasiBatalkan = $konsultasiStats?->batalkan ?? 0;
 
-            $stats = \DB::table('admin')->selectRaw('count(*) as total')->first();
+            $stats = \DB::table('admins')->selectRaw('count(*) as total')->first();
             $totalAdmin = $stats?->total ?? 0;
 
             // ===== MONTHLY STATS =====
             $bulanIni = now()->month;
             $tahunIni = now()->year;
 
-            $monthlyStats = \DB::table('konsultasi')
+            $monthlyStats = \DB::table('consultations')
                 ->selectRaw("
                     sum(case when month(created_at) = ? and year(created_at) = ? then 1 else 0 end) as bulanIni,
                     sum(case when status = 'closed' and month(end_time) = ? and year(end_time) = ? then 1 else 0 end) as selesaibulanini
@@ -109,14 +109,14 @@ class AdminController extends Controller
             $konsultasiBulanIni = $monthlyStats?->bulanini ?? 0;
             $konsultasiSelesaiBulanIni = $monthlyStats?->selesaibulanini ?? 0;
 
-            $pasienStats = \DB::table('pasien')
+            $pasienStats = \DB::table('patients')
                 ->whereMonth('created_at', $bulanIni)
                 ->whereYear('created_at', $tahunIni)
                 ->count();
             $pasienBaru = $pasienStats;
 
             // ===== DOCTOR AVAILABILITY =====
-            $dokterStats = \DB::table('dokter')
+            $dokterStats = \DB::table('doctors')
                 ->selectRaw("
                     sum(case when is_available = true then 1 else 0 end) as tersedia,
                     sum(case when is_available = false then 1 else 0 end) as tidaktersedia
