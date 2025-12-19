@@ -100,8 +100,8 @@ class AdminController extends Controller
 
             $monthlyStats = \DB::table('consultations')
                 ->selectRaw("
-                    sum(case when month(created_at) = ? and year(created_at) = ? then 1 else 0 end) as bulanIni,
-                    sum(case when status = 'closed' and month(end_time) = ? and year(end_time) = ? then 1 else 0 end) as selesaibulanini
+                    sum(case when cast(strftime('%m', created_at) as integer) = ? and cast(strftime('%Y', created_at) as integer) = ? then 1 else 0 end) as bulanIni,
+                    sum(case when status = 'closed' and cast(strftime('%m', end_time) as integer) = ? and cast(strftime('%Y', end_time) as integer) = ? then 1 else 0 end) as selesaibulanini
                 ")
                 ->setBindings([$bulanIni, $tahunIni, $bulanIni, $tahunIni])
                 ->first();
@@ -110,8 +110,8 @@ class AdminController extends Controller
             $konsultasiSelesaiBulanIni = $monthlyStats?->selesaibulanini ?? 0;
 
             $pasienStats = \DB::table('patients')
-                ->whereMonth('created_at', $bulanIni)
-                ->whereYear('created_at', $tahunIni)
+                ->whereRaw("cast(strftime('%m', created_at) as integer) = ?", [$bulanIni])
+                ->whereRaw("cast(strftime('%Y', created_at) as integer) = ?", [$tahunIni])
                 ->count();
             $pasienBaru = $pasienStats;
 
