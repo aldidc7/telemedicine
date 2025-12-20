@@ -23,6 +23,8 @@ use App\Http\Controllers\Api\DoctorVerificationDocumentController;
 use App\Http\Controllers\Api\ConsentController;
 use App\Http\Controllers\Api\DoctorPatientRelationshipController;
 use App\Http\Controllers\Api\PatientMedicalDataController;
+use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Api\ApiDocumentationController;
 use App\Http\Controllers\SimrsApi\SimrsPasienController;
@@ -119,6 +121,30 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
         Route::put('/emergencies/{id}/resolve', [EmergencyController::class, 'resolve']);
         Route::get('/emergencies/{id}/log', [EmergencyController::class, 'getLog']);
         Route::get('/admin/emergencies/active', [EmergencyController::class, 'activeEmergencies']);
+
+        // ========== PAYMENT ENDPOINTS ==========
+        /**
+         * Payment & Invoice Management
+         * POST /api/v1/payments - Create payment
+         * GET /api/v1/payments/{id} - Get payment details
+         * POST /api/v1/payments/{id}/confirm - Confirm payment
+         * POST /api/v1/payments/{id}/refund - Refund payment
+         * GET /api/v1/payments/history - Payment history
+         * GET /api/v1/invoices/{id} - Get invoice details
+         * GET /api/v1/invoices - List user invoices
+         * GET /api/v1/invoices/{id}/download - Download invoice PDF
+         * POST /api/v1/invoices/{id}/send - Send invoice via email
+         */
+        Route::post('/payments', [PaymentController::class, 'create']);
+        Route::get('/payments/{id}', [PaymentController::class, 'show']);
+        Route::post('/payments/{id}/confirm', [PaymentController::class, 'confirm']);
+        Route::post('/payments/{id}/refund', [PaymentController::class, 'refund']);
+        Route::get('/payments/history', [PaymentController::class, 'history']);
+        
+        Route::get('/invoices', [InvoiceController::class, 'index']);
+        Route::get('/invoices/{id}', [InvoiceController::class, 'show']);
+        Route::get('/invoices/{id}/download', [InvoiceController::class, 'download']);
+        Route::post('/invoices/{id}/send', [InvoiceController::class, 'send']);
 
         // ========== PASIEN ENDPOINTS (Admin & Self) ==========
         /**

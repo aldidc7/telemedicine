@@ -30,7 +30,7 @@ return new class extends Migration
                 $table->text('reason');
                 
                 // Status: open, escalated, resolved, referred
-                $table->enum('status', ['open', 'escalated', 'resolved', 'referred'])->default('open')->index();
+                $table->enum('status', ['open', 'escalated', 'resolved', 'referred'])->default('open');
                 
                 // Hospital referral info
                 $table->unsignedBigInteger('hospital_id')->nullable();
@@ -55,9 +55,7 @@ return new class extends Migration
                 
                 // Indexes untuk query
                 $table->index('level');
-                if (!Schema::hasColumn('emergencies', 'status')) {
-                    $table->index('status');
-                }
+                $table->index('status');
                 $table->index('created_by_id');
                 $table->index('created_at');
             });
@@ -70,7 +68,7 @@ return new class extends Migration
                 $table->foreignId('emergency_id')->constrained('emergencies')->onDelete('cascade');
                 
                 // Contact type: hospital, ambulance, police, family, etc
-                $table->enum('type', ['hospital', 'ambulance', 'police', 'family', 'other'])->index();
+                $table->enum('type', ['hospital', 'ambulance', 'police', 'family', 'other']);
                 
                 // Contact info
                 $table->string('name');
@@ -78,7 +76,7 @@ return new class extends Migration
                 $table->text('address')->nullable();
                 
                 // Status: pending, contacted, confirmed, unavailable
-                $table->enum('status', ['pending', 'contacted', 'confirmed', 'unavailable'])->default('pending')->index();
+                $table->enum('status', ['pending', 'contacted', 'confirmed', 'unavailable'])->default('pending');
                 
                 // When contact was made
                 $table->timestamp('contacted_at')->nullable();
