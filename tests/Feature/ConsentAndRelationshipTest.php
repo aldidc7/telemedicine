@@ -31,8 +31,8 @@ class ConsentAndRelationshipTest extends TestCase
     {
         parent::setUp();
         
-        // Create test users
-        $this->doctorUser = User::factory()->create(['role' => 'doctor']);
+        // Create test users (role harus 'dokter' & 'patient', bukan 'doctor')
+        $this->doctorUser = User::factory()->create(['role' => 'dokter']);
         $this->doctor = Dokter::factory()->create(['user_id' => $this->doctorUser->id]);
         
         $this->patient = User::factory()->create(['role' => 'patient']);
@@ -257,7 +257,8 @@ class ConsentAndRelationshipTest extends TestCase
                 'establishment_method' => 'consultation',
             ]);
         
-        $response->assertStatus(404); // Doctor model not found
+        // Should fail because patient tidak punya dokter record
+        $response->assertStatus(404);
     }
 
     /** @test */
