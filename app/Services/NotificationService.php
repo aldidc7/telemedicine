@@ -636,6 +636,82 @@ class NotificationService
         
         \Log::info('Consultation completed broadcast sent', ['konsultasi_id' => $konsultasi->id]);
     }
+
+    /**
+     * Broadcast consultation status change via WebSocket
+     */
+    public function broadcastConsultationStatus($consultation, $status, $message = null)
+    {
+        try {
+            $eventClass = 'App\\Events\\ConsultationStatusBroadcast';
+            if (class_exists($eventClass)) {
+                broadcast(new $eventClass($consultation, $status, $message));
+                \Log::info('Consultation status broadcast sent', [
+                    'consultation_id' => $consultation->id,
+                    'status' => $status,
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Failed to broadcast consultation status: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Broadcast appointment update via WebSocket
+     */
+    public function broadcastAppointmentUpdate($appointment, $action, $details = [])
+    {
+        try {
+            $eventClass = 'App\\Events\\AppointmentUpdateBroadcast';
+            if (class_exists($eventClass)) {
+                broadcast(new $eventClass($appointment, $action, $details));
+                \Log::info('Appointment update broadcast sent', [
+                    'appointment_id' => $appointment->id,
+                    'action' => $action,
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Failed to broadcast appointment update: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Broadcast new message via WebSocket
+     */
+    public function broadcastMessage($conversationId, $type = 'sent', $data = [])
+    {
+        try {
+            $eventClass = 'App\\Events\\MessageBroadcast';
+            if (class_exists($eventClass)) {
+                broadcast(new $eventClass($conversationId, $type, $data));
+                \Log::info('Message broadcast sent', [
+                    'conversation_id' => $conversationId,
+                    'type' => $type,
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Failed to broadcast message: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Broadcast notification via WebSocket
+     */
+    public function broadcastNotification($notification)
+    {
+        try {
+            $eventClass = 'App\\Events\\NotificationBroadcast';
+            if (class_exists($eventClass)) {
+                broadcast(new $eventClass($notification));
+                \Log::info('Notification broadcast sent', [
+                    'notification_id' => $notification->id,
+                    'user_id' => $notification->user_id,
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Failed to broadcast notification: ' . $e->getMessage());
+        }
+    }
 }
 
 
