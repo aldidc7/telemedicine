@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\FileUploadController;
 use App\Http\Controllers\Api\DoctorVerificationDocumentController;
 use App\Http\Controllers\Api\ConsentController;
 use App\Http\Controllers\Api\DoctorPatientRelationshipController;
+use App\Http\Controllers\Api\PatientMedicalDataController;
 use App\Http\Controllers\SimrsApi\SimrsPasienController;
 use App\Http\Controllers\SimrsApi\SimrsDokterController;
 use App\Http\Controllers\SimrsApi\SimrsRekamMedisController;
@@ -503,6 +504,30 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
             // Terminate & History (must be after specific routes)
             Route::put('/{relationshipId}/terminate', [DoctorPatientRelationshipController::class, 'terminate']);
             Route::get('/{relationshipId}/history', [DoctorPatientRelationshipController::class, 'getHistory']);
+        });
+
+        // ========== PATIENT MEDICAL DATA ACCESS ROUTES (Phase 3A) ==========
+        /**
+         * Patient Medical Records & Data Access
+         * GDPR/Privacy compliance: Pasien punya hak akses ke medical data mereka
+         * 
+         * PATIENT ENDPOINTS:
+         * GET /api/v1/patient/medical-records - Get all medical records
+         * GET /api/v1/patient/medical-records/{id} - Get consultation details
+         * GET /api/v1/patient/medical-records/{id}/summary - Get consultation summary
+         * GET /api/v1/patient/prescriptions - Get prescription history
+         * GET /api/v1/patient/data-access-history - See who accessed data
+         * GET /api/v1/patient/medical-records/export/pdf - Export medical records
+         * POST /api/v1/patient/request-data-deletion - Request data deletion (Right to be Forgotten)
+         */
+        Route::prefix('patient')->group(function () {
+            Route::get('/medical-records', [PatientMedicalDataController::class, 'getMedicalRecords']);
+            Route::get('/medical-records/{id}', [PatientMedicalDataController::class, 'getConsultationDetails']);
+            Route::get('/medical-records/{id}/summary', [PatientMedicalDataController::class, 'getConsultationSummary']);
+            Route::get('/medical-records/export/pdf', [PatientMedicalDataController::class, 'exportRecords']);
+            Route::get('/prescriptions', [PatientMedicalDataController::class, 'getPrescriptionHistory']);
+            Route::get('/data-access-history', [PatientMedicalDataController::class, 'getDataAccessHistory']);
+            Route::post('/request-data-deletion', [PatientMedicalDataController::class, 'requestDataDeletion']);
         });
 
         // ========== WEBSOCKET/BROADCASTING ROUTES ==========
