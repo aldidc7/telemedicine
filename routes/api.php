@@ -271,6 +271,23 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
         Route::post('/dokter/{id}/sync-patient', [DokterController::class, 'syncToPatient']);
         Route::put('/dokter/{id}/ketersediaan', [DokterController::class, 'updateKetersediaan']);
 
+        // ========== DOCTOR ANALYTICS ENDPOINTS (Phase 6B) ==========
+        /**
+         * Doctor Performance Analytics
+         * GET /api/v1/doctors/{id}/analytics - Doctor metrics
+         * GET /api/v1/doctors/{id}/ratings - Detailed ratings
+         * GET /api/v1/doctors/{id}/revenue - Revenue breakdown
+         * GET /api/v1/doctors/leaderboard - Top doctors leaderboard
+         * GET /api/v1/doctors/{id}/performance-report - Full performance report
+         * GET /api/v1/doctors/{id}/commission/calculate - Commission calculation
+         */
+        Route::get('/doctors/leaderboard', [\App\Http\Controllers\Api\Analytics\DoctorAnalyticsController::class, 'getLeaderboard']);
+        Route::get('/doctors/{id}/analytics', [\App\Http\Controllers\Api\Analytics\DoctorAnalyticsController::class, 'getDoctorMetrics']);
+        Route::get('/doctors/{id}/ratings', [\App\Http\Controllers\Api\Analytics\DoctorAnalyticsController::class, 'getDoctorRatings']);
+        Route::get('/doctors/{id}/revenue', [\App\Http\Controllers\Api\Analytics\DoctorAnalyticsController::class, 'getDoctorRevenue']);
+        Route::get('/doctors/{id}/performance-report', [\App\Http\Controllers\Api\Analytics\DoctorAnalyticsController::class, 'getPerformanceReport']);
+        Route::get('/doctors/{id}/commission/calculate', [\App\Http\Controllers\Api\Analytics\DoctorAnalyticsController::class, 'calculateCommission']);
+
         // ========== KONSULTASI ENDPOINTS ==========
         /**
          * Consultation Management
