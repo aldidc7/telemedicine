@@ -146,4 +146,30 @@ trait ApiResponse
             ],
         ], 200);
     }
+
+    /**
+     * Short alias for successResponse
+     * 
+     * @param mixed $data
+     * @param string $message
+     * @param int $statusCode
+     * @return JsonResponse
+     */
+    public function success($data = null, $message = 'Sukses', $statusCode = 200): JsonResponse
+    {
+        return $this->successResponse($data, $message, $statusCode);
+    }
+
+    /**
+     * Short alias for errorResponse
+     * 
+     * @param string $message
+     * @param array $data
+     * @param int $statusCode
+     * @return JsonResponse
+     */
+    public function error($message = 'Terjadi kesalahan', $data = [], $statusCode = 400): JsonResponse
+    {
+        return $this->errorResponse($message, $statusCode, $data);
+    }
 }

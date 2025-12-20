@@ -6,6 +6,7 @@ use App\Models\Notification;
 use App\Models\User;
 use App\Events\NotificationCreated;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class NotificationService
 {
@@ -61,7 +62,7 @@ class NotificationService
         try {
             broadcast(new NotificationCreated($notification));
         } catch (\Exception $e) {
-            \Log::warning('Failed to broadcast notification: ' . $e->getMessage());
+            Log::warning('Failed to broadcast notification: ' . $e->getMessage());
         }
 
         return $notification;
@@ -511,7 +512,7 @@ class NotificationService
             "/consultations/{$konsultasi->id}"
         );
         
-        \Log::info('New consultation broadcast sent', ['konsultasi_id' => $konsultasi->id]);
+        Log::info('New consultation broadcast sent', ['konsultasi_id' => $konsultasi->id]);
     }
 
     /**
@@ -546,7 +547,7 @@ class NotificationService
             "/consultations/{$konsultasi->id}/messages"
         );
         
-        \Log::info('New message broadcast sent', ['message_id' => $message->id]);
+        Log::info('New message broadcast sent', ['message_id' => $message->id]);
     }
 
     /**
@@ -580,7 +581,7 @@ class NotificationService
             "/consultations/{$konsultasi->id}"
         );
         
-        \Log::info('Consultation status change broadcast sent', [
+        Log::info('Consultation status change broadcast sent', [
             'konsultasi_id' => $konsultasi->id,
             'old_status' => $oldStatus,
             'new_status' => $newStatus,
@@ -599,7 +600,7 @@ class NotificationService
             "/consultations/{$konsultasi->id}"
         );
         
-        \Log::info('Consultation accepted broadcast sent', ['konsultasi_id' => $konsultasi->id]);
+        Log::info('Consultation accepted broadcast sent', ['konsultasi_id' => $konsultasi->id]);
     }
 
     /**
@@ -619,7 +620,7 @@ class NotificationService
             "/consultations/{$konsultasi->id}"
         );
         
-        \Log::info('Consultation rejected broadcast sent', ['konsultasi_id' => $konsultasi->id]);
+        Log::info('Consultation rejected broadcast sent', ['konsultasi_id' => $konsultasi->id]);
     }
 
     /**
@@ -634,7 +635,7 @@ class NotificationService
             "/consultations/{$konsultasi->id}/rating"
         );
         
-        \Log::info('Consultation completed broadcast sent', ['konsultasi_id' => $konsultasi->id]);
+        Log::info('Consultation completed broadcast sent', ['konsultasi_id' => $konsultasi->id]);
     }
 
     /**
@@ -646,13 +647,13 @@ class NotificationService
             $eventClass = 'App\\Events\\ConsultationStatusBroadcast';
             if (class_exists($eventClass)) {
                 broadcast(new $eventClass($consultation, $status, $message));
-                \Log::info('Consultation status broadcast sent', [
+                Log::info('Consultation status broadcast sent', [
                     'consultation_id' => $consultation->id,
                     'status' => $status,
                 ]);
             }
         } catch (\Exception $e) {
-            \Log::warning('Failed to broadcast consultation status: ' . $e->getMessage());
+            Log::warning('Failed to broadcast consultation status: ' . $e->getMessage());
         }
     }
 
@@ -665,13 +666,13 @@ class NotificationService
             $eventClass = 'App\\Events\\AppointmentUpdateBroadcast';
             if (class_exists($eventClass)) {
                 broadcast(new $eventClass($appointment, $action, $details));
-                \Log::info('Appointment update broadcast sent', [
+                Log::info('Appointment update broadcast sent', [
                     'appointment_id' => $appointment->id,
                     'action' => $action,
                 ]);
             }
         } catch (\Exception $e) {
-            \Log::warning('Failed to broadcast appointment update: ' . $e->getMessage());
+            Log::warning('Failed to broadcast appointment update: ' . $e->getMessage());
         }
     }
 
@@ -684,13 +685,13 @@ class NotificationService
             $eventClass = 'App\\Events\\MessageBroadcast';
             if (class_exists($eventClass)) {
                 broadcast(new $eventClass($conversationId, $type, $data));
-                \Log::info('Message broadcast sent', [
+                Log::info('Message broadcast sent', [
                     'conversation_id' => $conversationId,
                     'type' => $type,
                 ]);
             }
         } catch (\Exception $e) {
-            \Log::warning('Failed to broadcast message: ' . $e->getMessage());
+            Log::warning('Failed to broadcast message: ' . $e->getMessage());
         }
     }
 
@@ -703,13 +704,13 @@ class NotificationService
             $eventClass = 'App\\Events\\NotificationBroadcast';
             if (class_exists($eventClass)) {
                 broadcast(new $eventClass($notification));
-                \Log::info('Notification broadcast sent', [
+                Log::info('Notification broadcast sent', [
                     'notification_id' => $notification->id,
                     'user_id' => $notification->user_id,
                 ]);
             }
         } catch (\Exception $e) {
-            \Log::warning('Failed to broadcast notification: ' . $e->getMessage());
+            Log::warning('Failed to broadcast notification: ' . $e->getMessage());
         }
     }
 }

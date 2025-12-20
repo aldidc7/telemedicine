@@ -389,7 +389,7 @@ class AuthController extends Controller
         //     $message->to($user->email)->subject('Verifikasi Email - Telemedicine');
         // });
 
-        \Log::info('Email verification token sent to: ' . $user->email);
+        Log::info('Email verification token sent to: ' . $user->email);
 
         return $this->successResponse(
             null,

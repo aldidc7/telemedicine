@@ -17,11 +17,11 @@ class BroadcastService
     /**
      * Broadcast notification to user channel
      */
-    public function broadcastNotification(User $user, Notification $notification): void
+    public function broadcastNotification(Notification $notification): void
     {
         try {
-            event(new NotificationCreated($user, $notification));
-            Log::info("Broadcasting notification {$notification->id} to user {$user->id}");
+            event(new NotificationCreated($notification));
+            Log::info("Broadcasting notification {$notification->id} to user {$notification->user_id}");
         } catch (\Exception $e) {
             Log::error("Failed to broadcast notification: " . $e->getMessage());
         }
@@ -94,7 +94,7 @@ class BroadcastService
             'action_url' => "/messages?conversation_with={$sender->id}",
         ]);
 
-        $this->broadcastNotification($recipient, $notification);
+        $this->broadcastNotification($notification);
     }
 
     /**

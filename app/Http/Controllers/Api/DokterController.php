@@ -234,7 +234,7 @@ class DokterController extends Controller
                 'Detail dokter berhasil diambil'
             );
         } catch (\Exception $e) {
-            \Log::error('Error in DokterController.show: ' . $e->getMessage());
+            Log::error('Error in DokterController.show: ' . $e->getMessage());
             return $this->errorResponse('Gagal mengambil detail dokter: ' . $e->getMessage(), 500);
         }
     }
@@ -259,7 +259,7 @@ class DokterController extends Controller
     {
         try {
             // Debug logging - RIGHT AFTER REQUEST VALIDATION
-            \Log::info('Dokter update - AFTER DokterRequest validation', [
+            Log::info('Dokter update - AFTER DokterRequest validation', [
                 'dokter_id' => $id,
                 'request_all' => $request->all(),
                 'has_file' => $request->hasFile('profile_photo'),
@@ -270,13 +270,13 @@ class DokterController extends Controller
             // Try to get file directly
             if ($request->hasFile('profile_photo')) {
                 $file = $request->file('profile_photo');
-                \Log::info('Profile photo file found', [
+                Log::info('Profile photo file found', [
                     'name' => $file->getClientOriginalName(),
                     'size' => $file->getSize(),
                     'mime' => $file->getMimeType(),
                 ]);
             } else {
-                \Log::warning('No profile_photo file found in request');
+                Log::warning('No profile_photo file found in request');
             }
             
             $dokter = Dokter::find($id);
@@ -316,7 +316,7 @@ class DokterController extends Controller
                 'Data dokter berhasil diupdate'
             );
         } catch (\Throwable $e) {
-            \Log::error('Error updating dokter profile: ' . $e->getMessage(), [
+            Log::error('Error updating dokter profile: ' . $e->getMessage(), [
                 'dokter_id' => $id,
                 'trace' => $e->getTraceAsString()
             ]);
@@ -491,7 +491,7 @@ class DokterController extends Controller
                 'Status ketersediaan berhasil diupdate'
             );
         } catch (\Exception $e) {
-            \Log::error('Error updating dokter availability: ' . $e->getMessage());
+            Log::error('Error updating dokter availability: ' . $e->getMessage());
             return $this->errorResponse('Gagal mengupdate ketersediaan: ' . $e->getMessage(), 500);
         }
     }

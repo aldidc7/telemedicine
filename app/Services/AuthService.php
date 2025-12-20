@@ -133,7 +133,7 @@ class AuthService
                 'expires_at' => now()->addDays(7),  // Token valid for 7 days
             ]);
         } catch (\Exception $e) {
-            \Log::error('Failed to create session: ' . $e->getMessage());
+            Log::error('Failed to create session: ' . $e->getMessage());
             // Continue even if session creation fails
         }
 
@@ -284,7 +284,7 @@ class AuthService
             $notificationService = app(NotificationService::class);
             $notificationService->notifyEmailVerified($user->id);
         } catch (\Exception $e) {
-            \Log::warning('Failed to create notification: ' . $e->getMessage());
+            Log::warning('Failed to create notification: ' . $e->getMessage());
         }
 
         return true;
@@ -321,14 +321,14 @@ class AuthService
             // Send password reset email
             \Illuminate\Support\Facades\Mail::send(new \App\Mail\PasswordResetMail($user, $resetToken));
 
-            \Log::info('Password reset email sent to: ' . $user->email);
+            Log::info('Password reset email sent to: ' . $user->email);
 
             return [
                 'success' => true,
                 'message' => 'Jika email terdaftar, Anda akan menerima link reset password',
             ];
         } catch (\Exception $e) {
-            \Log::error('Failed to send password reset email: ' . $e->getMessage());
+            Log::error('Failed to send password reset email: ' . $e->getMessage());
             
             return [
                 'success' => true,
@@ -382,7 +382,7 @@ class AuthService
                 'message' => 'Password berhasil direset. Silakan login dengan password baru',
             ];
         } catch (\Exception $e) {
-            \Log::error('Failed to reset password: ' . $e->getMessage());
+            Log::error('Failed to reset password: ' . $e->getMessage());
             
             return [
                 'success' => false,
