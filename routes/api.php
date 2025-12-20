@@ -696,5 +696,34 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
          */
         Route::post('/broadcasting/auth', [BroadcastingController::class, 'authenticate']);
         Route::get('/broadcasting/config', [BroadcastingController::class, 'getConfig']);
+
+        // ========== ANALYTICS ROUTES (Phase 6A) ==========
+        /**
+         * Analytics & Reporting (Admin Only)
+         * GET /api/v1/analytics/dashboard - System dashboard metrics
+         * GET /api/v1/analytics/metrics - Key metrics
+         * GET /api/v1/analytics/users/activity - User activity trends
+         * GET /api/v1/analytics/consultations - Consultation statistics
+         * GET /api/v1/analytics/payments - Payment metrics
+         * POST /api/v1/analytics/export - Export analytics data
+         * GET /api/v1/analytics/reports - List saved reports
+         * POST /api/v1/analytics/reports - Create new report
+         * PUT /api/v1/analytics/reports/{id} - Update report
+         * DELETE /api/v1/analytics/reports/{id} - Delete report
+         * POST /api/v1/analytics/clear-cache - Clear analytics cache
+         */
+        Route::prefix('analytics')->group(function () {
+            Route::get('/dashboard', [\App\Http\Controllers\Api\Analytics\AnalyticsController::class, 'dashboard']);
+            Route::get('/metrics', [\App\Http\Controllers\Api\Analytics\AnalyticsController::class, 'metrics']);
+            Route::get('/users/activity', [\App\Http\Controllers\Api\Analytics\AnalyticsController::class, 'userActivity']);
+            Route::get('/consultations', [\App\Http\Controllers\Api\Analytics\AnalyticsController::class, 'consultations']);
+            Route::get('/payments', [\App\Http\Controllers\Api\Analytics\AnalyticsController::class, 'payments']);
+            Route::post('/export', [\App\Http\Controllers\Api\Analytics\AnalyticsController::class, 'export']);
+            Route::get('/reports', [\App\Http\Controllers\Api\Analytics\AnalyticsController::class, 'listReports']);
+            Route::post('/reports', [\App\Http\Controllers\Api\Analytics\AnalyticsController::class, 'createReport']);
+            Route::put('/reports/{id}', [\App\Http\Controllers\Api\Analytics\AnalyticsController::class, 'updateReport']);
+            Route::delete('/reports/{id}', [\App\Http\Controllers\Api\Analytics\AnalyticsController::class, 'deleteReport']);
+            Route::post('/clear-cache', [\App\Http\Controllers\Api\Analytics\AnalyticsController::class, 'clearCache']);
+        });
     });
 });
