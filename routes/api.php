@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\DoctorPatientRelationshipController;
 use App\Http\Controllers\Api\PatientMedicalDataController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\InvoiceController;
+use App\Http\Controllers\Api\VideoSessionController;
 use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Api\ApiDocumentationController;
 use App\Http\Controllers\SimrsApi\SimrsPasienController;
@@ -145,6 +146,27 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
         Route::get('/invoices/{id}', [InvoiceController::class, 'show']);
         Route::get('/invoices/{id}/download', [InvoiceController::class, 'download']);
         Route::post('/invoices/{id}/send', [InvoiceController::class, 'send']);
+
+        // ========== VIDEO CONSULTATION ENDPOINTS (Phase 3C) ==========
+        /**
+         * Video Consultation Management
+         * POST /api/v1/video-sessions - Create/initialize video session
+         * GET /api/v1/video-sessions - List user's video sessions
+         * GET /api/v1/video-sessions/{id} - Get session details
+         * POST /api/v1/video-sessions/{id}/start - Start session (doctor)
+         * POST /api/v1/video-sessions/{id}/end - End session
+         * POST /api/v1/video-sessions/{id}/log-event - Log participant event
+         * POST /api/v1/video-sessions/{id}/upload-recording - Upload recording
+         * GET /api/v1/video-sessions/{id}/analytics - Get session analytics
+         */
+        Route::post('/video-sessions', [VideoSessionController::class, 'create']);
+        Route::get('/video-sessions', [VideoSessionController::class, 'index']);
+        Route::get('/video-sessions/{id}', [VideoSessionController::class, 'show']);
+        Route::post('/video-sessions/{id}/start', [VideoSessionController::class, 'start']);
+        Route::post('/video-sessions/{id}/end', [VideoSessionController::class, 'end']);
+        Route::post('/video-sessions/{id}/log-event', [VideoSessionController::class, 'logParticipantEvent']);
+        Route::post('/video-sessions/{id}/upload-recording', [VideoSessionController::class, 'uploadRecording']);
+        Route::get('/video-sessions/{id}/analytics', [VideoSessionController::class, 'analytics']);
 
         // ========== PASIEN ENDPOINTS (Admin & Self) ==========
         /**
