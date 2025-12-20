@@ -29,6 +29,7 @@ use App\Http\Controllers\Api\VideoSessionController;
 use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Api\ApiDocumentationController;
 use App\Http\Controllers\Api\AvailabilityController;
+use App\Http\Controllers\Api\DoctorCredentialVerificationController;
 use App\Http\Controllers\SimrsApi\SimrsPasienController;
 use App\Http\Controllers\SimrsApi\SimrsDokterController;
 use App\Http\Controllers\SimrsApi\SimrsRekamMedisController;
@@ -190,6 +191,35 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
             Route::post('/doctors/availability/bulk', [AvailabilityController::class, 'bulkSetAvailability']);
             Route::delete('/doctors/availability/{id}', [AvailabilityController::class, 'deleteAvailability']);
         });
+
+        // ========== KKI CREDENTIAL VERIFICATION ENDPOINTS ==========
+        /**
+         * Doctor Credential Verification (Auto-KKI)
+         * POST /api/v1/doctors/credentials/submit - Submit credentials for verification
+         * GET /api/v1/doctors/credentials/status - Get verification status
+         * GET /api/v1/doctors/{id}/verification - Get doctor verification status (public)
+         * GET /api/v1/admin/verifications/pending - Get pending verifications (admin only)
+         * GET /api/v1/admin/verifications/{id} - Get verification detail (admin only)
+         * POST /api/v1/admin/verifications/{id}/verify - Verify specific credentials (admin only)
+         * POST /api/v1/admin/verifications/{id}/reject - Reject credential (admin only)
+         * POST /api/v1/admin/verifications/{id}/approve - Approve full verification (admin only)
+         */
+        Route::middleware('auth:sanctum')->group(function () {
+            Route::post('/doctors/credentials/submit', [DoctorCredentialVerificationController::class, 'submitCredentials']);
+            Route::get('/doctors/credentials/status', [DoctorCredentialVerificationController::class, 'getCredentialsStatus']);
+        });
+
+        // Admin verification routes
+        Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
+            Route::get('/verifications/pending', [DoctorCredentialVerificationController::class, 'getPendingVerifications']);
+            Route::get('/verifications/{id}', [DoctorCredentialVerificationController::class, 'getVerificationDetail']);
+            Route::post('/verifications/{id}/verify', [DoctorCredentialVerificationController::class, 'verifyCredentials']);
+            Route::post('/verifications/{id}/reject', [DoctorCredentialVerificationController::class, 'rejectCredentials']);
+            Route::post('/verifications/{id}/approve', [DoctorCredentialVerificationController::class, 'approveVerification']);
+        });
+
+        // Public verification status
+        Route::get('/doctors/{id}/verification', [DoctorCredentialVerificationController::class, 'getDoctorVerificationStatus']);
 
         // ========== PASIEN ENDPOINTS (Admin & Self) ==========
         /**
