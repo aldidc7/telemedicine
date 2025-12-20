@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\AppointmentController;
 use App\Http\Controllers\Api\PrescriptionController;
 use App\Http\Controllers\Api\BroadcastingController;
 use App\Http\Controllers\Api\FileUploadController;
+use App\Http\Controllers\Api\EmergencyController;
 use App\Http\Controllers\Api\DoctorVerificationDocumentController;
 use App\Http\Controllers\Api\ConsentController;
 use App\Http\Controllers\Api\DoctorPatientRelationshipController;
@@ -93,6 +94,31 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
         Route::post('/consent/{id}/revoke', [ConsentController::class, 'revoke']);
         Route::get('/consent/types', [ConsentController::class, 'types']);
         Route::get('/consent/{type}/text', [ConsentController::class, 'getText']);
+
+        // ========== EMERGENCY PROCEDURES ENDPOINTS ==========
+        /**
+         * Emergency Management & Escalation
+         * POST /api/v1/emergencies - Create emergency case
+         * GET /api/v1/emergencies/{id} - Get emergency details
+         * POST /api/v1/emergencies/{id}/escalate - Escalate to hospital
+         * POST /api/v1/emergencies/{id}/call-ambulance - Call ambulance
+         * POST /api/v1/emergencies/{id}/contacts - Add emergency contact
+         * POST /api/v1/emergencies/{id}/contacts/{contactId}/confirm - Confirm contact
+         * POST /api/v1/emergencies/{id}/referral-letter - Generate referral letter
+         * PUT /api/v1/emergencies/{id}/resolve - Mark emergency as resolved
+         * GET /api/v1/emergencies/{id}/log - Get escalation audit trail
+         * GET /api/v1/admin/emergencies/active - Admin: List active emergencies
+         */
+        Route::post('/emergencies', [EmergencyController::class, 'create']);
+        Route::get('/emergencies/{id}', [EmergencyController::class, 'show']);
+        Route::post('/emergencies/{id}/escalate', [EmergencyController::class, 'escalate']);
+        Route::post('/emergencies/{id}/call-ambulance', [EmergencyController::class, 'callAmbulance']);
+        Route::post('/emergencies/{id}/contacts', [EmergencyController::class, 'addContact']);
+        Route::post('/emergencies/{id}/contacts/{contactId}/confirm', [EmergencyController::class, 'confirmContact']);
+        Route::post('/emergencies/{id}/referral-letter', [EmergencyController::class, 'generateReferralLetter']);
+        Route::put('/emergencies/{id}/resolve', [EmergencyController::class, 'resolve']);
+        Route::get('/emergencies/{id}/log', [EmergencyController::class, 'getLog']);
+        Route::get('/admin/emergencies/active', [EmergencyController::class, 'activeEmergencies']);
 
         // ========== PASIEN ENDPOINTS (Admin & Self) ==========
         /**
