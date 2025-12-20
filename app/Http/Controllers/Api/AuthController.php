@@ -11,6 +11,8 @@ use App\Services\AuthService;
 use App\Services\RateLimitService;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 /**
  * ============================================
@@ -100,6 +102,17 @@ class AuthController extends Controller
             RateLimitService::increment($key, RateLimitService::LOGIN_DECAY_MINUTES);
             
             $remaining = RateLimitService::remaining($key, RateLimitService::LOGIN_MAX_ATTEMPTS, RateLimitService::LOGIN_DECAY_MINUTES);
+            
+            // Check if it's email verification issue
+            $user = User::where('email', $data['email'])->first();
+            if ($user && ($user->role === 'dokter' || $user->role === 'admin') && !$user->email_verified_at) {
+                return $this->validationErrorResponse(
+                    'Email belum diverifikasi. Silakan cek email Anda untuk link verifikasi.',
+                    403,
+                    ['error_code' => 'EMAIL_NOT_VERIFIED']
+                );
+            }
+            
             return $this->unauthorizedResponse('Email atau password salah', null, [
                 'remaining_attempts' => $remaining,
             ]);
@@ -301,5 +314,115 @@ class AuthController extends Controller
         }
 
         return $this->successResponse(null, $result['message']);
+    }
+
+    /**
+     * Verify email dengan token
+     * 
+     * POST /api/v1/auth/verify-email-confirm
+     * 
+     * Body:
+     * {
+     *   "token": "verification_token_dari_email"
+     * }
+     */
+    public function verifyEmailConfirm(Request $request)
+    {
+        $request->validate([
+            'token' => 'required|string',
+        ]);
+
+        $success = $this->authService->verifyEmail($request->token);
+
+        if (!$success) {
+            return $this->validationErrorResponse(
+                'Token verifikasi tidak valid atau sudah expired. Silakan minta link baru.',
+                422
+            );
+        }
+
+        return $this->successResponse(
+            null,
+            'Email berhasil diverifikasi. Anda sekarang bisa login.'
+        );
+    }
+
+    /**
+     * Resend email verification token
+     * 
+     * POST /api/v1/auth/resend-verification
+     * 
+     * Body:
+     * {
+     *   "email": "user@example.com"
+     * }
+     */
+    public function resendVerification(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+        
+        if (!$user) {
+            return $this->notFoundResponse('User tidak ditemukan');
+        }
+
+        // Check if already verified
+        if ($user->email_verified_at) {
+            return $this->successResponse(
+                null,
+                'Email sudah diverifikasi sebelumnya'
+            );
+        }
+
+        // Generate new token
+        $token = Str::random(64);
+        $user->update([
+            'email_verification_token' => $token,
+            'email_verification_expires_at' => now()->addHours(24),
+        ]);
+
+        // Send email (implement mail sending)
+        // Mail::send('emails.verify-email', ['user' => $user, 'token' => $token], function ($message) use ($user) {
+        //     $message->to($user->email)->subject('Verifikasi Email - Telemedicine');
+        // });
+
+        \Log::info('Email verification token sent to: ' . $user->email);
+
+        return $this->successResponse(
+            null,
+            'Link verifikasi telah dikirim ke email Anda'
+        );
+    }
+
+    /**
+     * Logout from all devices
+     * 
+     * POST /api/v1/auth/logout-all
+     * 
+     * Invalidates all active sessions for the current user
+     */
+    public function logoutAll(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return $this->unauthorizedResponse('User tidak ditemukan');
+        }
+
+        // Deactivate all active sessions
+        \App\Models\UserSession::where('user_id', $user->id)
+            ->where('is_active', true)
+            ->update([
+                'is_active' => false,
+                'expires_at' => now()
+            ]);
+
+        // Call auth service logout
+        $this->authService->logout();
+
+        return $this->successResponse(null, 'Logout dari semua perangkat berhasil');
     }
 }

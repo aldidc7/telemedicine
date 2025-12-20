@@ -54,4 +54,25 @@
     .animate-slideDown {
         animation: slideDown 0.5s ease-out;
     }
+
+    /* Prose styling for consent text */
+    .prose {
+        @apply text-gray-700;
+    }
+
+    .prose strong {
+        @apply font-bold text-gray-900;
+    }
+
+    .prose p {
+        @apply mb-2;
+    }
+
+    .prose ul {
+        @apply list-disc list-inside my-2;
+    }
+
+    .prose li {
+        @apply mb-1;
+    }
 }

@@ -354,6 +354,9 @@ const isLoggingOut = ref(false)
 const toggleLoading = computed(() => dokterAvailabilityStore.isLoading)
 const isDocterAvailable = computed(() => dokterAvailabilityStore.isAvailable)
 
+// Emit logout event
+const emit = defineEmits(['logout'])
+
 // Close menu when clicking outside
 const handleClickOutside = (e) => {
   const userMenuElement = document.querySelector('[data-user-menu]')
@@ -379,7 +382,7 @@ const getInitial = (name) => {
 const openLogoutModal = () => {
   showUserMenu.value = false
   showMobileMenu.value = false
-  showLogoutModal.value = true
+  emit('logout')
 }
 
 const handleLogout = async () => {

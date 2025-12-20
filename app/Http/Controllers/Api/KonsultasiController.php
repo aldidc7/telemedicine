@@ -77,6 +77,19 @@ class KonsultasiController extends Controller
         if (!$user->isPasien()) {
             return $this->forbiddenResponse('Hanya pasien yang bisa membuat konsultasi');
         }
+
+        // Check if selected doctor is verified (CRITICAL: Doctor verification gate)
+        $dokter = Dokter::find($request->dokter_id);
+        if (!$dokter || !$dokter->is_verified) {
+            return $this->forbiddenResponse(
+                'Dokter yang dipilih belum terverifikasi oleh admin. Silakan pilih dokter lain yang telah terverifikasi.'
+            );
+        }
+
+        // Check if doctor is available
+        if (!$dokter->is_available) {
+            return $this->validationErrorResponse('Dokter tidak tersedia saat ini');
+        }
         
         $konsultasi = $this->consultationService->createConsultation(
             $user,

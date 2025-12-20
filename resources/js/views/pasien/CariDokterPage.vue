@@ -126,98 +126,14 @@
 
       <!-- Dokter List Grid with Animations -->
       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fadeIn">
-        <div
+        <DoctorCard
           v-for="(dokter, index) in dokterList"
           :key="dokter.id"
-          class="group bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all overflow-hidden border border-gray-100 hover:border-indigo-200 animate-slideUp"
+          :doctor="dokter"
+          @consult="handleConsult"
           :style="{ animationDelay: `${index * 50}ms` }"
-        >
-          <!-- Card Header with Gradient & Avatar -->
-          <div class="bg-linear-to-r from-indigo-600 to-purple-600 p-8 text-white relative">
-            <div class="absolute -right-6 -top-6 w-32 h-32 bg-white opacity-10 rounded-full"></div>
-            <div class="relative z-10">
-              <div class="w-16 h-16 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
-                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
-              </div>
-              <div class="flex items-center gap-3 mb-3">
-                <div>
-                  <h3 class="text-2xl font-bold">Dr. {{ dokter.user?.name || dokter.name }}</h3>
-                  <p class="text-indigo-100 font-semibold mt-1 text-lg">{{ dokter.specialization || 'Dokter Umum' }}</p>
-                </div>
-                <!-- Availability Badge -->
-                <div :class="['px-3 py-2 rounded-full text-sm font-bold flex items-center gap-1.5 whitespace-nowrap',
-                  dokter.is_available || dokter.tersedia
-                    ? 'bg-green-200 text-green-800'
-                    : 'bg-gray-200 text-gray-700'
-                ]">
-                  <span class="text-lg">{{ dokter.is_available || dokter.tersedia ? '🟢' : '🔴' }}</span>
-                  <span class="text-xs">{{ dokter.is_available || dokter.tersedia ? 'Online' : 'Offline' }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Card Body -->
-          <div class="p-8 space-y-5">
-            <!-- Rating Display -->
-            <div class="bg-yellow-50 rounded-2xl p-4 flex items-center gap-3">
-              <div class="flex gap-1">
-                <svg
-                  v-for="i in 5"
-                  :key="i"
-                  :class="[
-                    'w-5 h-5',
-                    i <= Math.round(dokter.avg_rating || 0)
-                      ? 'text-yellow-400 fill-yellow-400'
-                      : 'text-gray-300'
-                  ]"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-              </div>
-              <div>
-                <p class="font-bold text-gray-900">{{ dokter.avg_rating?.toFixed(1) || '-' }}</p>
-                <p class="text-xs text-gray-600">{{ dokter.rating_count || 0 }} rating</p>
-              </div>
-            </div>
-
-            <!-- Status & Info Grid -->
-            <div class="grid grid-cols-2 gap-3">
-              <!-- Status Badge -->
-              <div class="rounded-xl p-3" :class="dokter.is_available ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'">
-                <p class="text-xs text-gray-600 font-medium">Status</p>
-                <p :class="dokter.is_available ? 'text-green-700 font-bold' : 'text-red-700 font-bold'">
-                  {{ dokter.is_available ? '✅ Tersedia' : '⏸️ Sibuk' }}
-                </p>
-              </div>
-
-              <!-- Max Konsultasi -->
-              <div class="rounded-xl p-3 bg-blue-50 border border-blue-200">
-                <p class="text-xs text-gray-600 font-medium">Konsultasi</p>
-                <p class="text-blue-700 font-bold">{{ dokter.max_concurrent_consultations }}</p>
-              </div>
-            </div>
-
-            <!-- Tarif -->
-            <div v-if="dokter.consultation_rate" class="bg-purple-50 rounded-2xl p-4 border border-purple-200">
-              <p class="text-xs text-gray-600 font-semibold mb-1">Tarif Konsultasi</p>
-              <p class="text-xl font-bold text-purple-700">Rp {{ formatCurrency(dokter.consultation_rate) }}</p>
-            </div>
-
-            <!-- Button with Better Styling -->
-            <button
-              @click="buatKonsultasi(dokter)"
-              :disabled="!dokter.is_available && !dokter.tersedia"
-              class="w-full mt-4 px-4 py-3 bg-linear-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed transition font-bold flex items-center justify-center gap-2 group/btn"
-            >
-              <svg v-if="!dokter.is_available && !dokter.tersedia" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 2.523a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd"/></svg>
-              <svg v-else class="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-              {{ dokter.is_available || dokter.tersedia ? 'Buat Konsultasi' : 'Sedang Sibuk' }}
-            </button>
-          </div>
-        </div>
+          class="animate-slideUp"
+        />
       </div>
 
       <!-- Modal Buat Konsultasi -->
@@ -236,6 +152,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { dokterAPI } from '@/api/dokter'
 import { ratingAPI } from '@/api/rating'
+import DoctorCard from '@/components/DoctorCard.vue'
 import BuatKonsultasiModal from '@/components/modals/BuatKonsultasiModal.vue'
 import CustomSelect from '@/components/CustomSelect.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
@@ -248,6 +165,11 @@ const dokterList = ref([])
 const showModal = ref(false)
 const selectedDokter = ref(null)
 let filterDebounceTimer = null
+
+const handleConsult = async (doctor) => {
+  selectedDokter.value = doctor
+  showModal.value = true
+}
 
 const filter = ref({
   spesialisasi: '',

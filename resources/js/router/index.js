@@ -33,6 +33,24 @@ const routes = [
     component: () => import('@/views/auth/RegisterPage.vue'),
     meta: { requiresGuest: true }
   },
+  {
+    path: '/verify-email',
+    name: 'verify-email',
+    component: () => import('@/views/auth/VerifyEmailPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/forgot-password',
+    name: 'forgot-password',
+    component: () => import('@/views/auth/ForgotPasswordPage.vue'),
+    meta: { requiresGuest: true }
+  },
+  {
+    path: '/reset-password',
+    name: 'reset-password',
+    component: () => import('@/views/auth/ResetPasswordPage.vue'),
+    meta: { requiresGuest: true }
+  },
 
   // ===== PASIEN ROUTES =====
   {
@@ -75,6 +93,12 @@ const routes = [
     path: '/settings',
     name: 'settings',
     component: () => import('@/views/pasien/SettingsPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/sessions',
+    name: 'sessions',
+    component: () => import('@/views/settings/SessionManagementPage.vue'),
     meta: { requiresAuth: true }
   },
   {

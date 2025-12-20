@@ -19,5 +19,32 @@ export const authApi = {
 
   logout() {
     return client.post('/auth/logout')
+  },
+
+  // Profile Completion - Issue #4
+  getProfileCompletion() {
+    return client.get('/auth/profile-completion')
+  },
+
+  // Password Reset - Issue #7
+  forgotPassword(payload) {
+    return client.post('/auth/forgot-password', payload)
+  },
+
+  resetPassword(payload) {
+    return client.post('/auth/reset-password', payload)
+  },
+
+  // Session Management - Issue #6
+  getSessions() {
+    return client.get('/sessions')
+  },
+
+  logoutSession(sessionId) {
+    return client.post(`/sessions/${sessionId}/logout`)
+  },
+
+  logoutAll() {
+    return client.post('/auth/logout-all')
   }
 }

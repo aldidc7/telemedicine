@@ -9,6 +9,7 @@ use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
@@ -106,6 +107,12 @@ class AuthService
             return null;
         }
 
+        // Check email verification - MANDATORY for doctors and admins
+        if (($user->role === 'dokter' || $user->role === 'admin') && !$user->email_verified_at) {
+            ActivityLog::log($user->id, 'login_failed', 'Email not verified');
+            return null; // Will return error with message in controller
+        }
+
         // Update last login
         $user->update(['last_login_at' => now()]);
 
@@ -114,6 +121,21 @@ class AuthService
 
         // Generate token using Sanctum
         $token = $user->createToken('api-token')->plainTextToken;
+
+        // Create session tracking record
+        try {
+            \App\Models\UserSession::create([
+                'user_id' => $user->id,
+                'token' => $token,
+                'ip_address' => \request()->ip(),
+                'user_agent' => \request()->header('User-Agent'),
+                'device_name' => null,
+                'expires_at' => now()->addDays(7),  // Token valid for 7 days
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to create session: ' . $e->getMessage());
+            // Continue even if session creation fails
+        }
 
         return [
             'user' => [
@@ -296,7 +318,10 @@ class AuthService
                 'password_reset_expires_at' => now()->addHours(2),
             ]);
 
-            // Password reset email removed - focus on chat system only
+            // Send password reset email
+            \Illuminate\Support\Facades\Mail::send(new \App\Mail\PasswordResetMail($user, $resetToken));
+
+            \Log::info('Password reset email sent to: ' . $user->email);
 
             return [
                 'success' => true,

@@ -197,10 +197,12 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import { RouterLink } from 'vue-router'
 
 const router = useRouter()
 const route = useRoute()
+const authStore = useAuthStore()
 const isLoading = ref(false)
 const error = ref(null)
 const showPassword = ref(false)
@@ -281,26 +283,34 @@ const handleRegister = async () => {
       payload.role = 'dokter'
     }
 
-    const response = await fetch(`/api/v1/auth/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
-      },
-      body: JSON.stringify(payload)
-    })
+    await authStore.register(
+      form.value.name,
+      form.value.email,
+      form.value.password,
+      form.value.password_confirmation,
+      userType.value,
+      form.value.phone,
+      '', // alamat (opsional)
+      null, // tglLahir (opsional)
+      userType.value === 'pasien' ? form.value.nik : null, // nik
+      null, // jenisKelamin
+      null, // golonganDarah
+      null, // namaKontakDarurat
+      null  // noKontakDarurat
+    )
 
-    const data = await response.json()
-
-    if (!response.ok) {
-      error.value = data.message || 'Registrasi gagal'
-      return
+    // Untuk dokter, redirect ke email verification
+    if (userType.value === 'dokter') {
+      router.push({
+        name: 'verify-email',
+        query: { email: form.value.email }
+      })
+    } else {
+      // Untuk pasien, redirect ke login
+      router.push('/login')
     }
-
-    // Redirect to login
-    router.push('/login')
   } catch (err) {
-    error.value = err.message || 'Terjadi kesalahan, coba lagi'
+    error.value = err.response?.data?.message || err.response?.data?.pesan || err.message || 'Terjadi kesalahan, coba lagi'
     console.error('Register error:', err)
   } finally {
     isLoading.value = false

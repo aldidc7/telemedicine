@@ -8,12 +8,15 @@ export const useAuthStore = defineStore('auth', () => {
   const isLoading = ref(false)
   const error = ref(null)
   const initialized = ref(false)
+  const consentRequired = ref(false)
+  const acceptedConsents = ref([])
 
   const isAuthenticated = computed(() => !!token.value && !!user.value)
   const userRole = computed(() => user.value?.role)
   const isPasien = computed(() => userRole.value === 'pasien')
   const isDokter = computed(() => userRole.value === 'dokter')
   const isAdmin = computed(() => userRole.value === 'admin')
+  const hasConsent = computed(() => acceptedConsents.value.length === 3) // All 3 consents
 
   const register = async (name, email, password, passwordConfirmation, role, noTelepon, alamat, tglLahir = null, nik = null, jenisKelamin = null, golonganDarah = null, namaKontakDarurat = null, noKontakDarurat = null) => {
     isLoading.value = true
@@ -47,6 +50,10 @@ export const useAuthStore = defineStore('auth', () => {
       token.value = data.data.token
       user.value = data.data.user
       localStorage.setItem('token', data.data.token)
+      
+      // Check consent status
+      await checkConsentStatus()
+      
       return data
     } catch (err) {
       error.value = err.response?.data?.pesan || err.response?.data?.message || 'Registration failed'
@@ -64,12 +71,30 @@ export const useAuthStore = defineStore('auth', () => {
       token.value = data.data.token
       user.value = data.data.user
       localStorage.setItem('token', data.data.token)
+      
+      // Check consent status
+      await checkConsentStatus()
+      
       return data
     } catch (err) {
-      error.value = err.response?.data?.pesan || 'Login failed'
+      error.value = err.response?.data?.pesan || err.response?.data?.message || 'Login failed'
       throw err
     } finally {
       isLoading.value = false
+    }
+  }
+
+  const checkConsentStatus = async () => {
+    try {
+      const { data } = await authApi.getConsentStatus()
+      acceptedConsents.value = data.data.accepted_consents || []
+      consentRequired.value = data.data.requires_consent || false
+    } catch (err) {
+      console.error('Check consent status error:', err)
+      // If not admin, require consent
+      if (user.value?.role !== 'admin') {
+        consentRequired.value = true
+      }
     }
   }
 
@@ -77,6 +102,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const { data } = await authApi.getProfile()
       user.value = data.data
+      await checkConsentStatus()
       return data
     } catch (err) {
       error.value = err.response?.data?.pesan
@@ -92,6 +118,8 @@ export const useAuthStore = defineStore('auth', () => {
     } finally {
       user.value = null
       token.value = null
+      consentRequired.value = false
+      acceptedConsents.value = []
       localStorage.removeItem('token')
     }
   }
@@ -110,6 +138,7 @@ export const useAuthStore = defineStore('auth', () => {
         try {
           const { data } = await Promise.race([authApi.getProfile(), timeoutPromise])
           user.value = data.data
+          await checkConsentStatus()
           return true
         } catch (err) {
           // Token invalid atau timeout, clear dan continue silently
@@ -131,6 +160,9 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading,
     error,
     initialized,
+    consentRequired,
+    acceptedConsents,
+    hasConsent,
     isAuthenticated,
     userRole,
     isPasien,
@@ -140,6 +172,7 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     getProfile,
     logout,
-    initializeAuth
+    initializeAuth,
+    checkConsentStatus
   }
 })

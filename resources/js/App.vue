@@ -8,8 +8,24 @@
       </div>
     </div>
 
+    <!-- Profile Completion Modal - Block Access Until Complete -->
+    <ProfileCompletionModal ref="profileCompletionModal" />
+
+    <!-- Logout Confirmation Modal -->
+    <LogoutModal ref="logoutModal" />
+
+    <!-- Informed Consent Dialog - Show jika consent belum accepted -->
+    <ConsentDialog 
+      v-if="authStore.isAuthenticated && authStore.consentRequired && !authStore.hasConsent"
+      :is-open="showConsentDialog"
+      @consent-complete="handleConsentComplete"
+    />
+
     <!-- Navbar - Authenticated -->
-    <Navbar v-if="authStore.isAuthenticated && authStore.initialized" />
+    <Navbar 
+      v-if="authStore.isAuthenticated && authStore.initialized"
+      @logout="showLogoutModal"
+    />
     <!-- Navbar - Unauthenticated (Landing) -->
     <LandingNavbar v-else-if="!authStore.isAuthenticated && authStore.initialized" />
 
@@ -31,17 +47,47 @@
 </template>
 
 <script setup>
+import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 import Navbar from '@/components/Navbar.vue'
 import LandingNavbar from '@/components/LandingNavbar.vue'
 import WebSocketStatus from '@/components/WebSocketStatus.vue'
 import RealtimeNotifications from '@/components/RealtimeNotifications.vue'
+import ConsentDialog from '@/components/ConsentDialog.vue'
+import ProfileCompletionModal from '@/components/ProfileCompletionModal.vue'
+import LogoutModal from '@/components/LogoutModal.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
+const profileCompletionModal = ref(null)
+const logoutModal = ref(null)
 
-// Initialization sudah di handle oleh router guard dengan timeout
+const showConsentDialog = computed(() => {
+  return authStore.isAuthenticated && authStore.consentRequired && !authStore.hasConsent
+})
+
+const handleConsentComplete = async () => {
+  // Consent telah diterima, reload user data untuk update consent status
+  try {
+    await authStore.checkConsentStatus()
+  } catch (err) {
+    console.error('Error refreshing consent status:', err)
+  }
+}
+
+const showLogoutModal = () => {
+  if (logoutModal.value) {
+    logoutModal.value.show()
+  }
+}
+
+onMounted(async () => {
+  // Check consent status jika user sudah login
+  if (authStore.isAuthenticated) {
+    await authStore.checkConsentStatus()
+  }
+})
 </script>
 
 <style scoped>

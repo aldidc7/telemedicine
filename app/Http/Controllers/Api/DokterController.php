@@ -11,6 +11,7 @@ use App\Services\DoctorSearchService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 /**
  * ============================================
@@ -76,7 +77,7 @@ class DokterController extends Controller
 
         // Non-admin users (pasien/dokter) hanya bisa lihat dokter yang verified dan tersedia
         if (!$isAdmin) {
-            $filters['is_verified'] = true;
+            $filters['is_verified'] = true;  // CRITICAL: Block unverified doctors
             $filters['tersedia'] = true;
         }
 

@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\SessionController;
 use App\Http\Controllers\Api\PasienController;
 use App\Http\Controllers\Api\DokterController;
 use App\Http\Controllers\Api\KonsultasiController;
@@ -21,6 +22,8 @@ use App\Http\Controllers\Api\DoctorVerificationDocumentController;
 use App\Http\Controllers\Api\ConsentController;
 use App\Http\Controllers\Api\DoctorPatientRelationshipController;
 use App\Http\Controllers\Api\PatientMedicalDataController;
+use App\Http\Controllers\Api\AnalyticsController;
+use App\Http\Controllers\Api\ApiDocumentationController;
 use App\Http\Controllers\SimrsApi\SimrsPasienController;
 use App\Http\Controllers\SimrsApi\SimrsDokterController;
 use App\Http\Controllers\SimrsApi\SimrsRekamMedisController;
@@ -47,12 +50,16 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
      * POST /api/v1/auth/logout - Logout user
      * GET /api/v1/auth/me - Get current user profile
      * GET /api/v1/auth/verify-email - Verifikasi email
+     * POST /api/v1/auth/verify-email-confirm - Confirm email verification dengan token
+     * POST /api/v1/auth/resend-verification - Resend verification email
      * POST /api/v1/auth/forgot-password - Request reset password
      * POST /api/v1/auth/reset-password - Reset password dengan token
      */
     Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/login', [AuthController::class, 'login']);
     Route::get('/auth/verify-email', [AuthController::class, 'verifyEmail']);
+    Route::post('/auth/verify-email-confirm', [AuthController::class, 'verifyEmailConfirm']);
+    Route::post('/auth/resend-verification', [AuthController::class, 'resendVerification']);
     Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
 
@@ -60,8 +67,32 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/auth/refresh', [AuthController::class, 'refreshToken']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
+        Route::post('/auth/logout-all', [AuthController::class, 'logoutAll']);
         Route::get('/auth/me', [AuthController::class, 'me']);
         Route::get('/auth/profile-completion', [AuthController::class, 'profileCompletion']);
+
+        // ========== SESSION MANAGEMENT ENDPOINTS ==========
+        /**
+         * Session Management
+         * GET /api/v1/sessions - List all user sessions
+         * POST /api/v1/sessions/{id}/logout - Logout specific session
+         */
+        Route::get('/sessions', [SessionController::class, 'index']);
+        Route::post('/sessions/{id}/logout', [SessionController::class, 'logout']);
+
+        // ========== CONSENT ENDPOINTS (Must accept before other operations) ==========
+        /**
+         * Informed Consent Management
+         * GET /api/v1/consent/status - Check consent status
+         * POST /api/v1/consent/accept - Accept consent
+         * GET /api/v1/consent/{type}/text - Get consent text
+         * POST /api/v1/consent/{id}/revoke - Revoke consent
+         */
+        Route::get('/consent/status', [ConsentController::class, 'status']);
+        Route::post('/consent/accept', [ConsentController::class, 'accept']);
+        Route::post('/consent/{id}/revoke', [ConsentController::class, 'revoke']);
+        Route::get('/consent/types', [ConsentController::class, 'types']);
+        Route::get('/consent/{type}/text', [ConsentController::class, 'getText']);
 
         // ========== PASIEN ENDPOINTS (Admin & Self) ==========
         /**

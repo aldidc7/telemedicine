@@ -16,7 +16,28 @@
 
         <!-- Alert Error -->
         <div v-if="error" class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
-          <p class="text-red-700 text-sm font-medium">{{ error }}</p>
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <p class="text-red-700 text-sm font-medium">{{ error }}</p>
+              <p v-if="emailNotVerified" class="text-red-600 text-xs mt-2">
+                Email Anda belum diverifikasi. Silakan cek inbox email Anda untuk link verifikasi.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Email Verification Required Alert -->
+        <div v-if="emailNotVerified" class="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg">
+          <p class="text-yellow-700 text-sm font-medium mb-3">Email Belum Diverifikasi</p>
+          <p class="text-yellow-600 text-xs mb-4">
+            Anda telah login tetapi email belum diverifikasi. Silakan verifikasi email Anda untuk mengakses fitur lengkap.
+          </p>
+          <button
+            @click="redirectToEmailVerification"
+            class="text-indigo-600 hover:text-indigo-700 font-semibold text-sm underline"
+          >
+            Verifikasi Email Sekarang →
+          </button>
         </div>
 
         <!-- Form -->
@@ -115,7 +136,9 @@ const router = useRouter()
 const authStore = useAuthStore()
 const isLoading = ref(false)
 const error = ref(null)
+const emailNotVerified = ref(false)
 const showPassword = ref(false)
+const userEmail = ref('')
 
 const form = ref({
   identifier: '',
@@ -125,9 +148,24 @@ const form = ref({
 const handleLogin = async () => {
   isLoading.value = true
   error.value = null
+  emailNotVerified.value = false
 
   try {
     await authStore.login(form.value.identifier, form.value.password)
+    userEmail.value = form.value.identifier
+    
+    // Check if email verification is required (for dokter/admin)
+    if (!authStore.user?.email_verified_at && (authStore.isDokter || authStore.isAdmin)) {
+      emailNotVerified.value = true
+      error.value = 'Email Anda belum diverifikasi. Silakan verifikasi email terlebih dahulu.'
+      return
+    }
+
+    // Check if consent is required
+    if (authStore.consentRequired && authStore.user?.role !== 'admin') {
+      router.push('/konsultasi/informed-consent')
+      return
+    }
     
     // Redirect berdasarkan role
     if (authStore.isDokter) {
@@ -138,10 +176,28 @@ const handleLogin = async () => {
       router.push('/dashboard')
     }
   } catch (err) {
-    error.value = err.response?.data?.message || err.message || 'Login gagal, coba lagi'
+    const errorCode = err.response?.data?.code
+    const errorMessage = err.response?.data?.message || err.response?.data?.pesan
+
+    // Handle specific error codes
+    if (errorCode === 'EMAIL_NOT_VERIFIED') {
+      emailNotVerified.value = true
+      error.value = 'Email belum diverifikasi. Silakan cek email Anda untuk link verifikasi.'
+      userEmail.value = form.value.identifier
+    } else {
+      error.value = errorMessage || err.message || 'Login gagal, coba lagi'
+    }
+    
     console.error('Login error:', err)
   } finally {
     isLoading.value = false
   }
+}
+
+const redirectToEmailVerification = () => {
+  router.push({
+    name: 'verify-email',
+    query: { email: userEmail.value }
+  })
 }
 </script>
