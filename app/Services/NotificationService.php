@@ -43,8 +43,8 @@ class NotificationService
         $userId,
         $type,
         $message,
-        $actionUrl = null,
-        Model $notifiable = null
+        ?string $actionUrl = null,
+        ?Model $notifiable = null
     ) {
         $title = self::$titles[$type] ?? 'Notifikasi';
 
@@ -75,8 +75,8 @@ class NotificationService
         array $userIds,
         $type,
         $message,
-        $actionUrl = null,
-        Model $notifiable = null
+        ?string $actionUrl = null,
+        ?Model $notifiable = null
     ) {
         $notifications = [];
 

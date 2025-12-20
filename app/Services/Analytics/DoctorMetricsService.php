@@ -216,7 +216,7 @@ class DoctorMetricsService
     /**
      * Clear doctor metrics cache
      */
-    public function clearCache(int $doctorId = null): void
+    public function clearCache(?int $doctorId = null): void
     {
         if ($doctorId) {
             Cache::forget("doctor.metrics.$doctorId");
