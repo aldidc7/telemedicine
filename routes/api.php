@@ -28,6 +28,7 @@ use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\VideoSessionController;
 use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Api\ApiDocumentationController;
+use App\Http\Controllers\Api\AvailabilityController;
 use App\Http\Controllers\SimrsApi\SimrsPasienController;
 use App\Http\Controllers\SimrsApi\SimrsDokterController;
 use App\Http\Controllers\SimrsApi\SimrsRekamMedisController;
@@ -167,6 +168,28 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
         Route::post('/video-sessions/{id}/log-event', [VideoSessionController::class, 'logParticipantEvent']);
         Route::post('/video-sessions/{id}/upload-recording', [VideoSessionController::class, 'uploadRecording']);
         Route::get('/video-sessions/{id}/analytics', [VideoSessionController::class, 'analytics']);
+
+        // ========== AVAILABILITY & SCHEDULING ENDPOINTS ==========
+        /**
+         * Doctor Availability Management
+         * GET /api/v1/doctors/{id}/availability - Get doctor's availability schedule
+         * GET /api/v1/doctors/{id}/available-slots - Get available slots for booking
+         * POST /api/v1/doctors/availability - Set availability (doctor only)
+         * PATCH /api/v1/doctors/availability/{id} - Update availability (doctor only)
+         * GET /api/v1/doctors/availability/list - List all availability (doctor only)
+         * POST /api/v1/doctors/availability/bulk - Bulk set availability (doctor only)
+         * DELETE /api/v1/doctors/availability/{id} - Delete availability (doctor only)
+         */
+        Route::get('/doctors/{id}/availability', [AvailabilityController::class, 'getDoctorAvailability']);
+        Route::get('/doctors/{id}/available-slots', [AvailabilityController::class, 'getAvailableSlots']);
+
+        Route::middleware('auth:sanctum')->group(function () {
+            Route::post('/doctors/availability', [AvailabilityController::class, 'setAvailability']);
+            Route::patch('/doctors/availability/{id}', [AvailabilityController::class, 'updateAvailability']);
+            Route::get('/doctors/availability/list', [AvailabilityController::class, 'listAvailability']);
+            Route::post('/doctors/availability/bulk', [AvailabilityController::class, 'bulkSetAvailability']);
+            Route::delete('/doctors/availability/{id}', [AvailabilityController::class, 'deleteAvailability']);
+        });
 
         // ========== PASIEN ENDPOINTS (Admin & Self) ==========
         /**
