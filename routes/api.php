@@ -26,10 +26,13 @@ use App\Http\Controllers\Api\PatientMedicalDataController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\VideoSessionController;
+use App\Http\Controllers\Api\VideoCallController;
 use App\Http\Controllers\Api\AnalyticsController;
+use App\Http\Controllers\Api\AppointmentReminderController;
 use App\Http\Controllers\Api\ApiDocumentationController;
 use App\Http\Controllers\Api\AvailabilityController;
 use App\Http\Controllers\Api\DoctorCredentialVerificationController;
+use App\Http\Controllers\Api\ConsultationChatController;
 use App\Http\Controllers\SimrsApi\SimrsPasienController;
 use App\Http\Controllers\SimrsApi\SimrsDokterController;
 use App\Http\Controllers\SimrsApi\SimrsRekamMedisController;
@@ -75,6 +78,8 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::post('/auth/logout-all', [AuthController::class, 'logoutAll']);
         Route::get('/auth/me', [AuthController::class, 'me']);
+        Route::get('/auth/consent-status', [AuthController::class, 'getConsentStatus']);
+        Route::post('/auth/accept-consent', [AuthController::class, 'acceptConsent']);
         Route::get('/auth/profile-completion', [AuthController::class, 'profileCompletion']);
 
         // ========== SESSION MANAGEMENT ENDPOINTS ==========
@@ -143,7 +148,7 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
         Route::post('/payments/{id}/confirm', [PaymentController::class, 'confirm']);
         Route::post('/payments/{id}/refund', [PaymentController::class, 'refund']);
         Route::get('/payments/history', [PaymentController::class, 'history']);
-        
+
         Route::get('/invoices', [InvoiceController::class, 'index']);
         Route::get('/invoices/{id}', [InvoiceController::class, 'show']);
         Route::get('/invoices/{id}/download', [InvoiceController::class, 'download']);
@@ -160,6 +165,9 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
          * POST /api/v1/video-sessions/{id}/log-event - Log participant event
          * POST /api/v1/video-sessions/{id}/upload-recording - Upload recording
          * GET /api/v1/video-sessions/{id}/analytics - Get session analytics
+         * GET /api/v1/video-sessions/{id}/jitsi-token - Get Jitsi JWT token
+         * POST /api/v1/video-sessions/{id}/jitsi-event - Log Jitsi event
+         * GET /api/v1/video-sessions/config/jitsi - Get Jitsi config
          */
         Route::post('/video-sessions', [VideoSessionController::class, 'create']);
         Route::get('/video-sessions', [VideoSessionController::class, 'index']);
@@ -169,6 +177,34 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
         Route::post('/video-sessions/{id}/log-event', [VideoSessionController::class, 'logParticipantEvent']);
         Route::post('/video-sessions/{id}/upload-recording', [VideoSessionController::class, 'uploadRecording']);
         Route::get('/video-sessions/{id}/analytics', [VideoSessionController::class, 'analytics']);
+        Route::get('/video-sessions/{id}/jitsi-token', [VideoSessionController::class, 'getJitsiToken']);
+        Route::post('/video-sessions/{id}/jitsi-event', [VideoSessionController::class, 'logJitsiEvent']);
+        Route::get('/video-sessions/config/jitsi', [VideoSessionController::class, 'getJitsiConfig']);
+
+        // ========== VIDEO CALL ENDPOINTS (Feature #1 - Enhanced) ==========
+        /**
+         * Video Consultation Call Management (New)
+         * POST /api/v1/video-consultations/{id}/start - Start video call with JWT token
+         * POST /api/v1/video-consultations/{id}/end - End video call
+         * POST /api/v1/video-consultations/{id}/consent - Store recording consent (GDPR)
+         * POST /api/v1/video-consultations/{id}/consent/withdraw - Withdraw consent
+         * POST /api/v1/video-consultations/{id}/recording/start - Start recording
+         * POST /api/v1/video-consultations/{id}/recording/stop - Stop and save recording
+         * GET /api/v1/video-consultations/recordings/list - List user's recordings
+         * GET /api/v1/video-consultations/recordings/{id} - Get recording details
+         * GET /api/v1/video-consultations/recordings/{id}/download - Download recording
+         * DELETE /api/v1/video-consultations/recordings/{id} - Delete recording
+         */
+        Route::post('/video-consultations/{consultationId}/start', [VideoCallController::class, 'startConsultation']);
+        Route::post('/video-consultations/{consultationId}/end', [VideoCallController::class, 'endConsultation']);
+        Route::post('/video-consultations/{consultationId}/consent', [VideoCallController::class, 'storeConsent']);
+        Route::post('/video-consultations/{consultationId}/consent/withdraw', [VideoCallController::class, 'withdrawConsent']);
+        Route::post('/video-consultations/{consultationId}/recording/start', [VideoCallController::class, 'recordingStart']);
+        Route::post('/video-consultations/{consultationId}/recording/stop', [VideoCallController::class, 'recordingStop']);
+        Route::get('/video-consultations/recordings/list', [VideoCallController::class, 'listRecordings']);
+        Route::get('/video-consultations/recordings/{recordingId}', [VideoCallController::class, 'getRecording']);
+        Route::get('/video-consultations/recordings/{recordingId}/download', [VideoCallController::class, 'downloadRecording']);
+        Route::delete('/video-consultations/recordings/{recordingId}', [VideoCallController::class, 'deleteRecording']);
 
         // ========== AVAILABILITY & SCHEDULING ENDPOINTS ==========
         /**
@@ -255,12 +291,12 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
          */
         Route::get('/dokter', [DokterController::class, 'index']);
         Route::post('/dokter', [DokterController::class, 'store']);
-        
+
         // Search & Filter endpoints (before specific routes to avoid conflicts)
         Route::get('/dokter/search/advanced', [DokterController::class, 'search']);
         Route::get('/dokter/top-rated', [DokterController::class, 'topRated']);
         Route::get('/dokter/specializations/list', [DokterController::class, 'specializations']);
-        
+
         // Other routes
         Route::get('/dokter/public/terverifikasi', [DokterController::class, 'verifiedDoctors']);
         Route::get('/dokter/user/{user_id}', [DokterController::class, 'getByUserId']);
@@ -391,7 +427,7 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
         Route::get('/admin/dokter/approved', [AdminController::class, 'getApprovedDoctors']);
         Route::post('/admin/dokter/{id}/approve', [AdminController::class, 'approveDoctor']);
         Route::post('/admin/dokter/{id}/reject', [AdminController::class, 'rejectDoctor']);
-        
+
         // Legacy DoctorVerificationController routes (for backward compatibility)
         Route::get('/admin/doctors/pending', [DoctorVerificationController::class, 'pendingDoctors']);
         Route::post('/admin/doctors/{id}/approve', [DoctorVerificationController::class, 'approvDoctor']);
@@ -413,7 +449,7 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
         Route::get('/doctor/verification/documents', [DoctorVerificationDocumentController::class, 'getDocuments']);
         Route::get('/doctor/verification/status', [DoctorVerificationDocumentController::class, 'getVerificationStatus']);
         Route::get('/verification/{id}/download', [DoctorVerificationDocumentController::class, 'download']);
-        
+
         Route::get('/admin/verification/pending', [DoctorVerificationDocumentController::class, 'adminListPending']);
         Route::get('/doctor-verification-documents', [DoctorVerificationDocumentController::class, 'adminListPending']);
         Route::post('/admin/verification/{id}/approve', [DoctorVerificationDocumentController::class, 'adminApprove']);
@@ -524,6 +560,23 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
             Route::delete('/clear', [NotificationController::class, 'clearAll']);
         });
 
+        // ========== APPOINTMENT REMINDER ENDPOINTS ==========
+        /**
+         * Appointment Reminders
+         * GET /api/v1/appointment-reminders - List reminders
+         * GET /api/v1/appointment-reminders/{id} - Get reminder detail
+         * POST /api/v1/appointment-reminders/{id}/resend - Resend reminder
+         * GET /api/v1/appointments/{id}/reminders - Get reminders for appointment
+         * GET /api/v1/reminder-preferences - Get reminder preferences
+         * PUT /api/v1/reminder-preferences - Update reminder preferences
+         */
+        Route::get('/appointment-reminders', [AppointmentReminderController::class, 'index']);
+        Route::get('/appointment-reminders/{id}', [AppointmentReminderController::class, 'show']);
+        Route::post('/appointment-reminders/{id}/resend', [AppointmentReminderController::class, 'resend']);
+        Route::get('/appointments/{id}/reminders', [AppointmentReminderController::class, 'getAppointmentReminders']);
+        Route::get('/reminder-preferences', [AppointmentReminderController::class, 'getPreferences']);
+        Route::put('/reminder-preferences', [AppointmentReminderController::class, 'updatePreferences']);
+
         // ========== APPOINTMENT ENDPOINTS ==========
         /**
          * Appointment/Booking Routes - Penjadwalan konsultasi
@@ -590,6 +643,28 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
         Route::get('/appointments/{appointmentId}/prescriptions', [PrescriptionController::class, 'byAppointment']);
         Route::get('/appointments/{appointmentId}/has-prescription', [PrescriptionController::class, 'appointmentHasPrescription']);
 
+        // ========== CONSULTATION CHAT ENDPOINTS (In-Call Messaging) ==========
+        /**
+         * Consultation Chat - Real-time messaging during consultation
+         * POST /api/v1/consultations/{id}/messages - Send message
+         * GET /api/v1/consultations/{id}/messages - Get chat history
+         * GET /api/v1/consultations/{id}/messages/search?q=keyword - Search messages
+         * GET /api/v1/consultations/{id}/messages/unread-count - Get unread count
+         * POST /api/v1/consultation-messages/{id}/read - Mark as read
+         * DELETE /api/v1/consultation-messages/{id} - Delete message
+         */
+        Route::prefix('/consultations/{consultation}')->group(function () {
+            Route::post('/messages', [ConsultationChatController::class, 'sendMessage']);
+            Route::get('/messages', [ConsultationChatController::class, 'getMessages']);
+            Route::get('/messages/search', [ConsultationChatController::class, 'searchMessages']);
+            Route::get('/messages/unread-count', [ConsultationChatController::class, 'getUnreadCount']);
+        });
+
+        Route::prefix('/consultation-messages')->group(function () {
+            Route::post('/{message}/read', [ConsultationChatController::class, 'markAsRead']);
+            Route::delete('/{message}', [ConsultationChatController::class, 'deleteMessage']);
+        });
+
         // ========== ANALYTICS ENDPOINTS (Admin Only) ==========
         /**
          * Analytics Routes - Admin dashboard analytics
@@ -609,11 +684,11 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
             Route::get('/revenue', [AnalyticsController::class, 'getRevenueAnalytics']);
             Route::get('/range', [AnalyticsController::class, 'getAnalyticsByDateRange']);
             Route::post('/refresh', [AnalyticsController::class, 'refreshCache']);
-            
+
             // Cache Management
             Route::get('/cache/status', [AnalyticsController::class, 'getCacheStatus']);
             Route::post('/cache/warm', [AnalyticsController::class, 'warmCache']);
-            
+
             // Real-time Updates
             Route::get('/realtime', [AnalyticsController::class, 'getRealtimeMetrics']);
 
@@ -666,16 +741,16 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
         Route::prefix('doctor-patient-relationships')->group(function () {
             // Doctor establishing relationship
             Route::post('/', [DoctorPatientRelationshipController::class, 'establish']);
-            
+
             // Doctor's patients
             Route::get('/my-patients', [DoctorPatientRelationshipController::class, 'getMyPatients']);
-            
+
             // Check relationship
             Route::get('/check/{patientId}', [DoctorPatientRelationshipController::class, 'checkRelationship']);
-            
+
             // Patient's doctors
             Route::get('/my-doctors', [DoctorPatientRelationshipController::class, 'getMyDoctors']);
-            
+
             // Terminate & History (must be after specific routes)
             Route::put('/{relationshipId}/terminate', [DoctorPatientRelationshipController::class, 'terminate']);
             Route::get('/{relationshipId}/history', [DoctorPatientRelationshipController::class, 'getHistory']);

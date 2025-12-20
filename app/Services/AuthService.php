@@ -30,7 +30,7 @@ class AuthService
         $result = DB::transaction(function () use ($data) {
             // Generate email verification token
             $verificationToken = Str::random(64);
-            
+
             // Create user
             $user = User::create([
                 'name' => $data['name'],
@@ -107,8 +107,9 @@ class AuthService
             return null;
         }
 
-        // Check email verification - MANDATORY for doctors and admins
-        if (($user->role === 'dokter' || $user->role === 'admin') && !$user->email_verified_at) {
+        // Check email verification - MANDATORY for doctors only
+        // Admin doesn't need email verification
+        if ($user->role === 'dokter' && !$user->email_verified_at) {
             ActivityLog::log($user->id, 'login_failed', 'Email not verified');
             return null; // Will return error with message in controller
         }
@@ -159,11 +160,11 @@ class AuthService
     public function logout(): bool
     {
         $user = Auth::user();
-        
+
         if ($user) {
             // Log logout
             ActivityLog::log($user->id, 'logout', 'User logged out');
-            
+
             // Revoke all tokens
             $user->tokens()->delete();
             return true;
@@ -311,7 +312,7 @@ class AuthService
         try {
             // Generate reset token (64 chars)
             $resetToken = Str::random(64);
-            
+
             // Update user dengan reset token dan expiry (2 hours)
             $user->update([
                 'password_reset_token' => $resetToken,
@@ -329,7 +330,7 @@ class AuthService
             ];
         } catch (\Exception $e) {
             Log::error('Failed to send password reset email: ' . $e->getMessage());
-            
+
             return [
                 'success' => true,
                 'message' => 'Jika email terdaftar, Anda akan menerima link reset password',
@@ -383,7 +384,7 @@ class AuthService
             ];
         } catch (\Exception $e) {
             Log::error('Failed to reset password: ' . $e->getMessage());
-            
+
             return [
                 'success' => false,
                 'message' => 'Gagal mereset password. Silakan coba lagi',

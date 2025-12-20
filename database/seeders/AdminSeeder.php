@@ -33,6 +33,7 @@ class AdminSeeder extends Seeder
                 'password' => Hash::make('Rsud123!'),
                 'role' => 'admin',
                 'is_active' => true,
+                'email_verified_at' => now(), // ✅ Added email verification
                 'last_login_at' => now(),
                 'admin' => [
                     'permission_level' => 3, // Super Admin
@@ -54,5 +55,7 @@ class AdminSeeder extends Seeder
         }
 
         echo "✅ Admin seeder completed - " . count($admin_data) . " admin created\n";
+        echo "📧 Email: admin@telemedicine\n";
+        echo "🔐 Password: Rsud123!\n";
     }
 }

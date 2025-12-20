@@ -172,4 +172,20 @@ trait ApiResponse
     {
         return $this->errorResponse($message, $statusCode, $data);
     }
+
+    /**
+     * Alias for successResponse (alternative naming)
+     */
+    public function sendSuccess($data = null, $message = 'Sukses', $statusCode = 200): JsonResponse
+    {
+        return $this->successResponse($data, $message, $statusCode);
+    }
+
+    /**
+     * Alias for errorResponse (alternative naming)
+     */
+    public function sendError($message = 'Terjadi kesalahan', $data = [], $statusCode = 400): JsonResponse
+    {
+        return $this->errorResponse($message, $statusCode, $data);
+    }
 }

@@ -2,144 +2,311 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Dokter;
-use App\Models\ActivityLog;
-use App\Traits\ApiResponse;
+use App\Models\DoctorVerification;
+use App\Models\DoctorVerificationDocument;
+use App\Services\DoctorVerification\DoctorVerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 /**
- * Doctor Verification Controller
+ * Doctor Verification API Controller
  * 
- * Handle verifikasi dokter oleh admin
- * - GET /api/v1/admin/doctors/pending - List dokter pending verifikasi
- * - POST /api/v1/admin/doctors/{id}/approve - Approve dokter
- * - POST /api/v1/admin/doctors/{id}/reject - Reject dokter
+ * Endpoints for doctor verification workflow
+ * - POST /api/v1/doctor-verification/submit - Submit verification
+ * - POST /api/v1/doctor-verification/{id}/documents - Upload document
+ * - GET /api/v1/doctor-verification/status - Get status
+ * - POST /api/v1/doctor-verification/{id}/approve - Approve (Admin)
+ * - POST /api/v1/doctor-verification/{id}/reject - Reject (Admin)
+ * - GET /api/v1/admin/verifications/pending - List pending (Admin)
  */
 class DoctorVerificationController extends BaseApiController
 {
-    use ApiResponse;
+    protected DoctorVerificationService $service;
 
-    /**
-     * List dokter yang pending verifikasi (untuk admin)
-     */
-    public function pendingDoctors()
+    public function __construct(DoctorVerificationService $service)
     {
-        // Check if user is admin
-        if (!Auth::user()?->isAdmin()) {
-            return $this->forbiddenResponse('Anda tidak memiliki izin mengakses fitur ini');
-        }
-
-        $doctors = Dokter::pending()
-            ->with('user')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return $this->successResponse($doctors, 'Data dokter pending');
+        $this->service = $service;
+        // Middleware is set in BaseApiController
     }
 
     /**
-     * Approve dokter (verifikasi dokter)
+     * Submit verification
+     * POST /api/v1/doctor-verification/submit
      */
-    public function approvDoctor(Request $request, $id)
+    public function submit(Request $request)
     {
-        // Check if user is admin
-        if (!Auth::user()?->isAdmin()) {
-            return $this->forbiddenResponse('Anda tidak memiliki izin untuk melakukan ini');
+        // Only doctors can submit
+        if (!$request->user() || $request->user()->role !== 'doctor') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only doctors can submit verification',
+            ], 403);
         }
 
-        $request->validate([
-            'notes' => 'nullable|string|max:500'
+        $validated = $request->validate([
+            'medical_license' => 'required|string|max:100',
+            'specialization' => 'required|string|max:100',
+            'institution' => 'nullable|string|max:200',
+            'years_of_experience' => 'required|integer|min:0',
         ]);
 
-        $result = DB::transaction(function () use ($id, $request) {
-            $doctor = Dokter::findOrFail($id);
+        try {
+            $verification = $this->service->submitVerification($request->user(), $validated);
 
-            $doctor->update([
-                'is_verified' => true,
-                'verified_at' => now(),
-                'verified_by_admin_id' => Auth::id(),
-                'verification_notes' => $request->notes ?? null,
-            ]);
-
-            // Log activity
-            ActivityLog::create([
-                'user_id' => Auth::id(),
-                'action' => 'approve_doctor',
-                'description' => "Admin approved doctor: {$doctor->user->name}",
-                'data' => [
-                    'doctor_id' => $doctor->id,
-                    'doctor_name' => $doctor->user->name,
-                    'notes' => $request->notes,
-                ]
-            ]);
-
-            return $doctor;
-        });
-
-        return $this->successResponse($result, 'Dokter berhasil diverifikasi');
+            return response()->json([
+                'success' => true,
+                'message' => 'Verification submitted successfully',
+                'data' => $verification,
+            ], 201);
+        } catch (\Exception $e) {
+            $statusCode = $e->getCode() ?: 400;
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], $statusCode);
+        }
     }
 
     /**
-     * Reject dokter
+     * Upload verification document
+     * POST /api/v1/doctor-verification/{id}/documents
      */
-    public function rejectDoctor(Request $request, $id)
+    public function uploadDocument(Request $request, DoctorVerification $verification)
     {
-        // Check if user is admin
-        if (!Auth::user()?->isAdmin()) {
-            return $this->forbiddenResponse('Anda tidak memiliki izin untuk melakukan ini');
+        // Verify ownership
+        if ($verification->doctor_id !== $request->user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
         }
 
-        $request->validate([
-            'reason' => 'required|string|max:500'
+        $validated = $request->validate([
+            'document_type' => 'required|string|in:ktp,skp,sertifikat,lisensi,ijazah',
+            'document' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
-        $result = DB::transaction(function () use ($id, $request) {
-            $doctor = Dokter::findOrFail($id);
-            $doctorName = $doctor->user->name;
+        try {
+            $document = $this->service->uploadDocument(
+                $verification,
+                $validated,
+                $request->file('document')
+            );
 
-            // Log activity sebelum delete
-            ActivityLog::create([
-                'user_id' => Auth::id(),
-                'action' => 'reject_doctor',
-                'description' => "Admin rejected doctor: {$doctorName}",
-                'data' => [
-                    'doctor_id' => $doctor->id,
-                    'doctor_name' => $doctorName,
-                    'reason' => $request->reason,
-                ]
-            ]);
-
-            // Delete dokter dan user-nya
-            $doctor->user->delete();
-            $doctor->delete();
-
-            return [
-                'message' => "Dokter {$doctorName} ditolak dan data dihapus"
-            ];
-        });
-
-        return $this->successResponse($result, 'Dokter berhasil ditolak');
+            return response()->json([
+                'success' => true,
+                'message' => 'Document uploaded successfully',
+                'data' => $document,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], $e->getCode() ?: 400);
+        }
     }
 
     /**
-     * Get doctor verification status
+     * Get verification status
+     * GET /api/v1/doctor-verification/status
      */
-    public function getDoctorStatus($id)
+    public function status(Request $request)
     {
-        $doctor = Dokter::with('user')
-            ->findOrFail($id);
+        $verification = $this->service->getStatus($request->user());
 
-        return $this->successResponse([
-            'id' => $doctor->id,
-            'name' => $doctor->user->name,
-            'email' => $doctor->user->email,
-            'specialization' => $doctor->specialization,
-            'license_number' => $doctor->license_number,
-            'is_verified' => $doctor->is_verified,
-            'verified_at' => $doctor->verified_at,
-            'verification_notes' => $doctor->verification_notes,
-        ], 'Doctor verification status');
+        if (!$verification) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No verification found',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Verification status retrieved',
+            'data' => $verification->load('documents'),
+        ]);
+    }
+
+    /**
+     * Get verification details (Admin only)
+     * GET /api/v1/doctor-verification/{id}
+     */
+    public function show(DoctorVerification $verification)
+    {
+        $user = Auth::user();
+        if (!$user || !in_array($user->role, ['admin'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Verification retrieved',
+            'data' => $verification->load('documents', 'doctor'),
+        ]);
+    }
+
+    /**
+     * Approve verification (Admin only)
+     * POST /api/v1/doctor-verification/{id}/approve
+     */
+    public function approve(Request $request, DoctorVerification $verification)
+    {
+        $user = Auth::user();
+        if (!$user || !in_array($user->role, ['admin'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        try {
+            $verification = $this->service->approveVerification($verification, $validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Verification approved successfully',
+                'data' => $verification,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+    }
+
+    /**
+     * Reject verification (Admin only)
+     * POST /api/v1/doctor-verification/{id}/reject
+     */
+    public function reject(Request $request, DoctorVerification $verification)
+    {
+        $user = Auth::user();
+        if (!$user || !in_array($user->role, ['admin'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'reason' => 'required|string|max:1000',
+        ]);
+
+        try {
+            $verification = $this->service->rejectVerification($verification, $validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Verification rejected',
+                'data' => $verification,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Reset verification after rejection
+     * POST /api/v1/doctor-verification/{id}/reset
+     */
+    public function reset(Request $request, DoctorVerification $verification)
+    {
+        if ($verification->doctor_id !== $request->user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        if ($verification->status !== 'rejected') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Can only reset rejected verifications',
+            ], 422);
+        }
+
+        try {
+            $verification = $this->service->resetVerification($verification);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Verification reset successfully',
+                'data' => $verification,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Download document (Admin and Doctor)
+     * GET /api/v1/doctor-verification/documents/{id}/download
+     */
+    public function downloadDocument(Request $request, DoctorVerificationDocument $document)
+    {
+        $user = $request->user();
+
+        // Check authorization
+        if ($user->id !== $document->verification->doctor_id && $user->role !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        try {
+            $url = $this->service->getDocumentUrl($document);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Download URL generated',
+                'data' => ['url' => $url],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * List pending verifications (Admin only)
+     * GET /api/v1/admin/verifications/pending
+     */
+    public function listPending(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user || !in_array($user->role, ['admin'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        $verifications = DoctorVerification::where('status', 'in_review')
+            ->with('doctor', 'documents')
+            ->paginate(15);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pending verifications retrieved',
+            'data' => $verifications,
+        ]);
     }
 }

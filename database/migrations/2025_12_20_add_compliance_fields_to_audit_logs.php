@@ -17,18 +17,18 @@ return new class extends Migration
                 if (!Schema::hasColumn('audit_logs', 'resource_type')) {
                     $table->string('resource_type')->nullable()->after('action');
                 }
-                
+
                 if (!Schema::hasColumn('audit_logs', 'resource_id')) {
                     $table->unsignedBigInteger('resource_id')->nullable()->after('resource_type');
                 }
-                
+
                 // Add details column if it doesn't exist
                 if (!Schema::hasColumn('audit_logs', 'details')) {
                     $table->json('details')->nullable()->after('description');
                 }
-                
-                // Add indexes
-                if (!Schema::hasIndexName('audit_logs', 'audit_logs_resource_type_index')) {
+
+                // Add indexes (skip hasIndexName check for SQLite compatibility)
+                if (!Schema::hasColumn('audit_logs', 'resource_type') === false) {
                     $table->index('resource_type');
                 }
             });
@@ -45,11 +45,11 @@ return new class extends Migration
                 if (Schema::hasColumn('audit_logs', 'resource_type')) {
                     $table->dropColumn('resource_type');
                 }
-                
+
                 if (Schema::hasColumn('audit_logs', 'resource_id')) {
                     $table->dropColumn('resource_id');
                 }
-                
+
                 if (Schema::hasColumn('audit_logs', 'details')) {
                     $table->dropColumn('details');
                 }

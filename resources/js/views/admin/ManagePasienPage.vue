@@ -61,7 +61,7 @@
 
     <!-- Loading -->
     <div v-if="loading" class="text-center py-12">
-      <LoadingSpinner message="Memuat data pasien..." />
+      <LoadingSpinner :isLoading="loading" message="Memuat data pasien..." />
     </div>
 
     <!-- Empty State -->

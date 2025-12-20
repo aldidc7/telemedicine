@@ -52,19 +52,19 @@ class AuthController extends Controller
         // Rate limiting check by email
         $email = $request->email;
         $key = "register:{$email}";
-        
+
         if (RateLimitService::isLimited($key, RateLimitService::REGISTER_MAX_ATTEMPTS, RateLimitService::REGISTER_DECAY_MINUTES)) {
             return $this->validationErrorResponse('Terlalu banyak upaya registrasi. Silakan coba lagi nanti.', 429, [
                 'retry_after' => RateLimitService::REGISTER_DECAY_MINUTES * 60,
             ]);
         }
-        
+
         // Validation happens automatically in RegisterRequest
         $result = $this->authService->register($request->validated());
-        
+
         // Reset rate limit on successful registration
         RateLimitService::reset($key);
-        
+
         return $this->createdResponse(
             $result,
             'User berhasil terdaftar'
@@ -80,7 +80,7 @@ class AuthController extends Controller
         $email = $request->email;
         $ip = $request->ip();
         $key = "login:{$email}:{$ip}";
-        
+
         if (RateLimitService::isLimited($key, RateLimitService::LOGIN_MAX_ATTEMPTS, RateLimitService::LOGIN_DECAY_MINUTES)) {
             $remaining = RateLimitService::remaining($key, RateLimitService::LOGIN_MAX_ATTEMPTS, RateLimitService::LOGIN_DECAY_MINUTES);
             return $this->validationErrorResponse('Terlalu banyak upaya login. Silakan coba lagi dalam 15 menit.', 429, [
@@ -88,21 +88,21 @@ class AuthController extends Controller
                 'remaining' => $remaining,
             ]);
         }
-        
+
         // Validation happens automatically in LoginRequest
         $data = $request->validated();
-        
+
         $result = $this->authService->login(
             $data['email'],
             $data['password']
         );
-        
+
         if (!$result) {
             // Increment rate limit on failed attempt
             RateLimitService::increment($key, RateLimitService::LOGIN_DECAY_MINUTES);
-            
+
             $remaining = RateLimitService::remaining($key, RateLimitService::LOGIN_MAX_ATTEMPTS, RateLimitService::LOGIN_DECAY_MINUTES);
-            
+
             // Check if it's email verification issue
             $user = User::where('email', $data['email'])->first();
             if ($user && ($user->role === 'dokter' || $user->role === 'admin') && !$user->email_verified_at) {
@@ -112,15 +112,15 @@ class AuthController extends Controller
                     ['error_code' => 'EMAIL_NOT_VERIFIED']
                 );
             }
-            
+
             return $this->unauthorizedResponse('Email atau password salah', null, [
                 'remaining_attempts' => $remaining,
             ]);
         }
-        
+
         // Reset rate limit on successful login
         RateLimitService::reset($key);
-        
+
         return $this->successResponse(
             $result,
             'Login berhasil'
@@ -148,11 +148,11 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         $user = $this->authService->getCurrentUser();
-        
+
         if (!$user) {
             return $this->unauthorizedResponse('User tidak ditemukan');
         }
-        
+
         return $this->successResponse($user, 'Profil user berhasil diambil');
     }
 
@@ -166,13 +166,13 @@ class AuthController extends Controller
     public function profileCompletion(Request $request)
     {
         $user = $request->user();
-        
+
         if (!$user) {
             return $this->unauthorizedResponse('User tidak ditemukan');
         }
-        
+
         $completion = \App\Services\ProfileCompletionService::getCompletion($user);
-        
+
         return $this->successResponse($completion, 'Status kelengkapan profil berhasil diambil');
     }
 
@@ -198,13 +198,13 @@ class AuthController extends Controller
     public function refreshToken(Request $request)
     {
         $user = $request->user();
-        
+
         if (!$user) {
             return $this->unauthorizedResponse('User tidak ditemukan');
         }
-        
+
         $token = $user->createToken('auth_token')->plainTextToken;
-        
+
         return $this->successResponse(
             ['token' => $token],
             'Token berhasil diperbarui'
@@ -219,7 +219,7 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         $this->authService->logout();
-        
+
         return $this->successResponse(null, 'Logout berhasil');
     }
 
@@ -231,7 +231,7 @@ class AuthController extends Controller
     public function verifyEmail(Request $request)
     {
         $token = $request->query('token');
-        
+
         if (!$token) {
             return $this->validationErrorResponse('Token tidak ditemukan');
         }
@@ -264,13 +264,13 @@ class AuthController extends Controller
         // Rate limiting check
         $email = $request->email;
         $key = "forgot-password:{$email}";
-        
+
         if (RateLimitService::isLimited($key, RateLimitService::FORGOT_PASSWORD_MAX_ATTEMPTS, RateLimitService::FORGOT_PASSWORD_DECAY_MINUTES)) {
             return $this->validationErrorResponse('Terlalu banyak upaya reset password. Silakan coba lagi nanti.', 429, [
                 'retry_after' => RateLimitService::FORGOT_PASSWORD_DECAY_MINUTES * 60,
             ]);
         }
-        
+
         RateLimitService::increment($key, RateLimitService::FORGOT_PASSWORD_DECAY_MINUTES);
         $result = $this->authService->forgotPassword($request->email);
 
@@ -364,7 +364,7 @@ class AuthController extends Controller
         ]);
 
         $user = User::where('email', $request->email)->first();
-        
+
         if (!$user) {
             return $this->notFoundResponse('User tidak ditemukan');
         }
@@ -424,5 +424,61 @@ class AuthController extends Controller
         $this->authService->logout();
 
         return $this->successResponse(null, 'Logout dari semua perangkat berhasil');
+    }
+
+    /**
+     * Get consent status for current user
+     * 
+     * GET /api/v1/auth/consent-status
+     */
+    public function getConsentStatus(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return $this->unauthorizedResponse('User tidak ditemukan');
+        }
+
+        // Admin tidak perlu consent
+        if ($user->role === 'admin') {
+            return $this->successResponse([
+                'accepted_consents' => [],
+                'requires_consent' => false
+            ], 'Admin tidak memerlukan consent');
+        }
+
+        // For now, no consent required (can be expanded later)
+        return $this->successResponse([
+            'accepted_consents' => [],
+            'requires_consent' => false
+        ], 'Consent status retrieved');
+    }
+
+    /**
+     * Accept consent
+     * 
+     * POST /api/v1/auth/accept-consent
+     */
+    public function acceptConsent(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return $this->unauthorizedResponse('User tidak ditemukan');
+        }
+
+        $consentType = $request->input('consent_type');
+
+        if (!$consentType) {
+            return $this->validationErrorResponse('Consent type harus diisi');
+        }
+
+        // Log consent acceptance
+        \App\Models\ActivityLog::log($user->id, 'accept_consent', 'Consent type: ' . $consentType);
+
+        return $this->successResponse([
+            'accepted_consents' => [$consentType],
+            'message' => 'Terima kasih telah menerima consent'
+        ], 'Consent berhasil diterima');
     }
 }

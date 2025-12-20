@@ -47,7 +47,7 @@
 
     <!-- Loading -->
     <div v-if="loading" class="text-center py-12">
-      <LoadingSpinner message="Memuat log aktivitas..." />
+      <LoadingSpinner :isLoading="loading" message="Memuat log aktivitas..." />
     </div>
 
     <!-- Empty State -->

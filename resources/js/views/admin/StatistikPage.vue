@@ -14,7 +14,7 @@
 
     <!-- Loading -->
     <div v-if="loading" class="text-center py-12">
-      <LoadingSpinner message="Memuat statistik..." />
+      <LoadingSpinner :isLoading="loading" message="Memuat statistik..." />
     </div>
 
     <div v-else class="space-y-10">

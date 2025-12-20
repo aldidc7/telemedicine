@@ -21,6 +21,13 @@ use App\Services\DokterService;
 use App\Services\PesanChatService;
 use App\Services\RatingService;
 use App\Observers\PasienObserver;
+use App\Observers\KonsultasiObserver;
+use App\Services\Appointment\AppointmentReminderService;
+use App\Services\Consultation\ConsultationChatService;
+use App\Services\Doctor\DoctorAvailabilityService;
+use App\Services\Security\AuditLoggingService;
+use App\Services\Security\GDPRComplianceService;
+use App\Services\Security\FileUploadValidationService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,11 +36,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Register middleware aliases
-        $this->app->make(\Illuminate\Contracts\Http\Kernel::class)->pushMiddleware(
-            \App\Http\Middleware\PerformanceMiddleware::class
-        );
-
         // Register singleton services untuk dependency injection
         $this->app->singleton(AuthService::class, function () {
             return new AuthService();
@@ -58,6 +60,30 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(RatingService::class, function () {
             return new RatingService();
         });
+
+        $this->app->singleton(AppointmentReminderService::class, function () {
+            return new AppointmentReminderService();
+        });
+
+        $this->app->singleton(ConsultationChatService::class, function () {
+            return new ConsultationChatService();
+        });
+
+        $this->app->singleton(DoctorAvailabilityService::class, function () {
+            return new DoctorAvailabilityService();
+        });
+
+        $this->app->singleton(AuditLoggingService::class, function () {
+            return new AuditLoggingService();
+        });
+
+        $this->app->singleton(GDPRComplianceService::class, function () {
+            return new GDPRComplianceService();
+        });
+
+        $this->app->singleton(FileUploadValidationService::class, function () {
+            return new FileUploadValidationService();
+        });
     }
 
     /**
@@ -69,6 +95,9 @@ class AppServiceProvider extends ServiceProvider
         if (config('app.debug') || app()->environment('production')) {
             \App\Services\QueryMonitoringService::registerListener();
         }
+
+        // ===== Register Model Observers =====
+        Konsultasi::observe(KonsultasiObserver::class);
 
         // ===== Register Model Observers =====
         Pasien::observe(PasienObserver::class);

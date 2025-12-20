@@ -77,6 +77,10 @@ export const useAuthStore = defineStore('auth', () => {
       
       return data
     } catch (err) {
+      // Clear auth on login failure
+      token.value = null
+      user.value = null
+      localStorage.removeItem('token')
       error.value = err.response?.data?.pesan || err.response?.data?.message || 'Login failed'
       throw err
     } finally {

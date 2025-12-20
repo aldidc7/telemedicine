@@ -71,13 +71,21 @@ class Konsultasi extends Model
     ];
 
     // ============ RELATIONSHIPS ============
-    
+
     /**
      * Relasi ke model Pasien (Konsultasi milik satu pasien)
      */
     public function pasien()
     {
         return $this->belongsTo(Pasien::class, 'patient_id');
+    }
+
+    /**
+     * Reminders untuk konsultasi ini
+     */
+    public function reminders()
+    {
+        return $this->hasMany(AppointmentReminder::class, 'appointment_id');
     }
 
     /**
@@ -98,6 +106,15 @@ class Konsultasi extends Model
     }
 
     /**
+     * Relasi ke model ConsultationMessage (In-call chat messages)
+     */
+    public function messages()
+    {
+        return $this->hasMany(ConsultationMessage::class, 'consultation_id')
+            ->orderBy('created_at', 'asc');
+    }
+
+    /**
      * Relasi ke model Rating (Konsultasi punya satu rating dari pasien)
      */
     public function rating()
@@ -106,7 +123,7 @@ class Konsultasi extends Model
     }
 
     // ============ SCOPES ============
-    
+
     /**
      * Filter konsultasi dengan status 'pending'
      */
@@ -148,7 +165,7 @@ class Konsultasi extends Model
     }
 
     // ============ HELPER METHODS ============
-    
+
     /**
      * Cek apakah konsultasi sedang menunggu
      */

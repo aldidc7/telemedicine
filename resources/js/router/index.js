@@ -293,7 +293,14 @@ router.beforeEach(async (to, from, next) => {
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     return next('/login')
   } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
-    return next('/dashboard')
+    // User sudah login, redirect ke dashboard sesuai role
+    if (authStore.isAdmin) {
+      return next('/admin/dashboard')
+    } else if (authStore.isDokter) {
+      return next('/dokter/dashboard')
+    } else {
+      return next('/dashboard')
+    }
   } else if (to.meta.requiresRole && authStore.userRole !== to.meta.requiresRole) {
     return next('/dashboard')
   } else {

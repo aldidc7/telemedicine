@@ -6,6 +6,8 @@ use App\Models\VideoSession;
 use App\Models\Consultation;
 use App\Models\VideoParticipantLog;
 use App\Models\VideoSessionEvent;
+use App\Services\Video\VideoSessionService;
+use App\Services\Video\JitsiTokenService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,6 +15,13 @@ use Illuminate\Support\Str;
 
 class VideoSessionController extends ApiController
 {
+    private VideoSessionService $videoSessionService;
+
+    public function __construct()
+    {
+        $this->videoSessionService = new VideoSessionService();
+    }
+
     /**
      * Initialize a video session
      * POST /api/v1/video-sessions
@@ -339,5 +348,126 @@ class VideoSessionController extends ApiController
                 'last_page' => $sessions->lastPage(),
             ],
         ]);
+    }
+
+    /**
+     * Get Jitsi JWT Token untuk video session
+     * GET /api/v1/video-sessions/{id}/jitsi-token
+     * 
+     * Returns JWT token untuk authentikasi ke Jitsi server
+     */
+    public function getJitsiToken(string $id): JsonResponse
+    {
+        try {
+            $userId = Auth::id();
+            $session = VideoSession::findOrFail($id);
+
+            // Verify user is part of session
+            if ($session->doctor_id !== $userId && $session->patient_id !== $userId) {
+                return $this->error('Unauthorized', [], 403);
+            }
+
+            // Get Jitsi token
+            $token = $this->videoSessionService->getJitsiToken($session->id, $userId);
+
+            // Get Jitsi config
+            $config = $this->videoSessionService->getJitsiConfig();
+
+            // Get room name
+            $roomName = \App\Services\Video\JitsiTokenService::formatRoomName($session->consultation_id);
+
+            return $this->success([
+                'token' => $token,
+                'room_name' => $roomName,
+                'server_url' => $config['server_url'],
+                'session_id' => $session->id,
+                'consultation_id' => $session->consultation_id,
+                'is_doctor' => $session->doctor_id === $userId,
+                'participant_name' => Auth::check() ? Auth::user()->name : 'Participant',
+            ], 'Jitsi token berhasil dibuat');
+        } catch (\Exception $e) {
+            return $this->error('Gagal membuat Jitsi token: ' . $e->getMessage(), [], 500);
+        }
+    }
+
+    /**
+     * Get Jitsi Configuration
+     * GET /api/v1/video-sessions/config/jitsi
+     * 
+     * Returns Jitsi configuration untuk frontend
+     */
+    public function getJitsiConfig(): JsonResponse
+    {
+        try {
+            $config = $this->videoSessionService->getJitsiConfig();
+
+            return $this->success([
+                'config' => $config,
+            ], 'Jitsi config berhasil diambil');
+        } catch (\Exception $e) {
+            return $this->error('Gagal mengambil Jitsi config: ' . $e->getMessage(), [], 500);
+        }
+    }
+
+    /**
+     * Log Jitsi Event
+     * POST /api/v1/video-sessions/{id}/jitsi-event
+     * 
+     * Log event dari Jitsi (participant joined, left, etc)
+     */
+    public function logJitsiEvent(Request $request, string $id): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'event_type' => 'required|string',
+                'timestamp' => 'nullable|date',
+                'data' => 'nullable|array',
+                'connection_quality' => 'nullable|in:excellent,good,fair,poor',
+                'audio_enabled' => 'nullable|boolean',
+                'video_enabled' => 'nullable|boolean',
+            ]);
+
+            $userId = Auth::id();
+            $session = VideoSession::findOrFail($id);
+
+            // Verify user is part of session
+            if ($session->doctor_id !== $userId && $session->patient_id !== $userId) {
+                return $this->error('Unauthorized', [], 403);
+            }
+
+            // Log participant event
+            $this->videoSessionService->logParticipantEvent(
+                $session->id,
+                $userId,
+                $validated['event_type'],
+                $validated
+            );
+
+            // Log session event if network degraded
+            if ($validated['event_type'] === 'network_degraded') {
+                VideoSessionEvent::logEvent(
+                    $session->id,
+                    VideoSessionEvent::TYPE_WARNING,
+                    'Kualitas jaringan menurun',
+                    [
+                        'user_id' => $userId,
+                        'quality' => $validated['connection_quality'] ?? null
+                    ],
+                    VideoSessionEvent::SEVERITY_MEDIUM
+                );
+            } elseif ($validated['event_type'] === 'connection_error') {
+                VideoSessionEvent::logEvent(
+                    $session->id,
+                    VideoSessionEvent::TYPE_ERROR,
+                    'Kesalahan koneksi',
+                    ['user_id' => $userId],
+                    VideoSessionEvent::SEVERITY_HIGH
+                );
+            }
+
+            return $this->success([], 'Event berhasil dicatat');
+        } catch (\Exception $e) {
+            return $this->error('Gagal mencatat event: ' . $e->getMessage(), [], 500);
+        }
     }
 }

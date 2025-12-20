@@ -3,234 +3,395 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
-use App\Models\Dokter;
-use App\Models\DoctorVerificationDocument;
 use App\Models\User;
+use App\Models\DoctorVerification;
+use App\Models\DoctorVerificationDocument;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * Phase 6: Doctor Verification Tests
+ * 
+ * Test suite untuk doctor verification workflow, document handling,
+ * dan approval/rejection logic
+ */
 class DoctorVerificationTest extends TestCase
 {
     use RefreshDatabase;
 
-    private $dokter;
-    private $admin;
+    protected User $doctor;
+    protected User $admin;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
-        // Create test users
-        $this->admin = User::factory()->create(['role' => 'admin']);
-        $dokterUser = User::factory()->create(['role' => 'dokter']);
-        
-        // Create dokter
-        $this->dokter = Dokter::create([
-            'user_id' => $dokterUser->id,
-            'specialization' => 'Umum',
-            'sip_number' => 'SIP123456',
-            'no_identitas' => 'ID123456',
+        Storage::fake('private');
+
+        $this->doctor = User::factory()->doctor()->create([
+            'name' => 'Dr. Test',
+            'email' => 'doctor@test.com',
+        ]);
+
+        $this->admin = User::factory()->admin()->create([
+            'name' => 'Admin Test',
+            'email' => 'admin@test.com',
         ]);
     }
 
-    /**
-     * Test dokter can upload verification document
-     */
-    public function test_dokter_can_upload_verification_document()
-    {
-        Storage::fake('private');
-        
-        $file = UploadedFile::fake()->create('sip.pdf', 100);
+    // ============== VERIFICATION SUBMISSION TESTS ==============
 
-        $response = $this->actingAs($this->dokter->user)
-            ->post('/api/doctor/verification/upload', [
-                'document_type' => 'sip',
-                'file' => $file,
-            ]);
+    /** @test */
+    public function doctor_can_submit_verification()
+    {
+        $this->actingAs($this->doctor);
+
+        $response = $this->postJson('/api/v1/doctor-verification/submit', [
+            'medical_license' => '12345/DKK/2020',
+            'specialization' => 'Cardiologist',
+            'institution' => 'Hospital ABC',
+            'years_of_experience' => 5,
+        ]);
 
         $response->assertStatus(201);
-        $data = $response->getData(true);
-        $this->assertTrue($data['success']);
-
-        $this->assertDatabaseHas('doctor_verification_documents', [
-            'dokter_id' => $this->dokter->id,
-            'document_type' => 'sip',
+        $this->assertDatabaseHas('doctor_verifications', [
+            'doctor_id' => $this->doctor->id,
             'status' => 'pending',
         ]);
     }
 
-    /**
-     * Test document upload validation
-     */
-    public function test_document_upload_requires_file()
+    /** @test */
+    public function doctor_verification_requires_license()
     {
-        $response = $this->actingAs($this->dokter->user)
-            ->post('/api/doctor/verification/upload', [
-                'document_type' => 'sip',
-            ]);
+        $this->actingAs($this->doctor);
+
+        $response = $this->postJson('/api/v1/doctor-verification/submit', [
+            'specialization' => 'Cardiologist',
+        ]);
 
         $response->assertStatus(422);
     }
 
-    /**
-     * Test admin can list pending documents
-     */
-    public function test_admin_can_list_pending_documents()
+    /** @test */
+    public function non_doctor_cannot_submit_verification()
     {
+        $patient = User::factory()->patient()->create();
+        $this->actingAs($patient);
+
+        $response = $this->postJson('/api/v1/doctor-verification/submit', [
+            'medical_license' => '12345/DKK/2020',
+            'specialization' => 'Cardiologist',
+        ]);
+
+        $response->assertStatus(403);
+    }
+
+    /** @test */
+    public function doctor_cannot_submit_twice_simultaneously()
+    {
+        DoctorVerification::create([
+            'doctor_id' => $this->doctor->id,
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($this->doctor);
+
+        $response = $this->postJson('/api/v1/doctor-verification/submit', [
+            'medical_license' => '12345/DKK/2020',
+            'specialization' => 'Cardiologist',
+        ]);
+
+        $response->assertStatus(409);
+    }
+
+    // ============== DOCUMENT UPLOAD TESTS ==============
+
+    /** @test */
+    public function doctor_can_upload_verification_document()
+    {
+        $verification = DoctorVerification::create([
+            'doctor_id' => $this->doctor->id,
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($this->doctor);
+
+        $file = UploadedFile::fake()->image('ktp.jpg');
+
+        $response = $this->postJson(
+            "/api/v1/doctor-verification/{$verification->id}/documents",
+            [
+                'document_type' => 'ktp',
+                'document' => $file,
+            ]
+        );
+
+        $response->assertStatus(201);
+        $this->assertDatabaseHas('doctor_verification_documents', [
+            'verification_id' => $verification->id,
+            'document_type' => 'ktp',
+        ]);
+    }
+
+    /** @test */
+    public function document_upload_validates_file_type()
+    {
+        $verification = DoctorVerification::create([
+            'doctor_id' => $this->doctor->id,
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($this->doctor);
+
+        $file = UploadedFile::fake()->create('malicious.exe', 100);
+
+        $response = $this->postJson(
+            "/api/v1/doctor-verification/{$verification->id}/documents",
+            [
+                'document_type' => 'ktp',
+                'document' => $file,
+            ]
+        );
+
+        $response->assertStatus(422);
+    }
+
+    /** @test */
+    public function document_upload_validates_file_size()
+    {
+        $verification = DoctorVerification::create([
+            'doctor_id' => $this->doctor->id,
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($this->doctor);
+
+        // Create a 6MB file
+        $file = UploadedFile::fake()->create('large.pdf', 6000);
+
+        $response = $this->postJson(
+            "/api/v1/doctor-verification/{$verification->id}/documents",
+            [
+                'document_type' => 'ktp',
+                'document' => $file,
+            ]
+        );
+
+        $response->assertStatus(422);
+    }
+
+    /** @test */
+    public function doctor_cannot_upload_for_others_verification()
+    {
+        $otherDoctor = User::factory()->doctor()->create();
+        $verification = DoctorVerification::create([
+            'doctor_id' => $otherDoctor->id,
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($this->doctor);
+
+        $file = UploadedFile::fake()->image('ktp.jpg');
+
+        $response = $this->postJson(
+            "/api/v1/doctor-verification/{$verification->id}/documents",
+            [
+                'document_type' => 'ktp',
+                'document' => $file,
+            ]
+        );
+
+        $response->assertStatus(403);
+    }
+
+    /** @test */
+    public function required_documents_include_ktp_skp_sertifikat()
+    {
+        $verification = DoctorVerification::create([
+            'doctor_id' => $this->doctor->id,
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($this->doctor);
+
+        $requiredDocs = ['ktp', 'skp', 'sertifikat'];
+
+        foreach ($requiredDocs as $docType) {
+            $file = UploadedFile::fake()->image("{$docType}.jpg");
+
+            $this->postJson(
+                "/api/v1/doctor-verification/{$verification->id}/documents",
+                [
+                    'document_type' => $docType,
+                    'document' => $file,
+                ]
+            );
+        }
+
+        $this->assertEquals(3, DoctorVerificationDocument::where('verification_id', $verification->id)->count());
+    }
+
+    // ============== VERIFICATION APPROVAL TESTS ==============
+
+    /** @test */
+    public function admin_can_approve_verification()
+    {
+        $verification = DoctorVerification::create([
+            'doctor_id' => $this->doctor->id,
+            'status' => 'pending',
+        ]);
+
+        // Add required documents
         DoctorVerificationDocument::create([
-            'dokter_id' => $this->dokter->id,
-            'document_type' => 'sip',
-            'file_path' => '/documents/sip.pdf',
-            'file_name' => 'sip.pdf',
-            'status' => 'pending',
+            'verification_id' => $verification->id,
+            'document_type' => 'ktp',
         ]);
 
-        $response = $this->actingAs($this->admin)
-            ->get('/api/admin/verification/pending');
+        $this->actingAs($this->admin);
+
+        $response = $this->postJson(
+            "/api/v1/doctor-verification/{$verification->id}/approve",
+            ['notes' => 'Verified successfully']
+        );
 
         $response->assertStatus(200);
-        $data = $response->getData(true);
-        
-        $this->assertTrue($data['success']);
-        $this->assertCount(1, $data['data']);
-    }
-
-    /**
-     * Test admin can approve document
-     */
-    public function test_admin_can_approve_document()
-    {
-        $document = DoctorVerificationDocument::create([
-            'dokter_id' => $this->dokter->id,
-            'document_type' => 'sip',
-            'file_path' => '/documents/sip.pdf',
-            'file_name' => 'sip.pdf',
-            'status' => 'pending',
-        ]);
-
-        $response = $this->actingAs($this->admin)
-            ->post("/api/admin/verification/{$document->id}/approve");
-
-        $response->assertStatus(200);
-        
-        $this->assertDatabaseHas('doctor_verification_documents', [
-            'id' => $document->id,
-            'status' => 'approved',
+        $this->assertDatabaseHas('doctor_verifications', [
+            'id' => $verification->id,
+            'status' => 'verified',
         ]);
     }
 
-    /**
-     * Test admin can reject document with reason
-     */
-    public function test_admin_can_reject_document()
+    /** @test */
+    public function only_admin_can_approve_verification()
     {
-        $document = DoctorVerificationDocument::create([
-            'dokter_id' => $this->dokter->id,
-            'document_type' => 'sip',
-            'file_path' => '/documents/sip.pdf',
-            'file_name' => 'sip.pdf',
+        $verification = DoctorVerification::create([
+            'doctor_id' => $this->doctor->id,
             'status' => 'pending',
         ]);
 
-        $response = $this->actingAs($this->admin)
-            ->post("/api/admin/verification/{$document->id}/reject", [
-                'rejection_reason' => 'Invalid document format',
-            ]);
+        $this->actingAs($this->doctor);
+
+        $response = $this->postJson(
+            "/api/v1/doctor-verification/{$verification->id}/approve",
+            ['notes' => 'Verified']
+        );
+
+        $response->assertStatus(403);
+    }
+
+    /** @test */
+    public function admin_can_reject_verification()
+    {
+        $verification = DoctorVerification::create([
+            'doctor_id' => $this->doctor->id,
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($this->admin);
+
+        $response = $this->postJson(
+            "/api/v1/doctor-verification/{$verification->id}/reject",
+            ['reason' => 'Documents incomplete']
+        );
 
         $response->assertStatus(200);
-        
-        $this->assertDatabaseHas('doctor_verification_documents', [
-            'id' => $document->id,
+        $this->assertDatabaseHas('doctor_verifications', [
+            'id' => $verification->id,
             'status' => 'rejected',
-            'rejection_reason' => 'Invalid document format',
         ]);
     }
 
-    /**
-     * Test dokter can view own verification documents
-     */
-    public function test_dokter_can_view_own_documents()
+    /** @test */
+    public function doctor_receives_notification_on_approval()
     {
-        DoctorVerificationDocument::create([
-            'dokter_id' => $this->dokter->id,
-            'document_type' => 'sip',
-            'file_path' => '/documents/sip.pdf',
-            'file_name' => 'sip.pdf',
+        $verification = DoctorVerification::create([
+            'doctor_id' => $this->doctor->id,
             'status' => 'pending',
         ]);
 
-        $response = $this->actingAs($this->dokter->user)
-            ->get('/api/doctor/verification/documents');
+        $this->actingAs($this->admin);
+
+        $this->postJson(
+            "/api/v1/doctor-verification/{$verification->id}/approve",
+            ['notes' => 'Verified']
+        );
+
+        // Check notification was created
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $this->doctor->id,
+            'type' => 'verification_approved',
+        ]);
+    }
+
+    /** @test */
+    public function doctor_receives_notification_on_rejection()
+    {
+        $verification = DoctorVerification::create([
+            'doctor_id' => $this->doctor->id,
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($this->admin);
+
+        $this->postJson(
+            "/api/v1/doctor-verification/{$verification->id}/reject",
+            ['reason' => 'Documents incomplete']
+        );
+
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $this->doctor->id,
+            'type' => 'verification_rejected',
+        ]);
+    }
+
+    // ============== VERIFICATION STATUS TESTS ==============
+
+    /** @test */
+    public function doctor_can_view_own_verification_status()
+    {
+        $verification = DoctorVerification::create([
+            'doctor_id' => $this->doctor->id,
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($this->doctor);
+
+        $response = $this->getJson('/api/v1/doctor-verification/status');
 
         $response->assertStatus(200);
-        $data = $response->getData(true);
-        
-        $this->assertTrue($data['success']);
-        $this->assertCount(1, $data['data']);
+        $response->assertJsonPath('data.status', 'pending');
     }
 
-    /**
-     * Test non-admin cannot approve documents
-     */
-    public function test_non_admin_cannot_approve_document()
+    /** @test */
+    public function verified_doctor_can_consult()
     {
-        $document = DoctorVerificationDocument::create([
-            'dokter_id' => $this->dokter->id,
-            'document_type' => 'sip',
-            'file_path' => '/documents/sip.pdf',
-            'file_name' => 'sip.pdf',
+        $verification = DoctorVerification::create([
+            'doctor_id' => $this->doctor->id,
+            'status' => 'verified',
+        ]);
+
+        $this->doctor->update(['verified_at' => now()]);
+
+        $this->actingAs($this->doctor);
+
+        $response = $this->getJson('/api/v1/doctor/profile');
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.is_verified', true);
+    }
+
+    /** @test */
+    public function unverified_doctor_cannot_access_consultation_endpoints()
+    {
+        $verification = DoctorVerification::create([
+            'doctor_id' => $this->doctor->id,
             'status' => 'pending',
         ]);
 
-        $response = $this->actingAs($this->dokter->user)
-            ->post("/api/admin/verification/{$document->id}/approve");
+        $this->actingAs($this->doctor);
 
-        // Should be 403 Forbidden or 401 Unauthorized
-        $this->assertTrue(in_array($response->status(), [401, 403]));
-    }
+        $response = $this->getJson('/api/v1/consultations');
 
-    /**
-     * Test cannot upload invalid file type
-     */
-    public function test_cannot_upload_invalid_file_type()
-    {
-        Storage::fake('private');
-        
-        $file = UploadedFile::fake()->create('document.exe', 100);
-
-        $response = $this->actingAs($this->dokter->user)
-            ->post('/api/doctor/verification/upload', [
-                'document_type' => 'sip',
-                'file' => $file,
-            ]);
-
-        // Should reject exe files
-        $this->assertNotEquals(201, $response->status());
-    }
-
-    /**
-     * Test document status tracking
-     */
-    public function test_document_status_transitions()
-    {
-        $document = DoctorVerificationDocument::create([
-            'dokter_id' => $this->dokter->id,
-            'document_type' => 'sip',
-            'file_path' => '/documents/sip.pdf',
-            'file_name' => 'sip.pdf',
-            'status' => 'pending',
-        ]);
-
-        // Initially pending
-        $this->assertEquals('pending', $document->status);
-
-        // Approve
-        $this->actingAs($this->admin)
-            ->post("/api/admin/verification/{$document->id}/approve");
-
-        $document->refresh();
-        $this->assertEquals('approved', $document->status);
-        $this->assertNotNull($document->verified_at);
+        $response->assertStatus(403);
     }
 }

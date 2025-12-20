@@ -46,5 +46,14 @@ export const authApi = {
 
   logoutAll() {
     return client.post('/auth/logout-all')
+  },
+
+  // Consent Management - Issue #3
+  getConsentStatus() {
+    return client.get('/auth/consent-status')
+  },
+
+  acceptConsent(consentType) {
+    return client.post('/auth/accept-consent', { consent_type: consentType })
   }
 }

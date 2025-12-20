@@ -151,46 +151,69 @@ const handleLogin = async () => {
   emailNotVerified.value = false
 
   try {
-    await authStore.login(form.value.identifier, form.value.password)
+    const loginResponse = await authStore.login(form.value.identifier, form.value.password)
+    
+    // Login berhasil, verifikasi status
     userEmail.value = form.value.identifier
     
-    // Check if email verification is required (for dokter/admin)
-    if (!authStore.user?.email_verified_at && (authStore.isDokter || authStore.isAdmin)) {
-      emailNotVerified.value = true
-      error.value = 'Email Anda belum diverifikasi. Silakan verifikasi email terlebih dahulu.'
-      return
-    }
-
+    // Backend sudah validate email_verified_at, jadi tidak perlu check di sini
     // Check if consent is required
     if (authStore.consentRequired && authStore.user?.role !== 'admin') {
-      router.push('/konsultasi/informed-consent')
+      await router.push('/konsultasi/informed-consent')
       return
     }
     
-    // Redirect berdasarkan role
+    // Redirect berdasarkan role (hanya jika login benar-benar berhasil)
     if (authStore.isDokter) {
-      router.push('/dokter/dashboard')
+      await router.push('/dokter/dashboard')
     } else if (authStore.isAdmin) {
-      router.push('/admin/dashboard')
+      await router.push('/admin/dashboard')
     } else {
-      router.push('/dashboard')
+      await router.push('/dashboard')
     }
   } catch (err) {
-    const errorCode = err.response?.data?.code
-    const errorMessage = err.response?.data?.message || err.response?.data?.pesan
+    // Pastikan loading state di-set false di sini untuk catch block
+    isLoading.value = false
+    
+    const status = err.response?.status
+    const errorData = err.response?.data
+    const errorCode = errorData?.code
+    const errorMessageStr = String(errorData?.message || errorData?.pesan || err.message || '')
 
-    // Handle specific error codes
-    if (errorCode === 'EMAIL_NOT_VERIFIED') {
+    console.error('Login error details:', {
+      status: status,
+      code: errorCode,
+      message: errorMessageStr,
+      fullError: JSON.stringify(errorData, null, 2)
+    })
+
+    // Handle specific error codes/status
+    if (errorCode === 'EMAIL_NOT_VERIFIED' || errorMessageStr.includes('Email')) {
       emailNotVerified.value = true
-      error.value = 'Email belum diverifikasi. Silakan cek email Anda untuk link verifikasi.'
+      error.value = '📧 Email belum diverifikasi. Silakan cek email Anda untuk link verifikasi.'
       userEmail.value = form.value.identifier
+    } else if (status === 401) {
+      error.value = '❌ Email atau password salah. Silakan coba lagi.'
+    } else if (status === 429) {
+      error.value = '⏳ Terlalu banyak percobaan login. Silakan coba lagi dalam 15 menit.'
+    } else if (status === 422) {
+      // Handle validation errors
+      const errors = errorData?.errors || errorData?.validation || {}
+      if (Object.keys(errors).length > 0) {
+        const firstError = Object.values(errors)?.[0]?.[0] || '⚠️ Data tidak valid'
+        error.value = firstError
+      } else {
+        error.value = '⚠️ Data tidak valid. Silakan periksa kembali.'
+      }
+    } else if (status === 403) {
+      error.value = errorMessageStr || '❌ Akses ditolak'
+    } else if (status === 500) {
+      error.value = '❌ Error server. Silakan coba lagi nanti.'
     } else {
-      error.value = errorMessage || err.message || 'Login gagal, coba lagi'
+      error.value = `❌ ${errorMessageStr || 'Login gagal'}`
     }
     
     console.error('Login error:', err)
-  } finally {
-    isLoading.value = false
   }
 }
 
