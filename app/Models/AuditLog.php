@@ -49,6 +49,9 @@ class AuditLog extends Model
         'accessed_pii',
         'access_level',
         'created_at',
+        'resource_type',
+        'resource_id',
+        'details',
     ];
 
     protected $casts = [

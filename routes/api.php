@@ -767,5 +767,26 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
             Route::post('/reports/yearly', [\App\Http\Controllers\Api\Analytics\FinancialController::class, 'yearlyReport']);
             Route::post('/clear-cache', [\App\Http\Controllers\Api\Analytics\FinancialController::class, 'clearCache']);
         });
+
+        // ========== COMPLIANCE ROUTES (Phase 6D) ==========
+        /**
+         * Compliance & Audit (Admin Only)
+         * GET /api/v1/compliance/dashboard - Compliance status overview
+         * GET /api/v1/compliance/audit-logs - Audit log viewer with filtering
+         * GET /api/v1/compliance/credentials - Medical credential verification
+         * GET /api/v1/compliance/consents - Patient consent tracking
+         * GET /api/v1/compliance/data-retention - Data retention verification
+         * POST /api/v1/compliance/export - Export compliance report for auditors
+         * POST /api/v1/compliance/clear-cache - Clear compliance cache
+         */
+        Route::prefix('compliance')->group(function () {
+            Route::get('/dashboard', [\App\Http\Controllers\Api\Analytics\ComplianceController::class, 'dashboard']);
+            Route::get('/audit-logs', [\App\Http\Controllers\Api\Analytics\ComplianceController::class, 'auditLogs']);
+            Route::get('/credentials', [\App\Http\Controllers\Api\Analytics\ComplianceController::class, 'credentials']);
+            Route::get('/consents', [\App\Http\Controllers\Api\Analytics\ComplianceController::class, 'consents']);
+            Route::get('/data-retention', [\App\Http\Controllers\Api\Analytics\ComplianceController::class, 'dataRetention']);
+            Route::post('/export', [\App\Http\Controllers\Api\Analytics\ComplianceController::class, 'export']);
+            Route::post('/clear-cache', [\App\Http\Controllers\Api\Analytics\ComplianceController::class, 'clearCache']);
+        });
     });
 });
