@@ -142,7 +142,7 @@ class ComplianceService
      */
     private function checkCredentialVerification(): array
     {
-        $verifiedDoctors = Dokter::where('credential_verified', true)->count();
+        $verifiedDoctors = Dokter::where('is_verified', true)->count();
         $totalDoctors = Dokter::count();
         
         $percentage = $totalDoctors > 0 ? round(($verifiedDoctors / $totalDoctors) * 100, 2) : 0;
@@ -209,33 +209,31 @@ class ComplianceService
      */
     public function getCredentialVerificationStatus(): array
     {
-        $doctors = Dokter::select(
-            'id',
-            'nama',
-            'spesialisasi',
-            'credential_verified',
-            'license_number',
-            'license_expiry',
-            'created_at'
-        )
-        ->with('user:id,email')
-        ->get()
-        ->map(function ($doctor) {
-            $isExpired = $doctor->license_expiry && $doctor->license_expiry < now();
-            
-            return [
-                'doctor_id' => $doctor->id,
-                'name' => $doctor->nama,
-                'specialization' => $doctor->spesialisasi,
-                'email' => $doctor->user?->email,
-                'verified' => $doctor->credential_verified,
-                'license_number' => $doctor->license_number,
-                'license_expiry' => $doctor->license_expiry?->toDateString(),
-                'is_expired' => $isExpired,
-                'status' => $isExpired ? 'expired' : ($doctor->credential_verified ? 'verified' : 'pending'),
-                'verified_at' => $doctor->credential_verified_at?->toDateTimeString(),
-            ];
-        });
+        $doctors = Dokter::with('user:id,name,email')
+            ->select(
+                'id',
+                'user_id',
+                'specialization',
+                'is_verified',
+                'license_number',
+                'verified_at',
+                'created_at'
+            )
+            ->get()
+            ->map(function ($doctor) {
+                return [
+                    'doctor_id' => $doctor->id,
+                    'name' => $doctor->user?->name ?? 'N/A',
+                    'specialization' => $doctor->specialization,
+                    'email' => $doctor->user?->email,
+                    'verified' => $doctor->is_verified,
+                    'license_number' => $doctor->license_number,
+                    'license_expiry' => null,
+                    'is_expired' => false,
+                    'status' => !$doctor->is_verified ? 'pending' : 'verified',
+                    'verified_at' => $doctor->verified_at?->toDateTimeString(),
+                ];
+            });
         
         $verified = $doctors->where('verified', true)->count();
         $total = $doctors->count();
