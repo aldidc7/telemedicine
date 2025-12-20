@@ -10,6 +10,31 @@ class Notification extends Model
 {
     use HasFactory, SoftDeletes;
 
+    // Notification types
+    const TYPE_APPOINTMENT = 'appointment';
+    const TYPE_APPOINTMENT_REMINDER = 'appointment_reminder';
+    const TYPE_APPOINTMENT_CANCELLED = 'appointment_cancelled';
+    const TYPE_APPOINTMENT_RESCHEDULED = 'appointment_rescheduled';
+    const TYPE_CONSULTATION_STARTED = 'consultation_started';
+    const TYPE_CONSULTATION_ENDED = 'consultation_ended';
+    const TYPE_MESSAGE = 'message';
+    const TYPE_PAYMENT = 'payment';
+    const TYPE_PAYMENT_SUCCESS = 'payment_success';
+    const TYPE_PAYMENT_FAILED = 'payment_failed';
+    const TYPE_PRESCRIPTION = 'prescription';
+    const TYPE_RATING = 'rating';
+    const TYPE_EMERGENCY = 'emergency';
+    const TYPE_VERIFICATION = 'verification';
+    const TYPE_CREDENTIAL_APPROVED = 'credential_approved';
+    const TYPE_CREDENTIAL_REJECTED = 'credential_rejected';
+    const TYPE_SYSTEM = 'system';
+
+    // Channels
+    const CHANNEL_IN_APP = 'in_app';
+    const CHANNEL_EMAIL = 'email';
+    const CHANNEL_SMS = 'sms';
+    const CHANNEL_PUSH = 'push';
+
     protected $fillable = [
         'user_id',
         'type',
@@ -19,6 +44,8 @@ class Notification extends Model
         'notifiable_type',
         'notifiable_id',
         'read_at',
+        'data',
+        'channel',
     ];
 
     protected $casts = [
@@ -26,6 +53,7 @@ class Notification extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'data' => 'json',
     ];
 
     /**
