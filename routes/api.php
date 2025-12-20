@@ -742,5 +742,30 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
             Route::delete('/reports/{id}', [\App\Http\Controllers\Api\Analytics\AnalyticsController::class, 'deleteReport']);
             Route::post('/clear-cache', [\App\Http\Controllers\Api\Analytics\AnalyticsController::class, 'clearCache']);
         });
+
+        // ========== FINANCIAL ROUTES (Phase 6C) ==========
+        /**
+         * Financial & Reporting (Admin Only)
+         * GET /api/v1/finance/dashboard - Financial overview
+         * GET /api/v1/finance/revenue - Revenue analytics
+         * GET /api/v1/finance/invoices - Invoice tracking
+         * GET /api/v1/finance/payments - Payment analytics
+         * GET /api/v1/finance/refunds - Refund tracking
+         * GET /api/v1/finance/cash-flow - Cash flow analysis
+         * POST /api/v1/finance/reports/monthly - Monthly financial report
+         * POST /api/v1/finance/reports/yearly - Yearly financial report
+         * POST /api/v1/finance/clear-cache - Clear financial cache
+         */
+        Route::prefix('finance')->group(function () {
+            Route::get('/dashboard', [\App\Http\Controllers\Api\Analytics\FinancialController::class, 'dashboard']);
+            Route::get('/revenue', [\App\Http\Controllers\Api\Analytics\FinancialController::class, 'revenue']);
+            Route::get('/invoices', [\App\Http\Controllers\Api\Analytics\FinancialController::class, 'invoices']);
+            Route::get('/payments', [\App\Http\Controllers\Api\Analytics\FinancialController::class, 'payments']);
+            Route::get('/refunds', [\App\Http\Controllers\Api\Analytics\FinancialController::class, 'refunds']);
+            Route::get('/cash-flow', [\App\Http\Controllers\Api\Analytics\FinancialController::class, 'cashFlow']);
+            Route::post('/reports/monthly', [\App\Http\Controllers\Api\Analytics\FinancialController::class, 'monthlyReport']);
+            Route::post('/reports/yearly', [\App\Http\Controllers\Api\Analytics\FinancialController::class, 'yearlyReport']);
+            Route::post('/clear-cache', [\App\Http\Controllers\Api\Analytics\FinancialController::class, 'clearCache']);
+        });
     });
 });
