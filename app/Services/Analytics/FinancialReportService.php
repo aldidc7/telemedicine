@@ -149,7 +149,7 @@ class FinancialReportService
     /**
      * Generate monthly financial report
      */
-    public function generateMonthlyReport(int $month = null, int $year = null): array
+    public function generateMonthlyReport(?int $month = null, ?int $year = null): array
     {
         $month = $month ?? now()->month;
         $year = $year ?? now()->year;
@@ -177,7 +177,7 @@ class FinancialReportService
     /**
      * Generate yearly financial report
      */
-    public function generateYearlyReport(int $year = null): array
+    public function generateYearlyReport(?int $year = null): array
     {
         $year = $year ?? now()->year;
         
