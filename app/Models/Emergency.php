@@ -193,11 +193,13 @@ class Emergency extends Model
         $consultation = $this->consultation;
         $patient = $consultation->patient;
         $doctor = $consultation->doctor;
+        $escalatedDate = $this->escalated_at?->format('d-m-Y H:i') ?? 'N/A';
+        $escalatedDateFull = $this->escalated_at?->format('d F Y') ?? date('d F Y');
 
         return <<<HTML
 TELEMEDICINE EMERGENCY REFERRAL LETTER
 
-Date: {$this->escalated_at->format('d-m-Y H:i')}
+Date: {$escalatedDate}
 Emergency Level: {$this->level}
 Status: {$this->status}
 
@@ -223,7 +225,7 @@ Address: {$this->hospital_address}
 This referral letter serves as documentation of medical emergency escalation from telemedicine consultation and authorizes immediate medical treatment at the referred hospital.
 
 Signed: Telemedicine System
-{$this->escalated_at->format('d F Y')}
+{$escalatedDateFull}
 HTML;
     }
 

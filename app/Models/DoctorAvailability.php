@@ -138,7 +138,7 @@ class DoctorAvailability extends Model
         // Get booked appointments for this date
         $booked = Appointment::forDoctor($this->doctor_id)
             ->whereDate('scheduled_at', $date)
-            ->where('status', '!=', Appointment::STATUS_CANCELLED)
+            ->where('status', '!=', 'cancelled')
             ->pluck('scheduled_at')
             ->toArray();
 

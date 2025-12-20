@@ -10,6 +10,14 @@ class Appointment extends Model
 {
     use HasFactory, SoftDeletes;
 
+    // Status constants
+    const STATUS_PENDING = 'pending';
+    const STATUS_CONFIRMED = 'confirmed';
+    const STATUS_IN_PROGRESS = 'in_progress';
+    const STATUS_COMPLETED = 'completed';
+    const STATUS_CANCELLED = 'cancelled';
+    const STATUS_REJECTED = 'rejected';
+
     protected $fillable = [
         'patient_id',
         'doctor_id',
