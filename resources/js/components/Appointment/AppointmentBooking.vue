@@ -391,118 +391,201 @@ onMounted(() => {
 
 <style scoped>
 .appointment-booking {
-  @apply bg-gray-50 py-8 px-4;
+  background-color: rgb(249, 250, 251);
+  padding: 2rem 1rem;
 }
 
 .booking-container {
-  @apply max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-8;
+  max-width: 56rem;
+  margin: 0 auto;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
 }
 
 .steps {
-  @apply flex justify-between mb-8;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2rem;
 }
 
 .step {
-  @apply flex flex-col items-center text-gray-500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: rgb(107, 114, 128);
 }
 
 .step.active {
-  @apply text-blue-600;
+  color: rgb(37, 99, 235);
 }
 
 .step.completed {
-  @apply text-green-600;
+  color: rgb(16, 185, 129);
 }
 
 .step-number {
-  @apply w-10 h-10 rounded-full border-2 border-current flex items-center justify-center mb-2 font-semibold;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  border: 2px solid currentColor;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
 }
 
 .doctor-card {
-  @apply border border-gray-300 rounded-lg p-4 mb-4 cursor-pointer hover:border-blue-500 hover:shadow-md transition;
+  border: 1px solid rgb(209, 213, 219);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.doctor-card:hover {
+  border-color: rgb(59, 130, 246);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .doctor-card.selected {
-  @apply border-blue-600 bg-blue-50;
+  border-color: rgb(37, 99, 235);
+  background-color: rgb(239, 246, 255);
 }
 
 .doctor-header {
-  @apply flex justify-between items-start;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
 .doctor-info h4 {
-  @apply font-semibold text-lg;
+  font-weight: 600;
+  font-size: 1.125rem;
 }
 
 .rating-star {
-  @apply text-yellow-500 font-semibold;
+  color: rgb(234, 179, 8);
+  font-weight: 600;
 }
 
 .badge {
-  @apply inline-block px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full mr-2;
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background-color: rgb(243, 244, 246);
+  color: rgb(55, 65, 81);
+  font-size: 0.875rem;
+  border-radius: 9999px;
+  margin-right: 0.5rem;
 }
 
 .calendar {
-  @apply border border-gray-300 rounded-lg overflow-hidden;
+  border: 1px solid rgb(209, 213, 219);
+  border-radius: 0.5rem;
+  overflow: hidden;
 }
 
 .calendar-header {
-  @apply flex justify-between items-center p-4 bg-gray-100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: rgb(243, 244, 246);
 }
 
 .calendar-grid {
-  @apply grid grid-cols-7 gap-0 p-4;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0;
+  padding: 1rem;
 }
 
 .weekday {
-  @apply text-center font-semibold text-gray-600 py-2;
+  text-align: center;
+  font-weight: 600;
+  color: rgb(75, 85, 99);
+  padding: 0.5rem 0;
 }
 
 .calendar-date {
-  @apply text-center py-2 cursor-pointer hover:bg-blue-100;
+  text-align: center;
+  padding: 0.5rem 0;
+  cursor: pointer;
+}
+
+.calendar-date:hover {
+  background-color: rgb(219, 234, 254);
 }
 
 .calendar-date.other {
-  @apply text-gray-400;
+  color: rgb(209, 213, 219);
 }
 
 .calendar-date.selected {
-  @apply bg-blue-600 text-white font-semibold;
+  background-color: rgb(37, 99, 235);
+  color: white;
+  font-weight: 600;
 }
 
 .calendar-date.disabled {
-  @apply text-gray-300 cursor-not-allowed hover:bg-transparent;
+  color: rgb(229, 231, 235);
+  cursor: not-allowed;
 }
 
 .time-slots {
-  @apply border border-gray-300 rounded-lg p-4;
+  border: 1px solid rgb(209, 213, 219);
+  border-radius: 0.5rem;
+  padding: 1rem;
 }
 
 .slots-grid {
-  @apply grid grid-cols-2 gap-3;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
 }
 
 .time-slot {
-  @apply border border-gray-300 rounded-lg py-2 px-3 text-center hover:border-blue-500 hover:bg-blue-50 transition;
+  border: 1px solid rgb(209, 213, 219);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.time-slot:hover {
+  border-color: rgb(59, 130, 246);
+  background-color: rgb(239, 246, 255);
 }
 
 .time-slot.selected {
-  @apply bg-blue-600 text-white border-blue-600;
+  background-color: rgb(37, 99, 235);
+  color: white;
+  border-color: rgb(37, 99, 235);
 }
 
 .confirmation-card {
-  @apply border border-gray-300 rounded-lg p-6;
+  border: 1px solid rgb(209, 213, 219);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
 }
 
 .detail-row {
-  @apply flex justify-between py-3 border-b border-gray-200;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgb(229, 231, 235);
 }
 
 .detail-row .label {
-  @apply font-semibold text-gray-700;
+  font-weight: 600;
+  color: rgb(55, 65, 81);
 }
 
 .detail-row .value {
-  @apply text-gray-900;
+  color: rgb(17, 24, 39);
 }
 </style>

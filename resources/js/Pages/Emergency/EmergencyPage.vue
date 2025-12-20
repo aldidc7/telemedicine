@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 p-4 md:p-8">
+  <div class="min-h-screen p-4 md:p-8" style="background: linear-gradient(to bottom right, rgb(254, 242, 242), rgb(255, 247, 237));">
     <div class="max-w-4xl mx-auto">
       <!-- Header -->
       <div class="mb-8">

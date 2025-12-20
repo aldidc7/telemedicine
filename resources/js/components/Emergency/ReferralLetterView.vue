@@ -12,7 +12,7 @@
           @click.stop
         >
           <!-- Header -->
-          <div class="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 flex items-center justify-between">
+          <div class="sticky top-0 px-6 py-4 flex items-center justify-between" style="background: linear-gradient(to right, rgb(37, 99, 235), rgb(79, 70, 229));">
             <h2 class="text-xl font-bold text-white">Surat Rujukan Medis</h2>
             <button
               @click="$emit('close')"

@@ -14,7 +14,7 @@
           @click.stop
         >
           <!-- Header -->
-          <div class="sticky top-0 bg-gradient-to-r from-red-600 to-orange-600 px-6 py-4 flex items-center justify-between">
+          <div class="sticky top-0 px-6 py-4 flex items-center justify-between" style="background: linear-gradient(to right, rgb(220, 38, 38), rgb(234, 88, 12));">
             <h2 class="text-xl font-bold text-white flex items-center gap-2">
               <AlertCircle class="w-6 h-6" />
               Detail Kasus Darurat

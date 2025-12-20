@@ -320,203 +320,434 @@ onMounted(() => {
 
 <style scoped>
 .credential-verification-admin {
-  @apply bg-gray-50 py-8 px-4;
+  background-color: rgb(249, 250, 251);
+  padding: 2rem 1rem;
 }
 
 .container {
-  @apply max-w-6xl mx-auto;
+  max-width: 72rem;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .filter-bar {
-  @apply flex gap-4 mb-6;
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .search-input {
-  @apply flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500;
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgb(209, 213, 219);
+  border-radius: 0.5rem;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 0 0 1px rgb(59, 130, 246);
 }
 
 .status-filter {
-  @apply px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgb(209, 213, 219);
+  border-radius: 0.5rem;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.status-filter:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 0 0 1px rgb(59, 130, 246);
 }
 
 .verifications-grid {
-  @apply grid gap-6 md:grid-cols-2 lg:grid-cols-3;
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .verifications-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .verifications-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .verification-card {
-  @apply bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.verification-card:hover {
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
 }
 
 .card-header {
-  @apply flex justify-between items-start mb-4;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
 }
 
 .doctor-name {
-  @apply font-semibold text-lg;
+  font-weight: 600;
+  font-size: 1.125rem;
 }
 
 .status-badge {
-  @apply px-3 py-1 rounded-full text-sm font-semibold;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 
 .status-badge.status-pending {
-  @apply bg-yellow-100 text-yellow-800;
+  background-color: rgb(254, 252, 232);
+  color: rgb(161, 98, 7);
 }
 
 .status-badge.status-verified {
-  @apply bg-green-100 text-green-800;
+  background-color: rgb(220, 252, 231);
+  color: rgb(22, 163, 74);
 }
 
 .status-badge.status-rejected {
-  @apply bg-red-100 text-red-800;
+  background-color: rgb(254, 226, 226);
+  color: rgb(220, 38, 38);
 }
 
 .card-body {
-  @apply text-gray-600 text-sm space-y-2;
+  color: rgb(75, 85, 99);
+  font-size: 0.875rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .card-footer {
-  @apply mt-4 pt-4 border-t border-gray-200;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgb(229, 231, 235);
 }
 
 .btn-view {
-  @apply text-blue-600 hover:text-blue-700 font-semibold;
+  color: rgb(37, 99, 235);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-view:hover {
+  color: rgb(29, 78, 216);
 }
 
 .empty-state {
-  @apply bg-white rounded-lg shadow-md p-12 text-center text-gray-500;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 3rem;
+  text-align: center;
+  color: rgb(107, 114, 128);
 }
 
 .pagination {
-  @apply flex justify-center items-center gap-4 mt-8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
 }
 
 .btn-page {
-  @apply px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgb(209, 213, 219);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-page:hover {
+  background-color: rgb(243, 244, 246);
+}
+
+.btn-page:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .modal {
-  @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50;
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 50;
 }
 
 .modal-content {
-  @apply bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-screen overflow-y-auto;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  max-width: 42rem;
+  width: 100%;
+  max-height: 100vh;
+  overflow-y: auto;
 }
 
 .modal-lg {
-  @apply max-w-4xl;
+  max-width: 56rem;
 }
 
 .modal-header {
-  @apply flex justify-between items-center p-6 border-b border-gray-200;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgb(229, 231, 235);
 }
 
 .close-btn {
-  @apply text-2xl text-gray-500 hover:text-gray-700 font-bold;
+  font-size: 1.5rem;
+  color: rgb(107, 114, 128);
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+.close-btn:hover {
+  color: rgb(55, 65, 81);
 }
 
 .modal-body {
-  @apply p-6;
+  padding: 1.5rem;
 }
 
 .doctor-info {
-  @apply mb-6 p-4 bg-gray-50 rounded-lg;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: rgb(243, 244, 246);
+  border-radius: 0.5rem;
 }
 
 .info-item {
-  @apply flex justify-between py-2;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
 }
 
 .label {
-  @apply font-semibold text-gray-700;
+  font-weight: 600;
+  color: rgb(55, 65, 81);
 }
 
 .credentials-section {
-  @apply mb-6;
+  margin-bottom: 1.5rem;
 }
 
 .section-title {
-  @apply text-lg font-semibold mb-4;
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
 }
 
 .credentials-list {
-  @apply space-y-4;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .credential-item {
-  @apply border border-gray-300 rounded-lg p-4 flex justify-between items-start;
+  border: 1px solid rgb(209, 213, 219);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
 .credential-info {
-  @apply flex-1;
+  flex: 1;
 }
 
 .credential-info h5 {
-  @apply font-semibold text-lg;
+  font-weight: 600;
+  font-size: 1.125rem;
 }
 
 .credential-info p {
-  @apply text-sm text-gray-600 mt-1;
+  font-size: 0.875rem;
+  color: rgb(75, 85, 99);
+  margin-top: 0.25rem;
 }
 
 .credential-actions {
-  @apply ml-4 flex gap-2;
+  margin-left: 1rem;
+  display: flex;
+  gap: 0.5rem;
 }
 
 .btn-download {
-  @apply px-3 py-2 bg-gray-500 text-white rounded text-sm hover:bg-gray-600;
+  padding: 0.75rem 0.75rem;
+  background-color: rgb(107, 114, 128);
+  color: white;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s;
+}
+
+.btn-download:hover {
+  background-color: rgb(75, 85, 99);
 }
 
 .btn-approve {
-  @apply px-3 py-2 bg-green-600 text-white rounded text-sm hover:bg-green-700;
+  padding: 0.75rem 0.75rem;
+  background-color: rgb(22, 163, 74);
+  color: white;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s;
+}
+
+.btn-approve:hover {
+  background-color: rgb(16, 185, 129);
 }
 
 .btn-reject {
-  @apply px-3 py-2 bg-red-600 text-white rounded text-sm hover:bg-red-700;
+  padding: 0.75rem 0.75rem;
+  background-color: rgb(239, 68, 68);
+  color: white;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s;
+}
+
+.btn-reject:hover {
+  background-color: rgb(220, 38, 38);
 }
 
 .sub-modal {
-  @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-60;
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 60;
 }
 
 .sub-modal-content {
-  @apply bg-white rounded-lg p-6 max-w-md w-full;
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  max-width: 28rem;
+  width: 100%;
 }
 
 .reject-textarea {
-  @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 mt-4 mb-4;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgb(209, 213, 219);
+  border-radius: 0.5rem;
+  outline: none;
+  transition: all 0.2s;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
   min-height: 100px;
+  font-family: inherit;
+}
+
+.reject-textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1), 0 0 0 1px rgb(239, 68, 68);
 }
 
 .modal-actions {
-  @apply flex gap-3;
+  display: flex;
+  gap: 0.75rem;
 }
 
 .modal-footer {
-  @apply flex justify-between items-center p-6 border-t border-gray-200;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-top: 1px solid rgb(229, 231, 235);
 }
 
 .btn-cancel {
-  @apply px-4 py-2 border border-gray-300 rounded hover:bg-gray-100;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgb(209, 213, 219);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  background: none;
+  font-weight: 600;
+}
+
+.btn-cancel:hover {
+  background-color: rgb(243, 244, 246);
 }
 
 .btn-success {
-  @apply px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700;
+  padding: 0.5rem 1rem;
+  background-color: rgb(22, 163, 74);
+  color: white;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s;
+  font-weight: 600;
+}
+
+.btn-success:hover {
+  background-color: rgb(16, 185, 129);
 }
 
 .btn-danger {
-  @apply px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700;
+  padding: 0.5rem 1rem;
+  background-color: rgb(239, 68, 68);
+  color: white;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s;
+  font-weight: 600;
+}
+
+.btn-danger:hover {
+  background-color: rgb(220, 38, 38);
 }
 
 .status-pending {
-  @apply text-yellow-600;
+  color: rgb(202, 138, 4);
 }
 
 .status-verified {
-  @apply text-green-600;
+  color: rgb(34, 197, 94);
 }
 
 .status-rejected {
-  @apply text-red-600;
+  color: rgb(239, 68, 68);
 }
 </style>

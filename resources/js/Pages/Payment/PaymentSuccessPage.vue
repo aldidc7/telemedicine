@@ -50,19 +50,19 @@
         <h3 class="font-bold text-blue-900 mb-4">Langkah Selanjutnya</h3>
         <ol class="space-y-3 text-blue-800">
           <li class="flex items-start gap-3">
-            <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</span>
+            <span class="shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</span>
             <span>Cek email Anda untuk invoice dan bukti pembayaran</span>
           </li>
           <li class="flex items-start gap-3">
-            <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</span>
+            <span class="shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</span>
             <span>Jika konsultasi dengan dokter, jadwal akan ditentukan dalam 24 jam</span>
           </li>
           <li class="flex items-start gap-3">
-            <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">3</span>
+            <span class="shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">3</span>
             <span>Anda akan menerima notifikasi tentang jadwal konsultasi</span>
           </li>
           <li class="flex items-start gap-3">
-            <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">4</span>
+            <span class="shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">4</span>
             <span>Bergabunglah dengan video call tepat waktu untuk konsultasi</span>
           </li>
         </ol>

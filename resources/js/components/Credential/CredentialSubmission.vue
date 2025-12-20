@@ -337,166 +337,284 @@ onMounted(() => {
 
 <style scoped>
 .credential-submission {
-  @apply bg-gray-50 py-12 px-4;
+  background-color: rgb(249, 250, 251);
+  padding: 3rem 1rem;
 }
 
 .container {
-  @apply max-w-4xl mx-auto;
+  max-width: 56rem;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .header {
-  @apply mb-8 text-center;
+  margin-bottom: 2rem;
+  text-align: center;
 }
 
 .title {
-  @apply text-3xl font-bold text-gray-900 mb-2;
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: rgb(17, 24, 39);
+  margin-bottom: 0.5rem;
 }
 
 .subtitle {
-  @apply text-gray-600;
+  color: rgb(75, 85, 99);
 }
 
 .status-alert {
-  @apply mb-8 p-6 rounded-lg border-l-4 flex gap-4;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border-left: 4px solid;
+  display: flex;
+  gap: 1rem;
 }
 
 .status-alert.status-pending {
-  @apply bg-yellow-50 border-yellow-400;
+  background-color: rgb(254, 243, 224);
+  border-left-color: rgb(202, 138, 4);
 }
 
 .status-alert.status-verified {
-  @apply bg-green-50 border-green-400;
+  background-color: rgb(240, 253, 244);
+  border-left-color: rgb(34, 197, 94);
 }
 
 .status-alert.status-rejected {
-  @apply bg-red-50 border-red-400;
+  background-color: rgb(254, 242, 242);
+  border-left-color: rgb(239, 68, 68);
 }
 
 .status-alert.status-unverified {
-  @apply bg-gray-100 border-gray-400;
+  background-color: rgb(243, 244, 246);
+  border-left-color: rgb(107, 114, 128);
 }
 
 .status-icon {
-  @apply text-2xl;
+  font-size: 1.5rem;
 }
 
 .status-title {
-  @apply font-semibold text-gray-900;
+  font-weight: 600;
+  color: rgb(17, 24, 39);
 }
 
 .status-message {
-  @apply text-sm text-gray-700 mt-1;
+  font-size: 0.875rem;
+  color: rgb(55, 65, 81);
+  margin-top: 0.25rem;
 }
 
 .credentials-form {
-  @apply bg-white rounded-lg shadow-md p-8 mb-8;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  margin-bottom: 2rem;
 }
 
 .empty-state {
-  @apply text-center py-12 text-gray-500;
+  text-align: center;
+  padding: 3rem 0;
+  color: rgb(107, 114, 128);
 }
 
 .credentials-list {
-  @apply mb-8;
+  margin-bottom: 2rem;
 }
 
 .credential-card {
-  @apply border border-gray-300 rounded-lg p-6 mb-4;
+  border: 1px solid rgb(209, 213, 219);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .credential-header {
-  @apply flex justify-between items-start mb-4;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
 }
 
 .credential-header h4 {
-  @apply font-semibold text-lg;
+  font-weight: 600;
+  font-size: 1.125rem;
 }
 
 .badge {
-  @apply px-3 py-1 rounded-full text-sm font-semibold;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: inline-block;
 }
 
 .badge.status-verified {
-  @apply bg-green-100 text-green-800;
+  background-color: rgb(220, 252, 231);
+  color: rgb(22, 163, 74);
 }
 
 .badge.status-pending {
-  @apply bg-yellow-100 text-yellow-800;
+  background-color: rgb(254, 252, 232);
+  color: rgb(161, 98, 7);
 }
 
 .badge.status-rejected {
-  @apply bg-red-100 text-red-800;
+  background-color: rgb(254, 226, 226);
+  color: rgb(220, 38, 38);
 }
 
 .badge.status-under_review {
-  @apply bg-blue-100 text-blue-800;
+  background-color: rgb(219, 234, 254);
+  color: rgb(30, 58, 138);
 }
 
 .badge.status-draft {
-  @apply bg-gray-100 text-gray-800;
+  background-color: rgb(243, 244, 246);
+  color: rgb(55, 65, 81);
 }
 
 .credential-details {
-  @apply text-sm text-gray-700 space-y-2;
+  font-size: 0.875rem;
+  color: rgb(55, 65, 81);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .add-credential {
-  @apply border-t border-gray-200 pt-8;
+  border-top: 1px solid rgb(229, 231, 235);
+  padding-top: 2rem;
 }
 
 .add-credential h3 {
-  @apply text-xl font-semibold mb-6;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
 }
 
 .form-group {
-  @apply mb-4;
+  margin-bottom: 1rem;
 }
 
 .form-group label {
-  @apply block text-sm font-medium text-gray-700 mb-2;
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgb(55, 65, 81);
+  margin-bottom: 0.5rem;
 }
 
 .form-control {
-  @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgb(209, 213, 219);
+  border-radius: 0.5rem;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.form-control:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 0 0 1px rgb(59, 130, 246);
 }
 
 .form-row {
-  @apply grid grid-cols-2 gap-4;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
 }
 
 .file-info {
-  @apply text-sm text-green-600 mt-2;
+  font-size: 0.875rem;
+  color: rgb(34, 197, 94);
+  margin-top: 0.5rem;
 }
 
 .form-actions {
-  @apply mt-6;
+  margin-top: 1.5rem;
 }
 
 .btn-primary {
-  @apply px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed;
+  padding: 0.5rem 1.5rem;
+  background-color: rgb(37, 99, 235);
+  color: white;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border: none;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background-color: rgb(29, 78, 216);
+}
+
+.btn-primary:disabled {
+  background-color: rgb(209, 213, 219);
+  cursor: not-allowed;
 }
 
 .submit-section {
-  @apply bg-white rounded-lg shadow-md p-8 mb-8;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  margin-bottom: 2rem;
 }
 
 .alert-info {
-  @apply bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-4 mb-6;
+  background-color: rgb(239, 246, 255);
+  border: 1px solid rgb(191, 219, 254);
+  color: rgb(30, 58, 138);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .btn-submit {
-  @apply w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 disabled:bg-gray-400;
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  background-color: rgb(22, 163, 74);
+  color: white;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s;
+}
+
+.btn-submit:hover {
+  background-color: rgb(16, 185, 129);
+}
+
+.btn-submit:disabled {
+  background-color: rgb(209, 213, 219);
+  cursor: not-allowed;
 }
 
 .instructions {
-  @apply bg-white rounded-lg shadow-md p-8;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
 }
 
 .instructions h3 {
-  @apply text-xl font-semibold mb-4;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
 }
 
 .instructions ul {
-  @apply list-disc list-inside space-y-2 text-gray-700;
+  list-style-type: disc;
+  list-style-position: inside;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: rgb(55, 65, 81);
 }
 </style>

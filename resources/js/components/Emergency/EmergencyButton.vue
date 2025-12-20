@@ -27,7 +27,7 @@
           @click.stop
         >
           <!-- Header -->
-          <div class="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4 flex items-center justify-between">
+          <div class="px-6 py-4 flex items-center justify-between" style="background: linear-gradient(to right, rgb(220, 38, 38), rgb(185, 28, 28));">
             <h2 class="text-xl font-bold text-white flex items-center gap-2">
               <AlertTriangle class="w-6 h-6" />
               Lapor Kasus Darurat Medis

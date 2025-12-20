@@ -371,118 +371,218 @@ onMounted(() => {
 
 <style scoped>
 .appointment-list {
-  @apply bg-gray-50 py-8 px-4;
+  background-color: rgb(249, 250, 251);
+  padding: 2rem 1rem;
 }
 
 .container {
-  @apply max-w-6xl mx-auto;
+  max-width: 72rem;
+  margin: 0 auto;
 }
 
 .filter-tabs {
-  @apply flex gap-4 border-b border-gray-200;
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid rgb(229, 231, 235);
 }
 
 .tab {
-  @apply px-4 py-3 text-gray-600 border-b-2 border-transparent hover:text-gray-900 transition;
+  padding: 0.75rem 1rem;
+  color: rgb(75, 85, 99);
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab:hover {
+  color: rgb(31, 41, 55);
 }
 
 .tab.active {
-  @apply text-blue-600 border-blue-600 font-semibold;
+  color: rgb(37, 99, 235);
+  border-bottom-color: rgb(37, 99, 235);
+  font-weight: 600;
 }
 
 .count {
-  @apply ml-2 px-2 py-1 bg-gray-200 text-gray-700 rounded-full text-sm;
+  margin-left: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background-color: rgb(229, 231, 235);
+  color: rgb(55, 65, 81);
+  border-radius: 9999px;
+  font-size: 0.875rem;
 }
 
 .appointment-grid {
-  @apply grid gap-6;
+  display: grid;
+  gap: 1.5rem;
 }
 
 .appointment-card {
-  @apply bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.appointment-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 .card-header {
-  @apply flex justify-between items-start p-4 border-b border-gray-200;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1rem;
+  border-bottom: 1px solid rgb(229, 231, 235);
 }
 
 .doctor-info h4 {
-  @apply font-semibold text-lg;
+  font-weight: 600;
+  font-size: 1.125rem;
 }
 
 .status-badge {
-  @apply px-3 py-1 rounded-full text-sm font-semibold;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 
 .status-pending {
-  @apply bg-yellow-100 text-yellow-800;
+  background-color: rgb(254, 243, 199);
+  color: rgb(113, 63, 18);
 }
 
 .status-confirmed {
-  @apply bg-blue-100 text-blue-800;
+  background-color: rgb(219, 234, 254);
+  color: rgb(30, 58, 138);
 }
 
 .status-completed {
-  @apply bg-green-100 text-green-800;
+  background-color: rgb(220, 252, 231);
+  color: rgb(5, 46, 22);
 }
 
 .status-cancelled {
-  @apply bg-red-100 text-red-800;
+  background-color: rgb(254, 226, 226);
+  color: rgb(127, 29, 29);
 }
 
 .card-body {
-  @apply p-4;
+  padding: 1rem;
 }
 
 .detail-item {
-  @apply flex justify-between py-2;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
 }
 
 .detail-item .label {
-  @apply text-gray-600;
+  color: rgb(75, 85, 99);
 }
 
 .detail-item .value {
-  @apply text-gray-900 font-medium;
+  color: rgb(17, 24, 39);
+  font-weight: 500;
 }
 
 .card-footer {
-  @apply p-4 bg-gray-50 flex gap-2 flex-wrap;
+  padding: 1rem;
+  background-color: rgb(249, 250, 251);
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .btn-primary {
-  @apply px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700;
+  padding: 0.5rem 1rem;
+  background-color: rgb(37, 99, 235);
+  color: white;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: rgb(29, 78, 216);
 }
 
 .btn-secondary {
-  @apply px-4 py-2 border border-blue-600 text-blue-600 rounded hover:bg-blue-50;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgb(37, 99, 235);
+  color: rgb(37, 99, 235);
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: rgb(239, 246, 255);
 }
 
 .btn-danger {
-  @apply px-4 py-2 border border-red-600 text-red-600 rounded hover:bg-red-50;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgb(220, 38, 38);
+  color: rgb(220, 38, 38);
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-danger:hover {
+  background-color: rgb(254, 242, 242);
 }
 
 .btn-outline {
-  @apply px-4 py-2 border border-gray-300 rounded hover:bg-gray-100;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgb(209, 213, 219);
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-outline:hover {
+  background-color: rgb(243, 244, 246);
 }
 
 .modal {
-  @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50;
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 50;
 }
 
 .modal-content {
-  @apply bg-white rounded-lg p-8 max-w-md w-full;
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 2rem;
+  max-width: 28rem;
+  width: 100%;
 }
 
 .star-rating {
-  @apply flex gap-2;
+  display: flex;
+  gap: 0.5rem;
 }
 
 .empty-state {
-  @apply bg-white rounded-lg;
+  background-color: white;
+  border-radius: 0.5rem;
 }
 
 .pagination {
-  @apply flex justify-center items-center gap-4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
 }
 </style>
