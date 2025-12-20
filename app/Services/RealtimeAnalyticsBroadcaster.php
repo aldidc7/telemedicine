@@ -7,6 +7,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Real-time Analytics Broadcaster Service
@@ -39,7 +40,7 @@ class RealtimeAnalyticsBroadcaster
 
             return true;
         } catch (\Exception $e) {
-            \Log::error('Failed to broadcast consultation metrics:', [
+            Log::error('Failed to broadcast consultation metrics:', [
                 'error' => $e->getMessage(),
                 'period' => $period
             ]);
@@ -64,7 +65,7 @@ class RealtimeAnalyticsBroadcaster
 
             return true;
         } catch (\Exception $e) {
-            \Log::error('Failed to broadcast doctor performance:', [
+            Log::error('Failed to broadcast doctor performance:', [
                 'error' => $e->getMessage()
             ]);
             return false;
@@ -88,7 +89,7 @@ class RealtimeAnalyticsBroadcaster
 
             return true;
         } catch (\Exception $e) {
-            \Log::error('Failed to broadcast revenue metrics:', [
+            Log::error('Failed to broadcast revenue metrics:', [
                 'error' => $e->getMessage()
             ]);
             return false;
@@ -112,7 +113,7 @@ class RealtimeAnalyticsBroadcaster
 
             return true;
         } catch (\Exception $e) {
-            \Log::error('Failed to broadcast health trends:', [
+            Log::error('Failed to broadcast health trends:', [
                 'error' => $e->getMessage()
             ]);
             return false;
@@ -131,7 +132,7 @@ class RealtimeAnalyticsBroadcaster
             'health_trends' => $this->broadcastHealthTrends(),
         ];
 
-        return array_all_succeeded($results);
+        return !in_array(false, $results, true);
     }
 
     /**
@@ -156,7 +157,7 @@ class RealtimeAnalyticsBroadcaster
                 return $this->broadcastHealthTrends();
             
             default:
-                \Log::warning('Unknown WebSocket request type:', ['type' => $type]);
+                Log::warning('Unknown WebSocket request type:', ['type' => $type]);
                 return false;
         }
     }

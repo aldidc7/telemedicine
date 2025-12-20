@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\User;
 use Pusher\Pusher;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class WebSocketService
 {
@@ -250,7 +251,7 @@ class WebSocketService
                 ]);
             }
         } catch (\Exception $e) {
-            \Log::error('WebSocket authentication failed: ' . $e->getMessage());
+            Log::error('WebSocket authentication failed: ' . $e->getMessage());
             return abort(403, 'Authentication failed');
         }
     }
