@@ -77,6 +77,22 @@ class Dokter extends Model
         'blood_type',
         'ethnicity',
         'patient_synced',
+        // Two-stage registration fields
+        'registration_status',
+        'document_status',
+        'sip_file_path',
+        'str_file_path',
+        'ktp_file_path',
+        'ijazah_file_path',
+        'additional_documents',
+        'document_submitted_at',
+        'document_verified_at',
+        'accepted_terms',
+        'accepted_privacy_policy',
+        'accepted_informed_consent',
+        'compliance_accepted_at',
+        'profile_completed_at',
+        'activated_at',
     ];
 
     /**
@@ -91,10 +107,20 @@ class Dokter extends Model
         'verified_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        // Two-stage registration casts
+        'additional_documents' => 'json',
+        'document_submitted_at' => 'datetime',
+        'document_verified_at' => 'datetime',
+        'accepted_terms' => 'boolean',
+        'accepted_privacy_policy' => 'boolean',
+        'accepted_informed_consent' => 'boolean',
+        'compliance_accepted_at' => 'datetime',
+        'profile_completed_at' => 'datetime',
+        'activated_at' => 'datetime',
     ];
 
     // ============ RELATIONSHIPS (RELASI) ============
-    
+
     /**
      * Relasi ke model User (Sebaliknya dari User::dokter())
      * Setiap dokter punya satu user untuk login
@@ -141,7 +167,7 @@ class Dokter extends Model
     }
 
     // ============ SCOPES (FILTER QUERY) ============
-    
+
     /**
      * Filter dokter yang tersedia
      * 
@@ -205,7 +231,7 @@ class Dokter extends Model
     }
 
     // ============ HELPER METHODS ============
-    
+
     /**
      * Hitung jumlah konsultasi aktif dokter saat ini
      * Digunakan untuk mengecek apakah dokter bisa menerima konsultasi baru
@@ -243,8 +269,8 @@ class Dokter extends Model
     public function bisaTerimaKonsultasi()
     {
         // Cek 2 kondisi: tersedia AND jumlah konsultasi < max
-        return $this->is_available && 
-               $this->getJmlKonsultasiAktif() < $this->max_concurrent_consultations;
+        return $this->is_available &&
+            $this->getJmlKonsultasiAktif() < $this->max_concurrent_consultations;
     }
 
     /**
@@ -279,5 +305,95 @@ class Dokter extends Model
     public function isTidakTersedia()
     {
         return !$this->is_available;
+    }
+
+    // ============ TWO-STAGE REGISTRATION HELPERS ============
+
+    /**
+     * Check if doctor registration is incomplete
+     */
+    public function isIncomplete(): bool
+    {
+        return $this->registration_status === 'INCOMPLETE';
+    }
+
+    /**
+     * Check if doctor is pending verification
+     */
+    public function isPendingVerification(): bool
+    {
+        return $this->registration_status === 'PENDING_VERIFICATION';
+    }
+
+    /**
+     * Check if doctor is active
+     */
+    public function isActive(): bool
+    {
+        return $this->registration_status === 'ACTIVE';
+    }
+
+    /**
+     * Check if doctor is rejected
+     */
+    public function isRejected(): bool
+    {
+        return $this->registration_status === 'REJECTED';
+    }
+
+    /**
+     * Check if all compliance requirements are met
+     */
+    public function hasComplianceApproval(): bool
+    {
+        return $this->accepted_terms &&
+            $this->accepted_privacy_policy &&
+            $this->accepted_informed_consent;
+    }
+
+    /**
+     * Check if documents are uploaded
+     */
+    public function hasDocumentsUploaded(): bool
+    {
+        return $this->sip_file_path &&
+            $this->str_file_path &&
+            $this->ktp_file_path &&
+            $this->ijazah_file_path;
+    }
+
+    /**
+     * Mark documents as submitted
+     */
+    public function submitDocuments(): void
+    {
+        $this->document_status = 'PENDING_REVIEW';
+        $this->document_submitted_at = now();
+        $this->registration_status = 'PENDING_VERIFICATION';
+        $this->save();
+    }
+
+    /**
+     * Approve documents and activate doctor
+     */
+    public function approveDocuments(string $notes = null): void
+    {
+        $this->document_status = 'APPROVED';
+        $this->document_verified_at = now();
+        $this->verification_notes = $notes;
+        $this->registration_status = 'ACTIVE';
+        $this->activated_at = now();
+        $this->save();
+    }
+
+    /**
+     * Reject documents for revision
+     */
+    public function rejectDocuments(string $notes): void
+    {
+        $this->document_status = 'REJECTED';
+        $this->registration_status = 'INCOMPLETE';
+        $this->verification_notes = $notes;
+        $this->save();
     }
 }

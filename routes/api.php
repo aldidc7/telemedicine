@@ -32,6 +32,7 @@ use App\Http\Controllers\Api\AppointmentReminderController;
 use App\Http\Controllers\Api\ApiDocumentationController;
 use App\Http\Controllers\Api\AvailabilityController;
 use App\Http\Controllers\Api\DoctorCredentialVerificationController;
+use App\Http\Controllers\Api\DoctorRegistrationController;
 use App\Http\Controllers\Api\ConsultationChatController;
 use App\Http\Controllers\SimrsApi\SimrsPasienController;
 use App\Http\Controllers\SimrsApi\SimrsDokterController;
@@ -228,6 +229,24 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
             Route::delete('/doctors/availability/{id}', [AvailabilityController::class, 'deleteAvailability']);
         });
 
+        // ========== TWO-STAGE DOCTOR REGISTRATION ENDPOINTS (PHASE 7) ==========
+        /**
+         * Two-Stage Doctor Registration
+         * POST /api/v1/dokter/register - Stage 1: Basic registration
+         * POST /api/v1/dokter/verification/documents - Stage 2: Upload documents
+         * POST /api/v1/dokter/profile/complete - Stage 3: Complete profile
+         * POST /api/v1/dokter/compliance/accept - Stage 4: Accept compliance
+         * GET /api/v1/dokter/registration/status - Get registration status
+         */
+        Route::post('/dokter/register', [DoctorRegistrationController::class, 'register']);
+
+        Route::middleware('auth:sanctum')->group(function () {
+            Route::post('/dokter/verification/documents', [DoctorRegistrationController::class, 'uploadDocuments']);
+            Route::post('/dokter/profile/complete', [DoctorRegistrationController::class, 'completeProfile']);
+            Route::post('/dokter/compliance/accept', [DoctorRegistrationController::class, 'acceptCompliance']);
+            Route::get('/dokter/registration/status', [DoctorRegistrationController::class, 'getStatus']);
+        });
+
         // ========== KKI CREDENTIAL VERIFICATION ENDPOINTS ==========
         /**
          * Doctor Credential Verification (Auto-KKI)
@@ -252,6 +271,11 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
             Route::post('/verifications/{id}/verify', [DoctorCredentialVerificationController::class, 'verifyCredentials']);
             Route::post('/verifications/{id}/reject', [DoctorCredentialVerificationController::class, 'rejectCredentials']);
             Route::post('/verifications/{id}/approve', [DoctorCredentialVerificationController::class, 'approveVerification']);
+
+            // Doctor registration approval/rejection
+            Route::get('/dokter/pending-verification', [DoctorRegistrationController::class, 'getPendingForVerification']);
+            Route::post('/dokter/{id}/approve', [DoctorRegistrationController::class, 'approveDoctorRegistration']);
+            Route::post('/dokter/{id}/reject', [DoctorRegistrationController::class, 'rejectDoctorRegistration']);
         });
 
         // Public verification status
