@@ -217,6 +217,77 @@ Fully responsive across:
 
 ---
 
+## 🏥 Regulatory Compliance
+
+### Healthcare Standards & Regulations
+
+This application complies with:
+
+**International Standards**:
+- ✅ **WHO Telemedicine Framework** - Multi-modal telemedicine support
+- ✅ **India Telemedicine Practice Guidelines 2020** - Informed consent, medical records
+- ✅ **Telemedicine Best Practices** - Doctor-patient relationship documentation
+- ✅ **HIPAA-Like Security Controls** - Encryption, audit logging, access control
+
+**Indonesia Compliance**:
+- ✅ **JKN/BPJS Kesehatan** - Universal health insurance integration ready
+- ✅ **Medical Record Retention** - 7-10 years soft-delete policy
+- ✅ **Doctor Verification** - License verification system
+- ✅ **Data Protection** - Audit trails, encryption, privacy policy
+
+**Data Protection**:
+- ✅ **Informed Consent Module** - Explicit consent before telemedicine usage
+- ✅ **Privacy Policy** - Comprehensive data handling disclosure
+- ✅ **Audit Logging** - Immutable logs of all PHI access
+- ✅ **Soft Delete Pattern** - Medical records retained, never permanently deleted
+- ✅ **HTTPS/TLS Encryption** - All data in transit encrypted
+- ✅ **Access Control** - Role-based authorization with policy enforcement
+
+### Compliance Documentation
+
+See detailed compliance documentation:
+- 📋 [**TELEMEDICINE_REGULATORY_ANALYSIS.md**](TELEMEDICINE_REGULATORY_ANALYSIS.md) - Comprehensive regulatory framework analysis
+- 📋 [**PRIVACY_POLICY.md**](PRIVACY_POLICY.md) - Complete privacy policy (bilingual: Indonesian/English)
+- 🔒 [**SECURITY_MEASURES.md**](SECURITY_MEASURES.md) - Detailed security implementation and standards
+- ✅ [**COMPLIANCE_CHECKLIST.md**](COMPLIANCE_CHECKLIST.md) - Pre-launch compliance verification
+- 📊 [**DATA_HANDLER_TRANSPARENCY.md**](DATA_HANDLER_TRANSPARENCY.md) - Third-party vendor disclosure
+
+### Key Compliance Features
+
+**Informed Consent**:
+- Explicit consent required before first consultation
+- Consent tracked with timestamp and user acceptance
+- Consent text stored for audit trail
+- Users understand telemedicine limitations
+
+**Medical Records Protection**:
+- Soft-delete pattern (data never permanently deleted)
+- Supports 7-10 year retention per JCI standards
+- Properly structured electronic medical records
+- Integration with hospital SIMRS system
+
+**Audit Logging**:
+- All user actions logged (ActivityLog model)
+- All PHI access logged (AuditLog model)
+- Immutable logs (cannot be modified/deleted)
+- Searchable by date, user, entity type
+
+**Data Security**:
+- HTTPS/TLS 1.2+ for all communications
+- bcrypt password hashing
+- Role-based access control (RBAC)
+- Policy-based authorization
+- 30-minute session timeout
+- Rate limiting on authentication
+
+**Doctor Verification**:
+- Document upload system for credentials
+- Verification workflow with approval
+- Status tracking (pending, approved, rejected)
+- Only verified doctors can consult patients
+
+---
+
 ## 🚀 Deployment
 
 ### Local Development

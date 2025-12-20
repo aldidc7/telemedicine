@@ -6,6 +6,12 @@ use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Auth\Access\AuthorizationException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use App\Http\Responses\ApiResponseFormatter;
 use Throwable;
 
 /**
@@ -79,61 +85,73 @@ class Handler extends ExceptionHandler
     }
 
     /**
-     * Handle API exceptions dengan response format konsisten menggunakan ApiResponse
+     * Handle API exceptions dengan response format konsisten
      * 
      * @param \Throwable $exception
      * @return JsonResponse
      */
     protected function handleApiException(\Throwable $exception): JsonResponse
     {
-        // Import ApiResponse
-        $apiResponse = \App\Http\Responses\ApiResponse::class;
-
         // Validation exception
-        if ($exception instanceof \Illuminate\Validation\ValidationException) {
-            return $apiResponse::fromValidationException($exception);
+        if ($exception instanceof ValidationException) {
+            $errors = $exception->validator->errors()->messages();
+            return ApiResponseFormatter::unprocessable(
+                'Validation failed',
+                $errors,
+                'VALIDATION_ERROR'
+            );
         }
 
         // Authentication exception
-        if ($exception instanceof \Illuminate\Auth\AuthenticationException) {
-            return $apiResponse::unauthorized('Unauthenticated. Please login first.');
+        if ($exception instanceof AuthenticationException) {
+            return ApiResponseFormatter::unauthorized('Unauthenticated. Please login first.');
         }
 
         // Authorization exception
-        if ($exception instanceof \Illuminate\Auth\Access\AuthorizationException) {
-            return $apiResponse::forbidden('You do not have permission to access this resource.');
+        if ($exception instanceof AuthorizationException) {
+            return ApiResponseFormatter::forbidden('You do not have permission to access this resource.');
         }
 
         // Not found exception
-        if ($exception instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
-            return $apiResponse::notFound('The requested resource was not found.');
+        if ($exception instanceof NotFoundHttpException) {
+            return ApiResponseFormatter::notFound('The requested resource was not found.');
         }
 
         // Method not allowed
-        if ($exception instanceof \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException) {
-            return $apiResponse::error('Method not allowed', 405, null, 'METHOD_NOT_ALLOWED');
+        if ($exception instanceof MethodNotAllowedHttpException) {
+            return ApiResponseFormatter::error(
+                'Method not allowed',
+                405,
+                'METHOD_NOT_ALLOWED'
+            );
         }
 
         // Unique constraint violation
         if ($exception instanceof \Illuminate\Database\UniqueConstraintViolationException) {
-            return $apiResponse::conflict('This record already exists.');
+            return ApiResponseFormatter::conflict('This record already exists.');
         }
 
         // Throttle exception (from rate limiting)
         if ($exception instanceof \Illuminate\Http\Exceptions\ThrottleRequestsException) {
-            return $apiResponse::tooManyRequests(
-                'Too many requests. Please try again later.',
-                $exception->getHeaders()['Retry-After'] ?? null
+            return ApiResponseFormatter::tooManyRequests(
+                'Too many requests. Please try again later.'
             );
         }
 
         // Generic exceptions
         if (config('app.debug')) {
-            // Cast Throwable to Exception if needed
-            return $apiResponse::fromException($exception instanceof \Exception ? $exception : new \Exception($exception->getMessage()), true);
+            return ApiResponseFormatter::internalError(
+                $exception->getMessage(),
+                'DEBUG_ERROR',
+                [
+                    'file' => $exception->getFile(),
+                    'line' => $exception->getLine(),
+                    'trace' => $exception->getTrace(),
+                ]
+            );
         }
 
-        return $apiResponse::serverError('An error occurred. Please try again later.');
+        return ApiResponseFormatter::internalError('An error occurred. Please try again later.');
     }
 
 }

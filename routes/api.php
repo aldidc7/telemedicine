@@ -17,10 +17,17 @@ use App\Http\Controllers\Api\AppointmentController;
 use App\Http\Controllers\Api\PrescriptionController;
 use App\Http\Controllers\Api\BroadcastingController;
 use App\Http\Controllers\Api\FileUploadController;
+use App\Http\Controllers\Api\DoctorVerificationDocumentController;
+use App\Http\Controllers\Api\ConsentController;
 use App\Http\Controllers\SimrsApi\SimrsPasienController;
 use App\Http\Controllers\SimrsApi\SimrsDokterController;
 use App\Http\Controllers\SimrsApi\SimrsRekamMedisController;
 use App\Http\Controllers\SimrsApi\SimrsKonsultasiSyncController;
+
+// ============ DOCUMENTATION ROUTES ============
+Route::get('/health', [ApiDocumentationController::class, 'health']);
+Route::get('/docs', [ApiDocumentationController::class, 'swagger']);
+Route::get('/docs/openapi.json', [ApiDocumentationController::class, 'openapi']);
 
 Route::get('/v1/health', function () {
     return response()->json(['status' => 'API is running']);
@@ -213,6 +220,29 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
         Route::post('/admin/doctors/{id}/approve', [DoctorVerificationController::class, 'approvDoctor']);
         Route::post('/admin/doctors/{id}/reject', [DoctorVerificationController::class, 'rejectDoctor']);
         Route::get('/admin/doctors/{id}/status', [DoctorVerificationController::class, 'getDoctorStatus']);
+
+        // ========== DOCTOR VERIFICATION DOCUMENT ROUTES ==========
+        /**
+         * Doctor Document Verification
+         * POST /api/v1/doctor/verification/upload - Upload verification document
+         * GET /api/v1/doctor/verification/documents - Get doctor's documents
+         * GET /api/v1/doctor/verification/status - Get overall verification status
+         * GET /api/v1/admin/verification/pending - Admin: List pending documents
+         * POST /api/v1/admin/verification/{id}/approve - Admin: Approve document
+         * POST /api/v1/admin/verification/{id}/reject - Admin: Reject document
+         * GET /api/v1/verification/{id}/download - Download document
+         */
+        Route::post('/doctor/verification/upload', [DoctorVerificationDocumentController::class, 'upload']);
+        Route::get('/doctor/verification/documents', [DoctorVerificationDocumentController::class, 'getDocuments']);
+        Route::get('/doctor/verification/status', [DoctorVerificationDocumentController::class, 'getVerificationStatus']);
+        Route::get('/verification/{id}/download', [DoctorVerificationDocumentController::class, 'download']);
+        
+        Route::get('/admin/verification/pending', [DoctorVerificationDocumentController::class, 'adminListPending']);
+        Route::get('/doctor-verification-documents', [DoctorVerificationDocumentController::class, 'adminListPending']);
+        Route::post('/admin/verification/{id}/approve', [DoctorVerificationDocumentController::class, 'adminApprove']);
+        Route::post('/doctor-verification-documents/{id}/approve', [DoctorVerificationDocumentController::class, 'adminApprove']);
+        Route::post('/admin/verification/{id}/reject', [DoctorVerificationDocumentController::class, 'adminReject']);
+        Route::post('/doctor-verification-documents/{id}/reject', [DoctorVerificationDocumentController::class, 'adminReject']);
 
         // ========== FILE UPLOAD ENDPOINTS ==========
         /**
@@ -420,6 +450,23 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
             Route::get('/user-trends', [AnalyticsController::class, 'getUserTrends']);
             Route::get('/growth', [AnalyticsController::class, 'getGrowthMetrics']);
             Route::get('/retention', [AnalyticsController::class, 'getUserRetention']);
+        });
+
+        // ========== INFORMED CONSENT ROUTES ==========
+        /**
+         * Informed Consent Management
+         * GET /api/v1/consent/required - Get required consents untuk user
+         * POST /api/v1/consent/accept - Catat consent yang diterima
+         * GET /api/v1/consent/check/{type} - Cek apakah user sudah accept consent
+         * GET /api/v1/consent/history - Riwayat consent user
+         * POST /api/v1/consent/revoke/{id} - Tarik kembali consent
+         */
+        Route::prefix('consent')->group(function () {
+            Route::get('/required', [ConsentController::class, 'getRequired']);
+            Route::post('/accept', [ConsentController::class, 'accept']);
+            Route::get('/check/{type}', [ConsentController::class, 'check']);
+            Route::get('/history', [ConsentController::class, 'history']);
+            Route::post('/revoke/{id}', [ConsentController::class, 'revoke']);
         });
 
         // ========== WEBSOCKET/BROADCASTING ROUTES ==========
