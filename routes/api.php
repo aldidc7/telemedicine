@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\BroadcastingController;
 use App\Http\Controllers\Api\FileUploadController;
 use App\Http\Controllers\Api\DoctorVerificationDocumentController;
 use App\Http\Controllers\Api\ConsentController;
+use App\Http\Controllers\Api\DoctorPatientRelationshipController;
 use App\Http\Controllers\SimrsApi\SimrsPasienController;
 use App\Http\Controllers\SimrsApi\SimrsDokterController;
 use App\Http\Controllers\SimrsApi\SimrsRekamMedisController;
@@ -467,6 +468,41 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
             Route::get('/check/{type}', [ConsentController::class, 'check']);
             Route::get('/history', [ConsentController::class, 'history']);
             Route::post('/revoke/{id}', [ConsentController::class, 'revoke']);
+        });
+
+        // ========== DOCTOR-PATIENT RELATIONSHIP ROUTES (Ryan Haight Act) ==========
+        /**
+         * Doctor-Patient Relationship Management
+         * Requirement: Ryan Haight Act compliance
+         * 
+         * DOCTOR ENDPOINTS:
+         * POST /api/v1/doctor-patient-relationships - Dokter establish relationship dengan pasien
+         * GET /api/v1/doctor-patient-relationships/my-patients - Dokter lihat pasiennya
+         * GET /api/v1/doctor-patient-relationships/check/{patientId} - Cek ada relationship
+         * 
+         * PATIENT ENDPOINTS:
+         * GET /api/v1/doctor-patient-relationships/my-doctors - Pasien lihat dokternya
+         * 
+         * SHARED ENDPOINTS:
+         * PUT /api/v1/doctor-patient-relationships/{id}/terminate - Akhiri relationship
+         * GET /api/v1/doctor-patient-relationships/{id}/history - Lihat audit history
+         */
+        Route::prefix('doctor-patient-relationships')->group(function () {
+            // Doctor establishing relationship
+            Route::post('/', [DoctorPatientRelationshipController::class, 'establish']);
+            
+            // Doctor's patients
+            Route::get('/my-patients', [DoctorPatientRelationshipController::class, 'getMyPatients']);
+            
+            // Check relationship
+            Route::get('/check/{patientId}', [DoctorPatientRelationshipController::class, 'checkRelationship']);
+            
+            // Patient's doctors
+            Route::get('/my-doctors', [DoctorPatientRelationshipController::class, 'getMyDoctors']);
+            
+            // Terminate & History (must be after specific routes)
+            Route::put('/{relationshipId}/terminate', [DoctorPatientRelationshipController::class, 'terminate']);
+            Route::get('/{relationshipId}/history', [DoctorPatientRelationshipController::class, 'getHistory']);
         });
 
         // ========== WEBSOCKET/BROADCASTING ROUTES ==========
