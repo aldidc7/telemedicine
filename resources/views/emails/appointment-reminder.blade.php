@@ -1,5 +1,5 @@
 @component('mail::message')
-# 📅 Appointment Reminder
+# [APPOINTMENT] Appointment Reminder
 
 Hello {{ $user->name }},
 

@@ -1,4 +1,4 @@
-<!-- 📁 resources/js/views/pasien/CariDokterPage.vue -->
+<!-- [CARI-DOKTER] resources/js/views/pasien/CariDokterPage.vue -->
 <template>
   <div class="min-h-screen bg-linear-to-b from-gray-50 to-gray-100 pb-12">
     <!-- Hero Section -->
@@ -198,9 +198,9 @@ const tersediaOptions = [
 
 const ratingOptions = [
   { value: '', label: 'Semua Rating' },
-  { value: '3', label: '⭐ 3+ Bintang' },
-  { value: '4', label: '⭐⭐ 4+ Bintang' },
-  { value: '4.5', label: '⭐⭐⭐ 4.5+ Bintang' }
+  { value: '3', label: '[3STAR] 3+ Bintang' },
+  { value: '4', label: '[4STAR] 4+ Bintang' },
+  { value: '4.5', label: '[4.5STAR] 4.5+ Bintang' }
 ]
 
 onMounted(() => {

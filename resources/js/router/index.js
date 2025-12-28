@@ -51,6 +51,36 @@ const routes = [
     component: () => import('@/views/auth/ResetPasswordPage.vue'),
     meta: { requiresGuest: true }
   },
+  {
+    path: '/terms',
+    name: 'terms',
+    component: () => import('@/views/pages/TermsPage.vue')
+  },
+  {
+    path: '/privacy',
+    name: 'privacy',
+    component: () => import('@/views/pages/PrivacyPage.vue')
+  },
+  {
+    path: '/about',
+    name: 'about',
+    component: () => import('@/views/pages/AboutPage.vue')
+  },
+  {
+    path: '/blog',
+    name: 'blog',
+    component: () => import('@/views/pages/BlogPage.vue')
+  },
+  {
+    path: '/careers',
+    name: 'careers',
+    component: () => import('@/views/pages/CareersPage.vue')
+  },
+  {
+    path: '/contact',
+    name: 'contact',
+    component: () => import('@/views/pages/ContactPage.vue')
+  },
 
   // ===== PASIEN ROUTES =====
   {

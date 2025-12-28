@@ -60,6 +60,43 @@
             />
           </div>
 
+          <!-- Tanggal Lahir (Pasien) -->
+          <div v-if="userType === 'pasien'">
+            <label class="block text-sm font-semibold text-gray-900 mb-2">Tanggal Lahir</label>
+            <input
+              v-model="form.tanggal_lahir"
+              type="date"
+              required
+              class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition bg-gray-50 hover:bg-white"
+            />
+          </div>
+
+          <!-- Jenis Kelamin (Pasien) -->
+          <div v-if="userType === 'pasien'">
+            <label class="block text-sm font-semibold text-gray-900 mb-2">Jenis Kelamin</label>
+            <select
+              v-model="form.jenis_kelamin"
+              required
+              class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition bg-gray-50 hover:bg-white"
+            >
+              <option value="">-- Pilih Jenis Kelamin --</option>
+              <option value="Laki-laki">Laki-laki</option>
+              <option value="Perempuan">Perempuan</option>
+            </select>
+          </div>
+
+          <!-- Alamat (Pasien) -->
+          <div v-if="userType === 'pasien'">
+            <label class="block text-sm font-semibold text-gray-900 mb-2">Alamat</label>
+            <textarea
+              v-model="form.alamat"
+              required
+              rows="3"
+              class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition bg-gray-50 hover:bg-white"
+              placeholder="Masukkan alamat lengkap Anda"
+            ></textarea>
+          </div>
+
           <!-- SIP/Spesialisasi (Dokter) -->
           <div v-if="userType === 'dokter'">
             <label class="block text-sm font-semibold text-gray-900 mb-2">Nomor SIP (Surat Ijin Praktik)</label>
@@ -153,7 +190,10 @@
               required
             />
             <label for="agree" class="text-sm text-gray-600">
-              Saya setuju dengan <span class="font-semibold">Syarat & Ketentuan</span> dan <span class="font-semibold">Kebijakan Privasi</span>
+              Saya setuju dengan 
+              <router-link to="/terms" target="_blank" class="text-indigo-600 font-semibold hover:underline">Syarat & Ketentuan</router-link> 
+              dan 
+              <router-link to="/privacy" target="_blank" class="text-indigo-600 font-semibold hover:underline">Kebijakan Privasi</router-link>
             </label>
           </div>
 
@@ -218,6 +258,9 @@ const form = ref({
   nik: '',
   sip: '',
   phone: '',
+  tanggal_lahir: '',
+  jenis_kelamin: '',
+  alamat: '',
   specialization: '',
   password: '',
   password_confirmation: '',
@@ -238,6 +281,13 @@ const handleRegister = async () => {
     return
   }
 
+  // Validate phone format (Indonesia)
+  const phoneRegex = /^(\+62|0)[0-9]{9,12}$/
+  if (!phoneRegex.test(form.value.phone)) {
+    error.value = 'Nomor telepon tidak valid. Format: +62/0 diikuti 9-12 digit'
+    return
+  }
+
   // Validate pasien NIK
   if (userType.value === 'pasien') {
     if (!form.value.nik || form.value.nik.trim() === '') {
@@ -246,6 +296,24 @@ const handleRegister = async () => {
     }
     if (form.value.nik.length !== 16 || !/^\d+$/.test(form.value.nik)) {
       error.value = 'NIK harus berupa 16 digit angka'
+      return
+    }
+
+    // Validate tanggal lahir
+    if (!form.value.tanggal_lahir) {
+      error.value = 'Tanggal lahir harus diisi'
+      return
+    }
+
+    // Validate jenis kelamin
+    if (!form.value.jenis_kelamin) {
+      error.value = 'Jenis kelamin harus dipilih'
+      return
+    }
+
+    // Validate alamat
+    if (!form.value.alamat || form.value.alamat.trim() === '') {
+      error.value = 'Alamat harus diisi'
       return
     }
   }
@@ -276,6 +344,9 @@ const handleRegister = async () => {
 
     if (userType.value === 'pasien') {
       payload.nik = form.value.nik
+      payload.tanggal_lahir = form.value.tanggal_lahir
+      payload.jenis_kelamin = form.value.jenis_kelamin
+      payload.alamat = form.value.alamat
       payload.role = 'pasien'
     } else {
       payload.sip = form.value.sip
@@ -290,25 +361,20 @@ const handleRegister = async () => {
       form.value.password_confirmation,
       userType.value,
       form.value.phone,
-      '', // alamat (opsional)
-      null, // tglLahir (opsional)
+      form.value.alamat || '', // alamat
+      form.value.tanggal_lahir || null, // tglLahir
       userType.value === 'pasien' ? form.value.nik : null, // nik
-      null, // jenisKelamin
+      form.value.jenis_kelamin || null, // jenisKelamin
       null, // golonganDarah
       null, // namaKontakDarurat
       null  // noKontakDarurat
     )
 
-    // Untuk dokter, redirect ke email verification
-    if (userType.value === 'dokter') {
-      router.push({
-        name: 'verify-email',
-        query: { email: form.value.email }
-      })
-    } else {
-      // Untuk pasien, redirect ke login
-      router.push('/login')
-    }
+    // Redirect ke email verification (untuk pasien dan dokter)
+    router.push({
+      name: 'verify-email',
+      query: { email: form.value.email }
+    })
   } catch (err) {
     error.value = err.response?.data?.message || err.response?.data?.pesan || err.message || 'Terjadi kesalahan, coba lagi'
     console.error('Register error:', err)

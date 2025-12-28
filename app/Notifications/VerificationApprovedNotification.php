@@ -49,7 +49,7 @@ class VerificationApprovedNotification extends Notification implements ShouldQue
             'verification_id' => $this->verification->id,
             'title' => 'Doctor Verification Approved',
             'message' => 'Your doctor verification has been approved. You can now accept consultations.',
-            'approved_at' => $this->verification->approved_at,
+            'approved_at' => $this->verification->verified_at,
         ];
     }
 }

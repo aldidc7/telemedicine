@@ -1,4 +1,4 @@
-// 📁 resources/js/api/rating.js
+// [RATING-API] resources/js/api/rating.js
 import client from './client'
 
 export const ratingAPI = {

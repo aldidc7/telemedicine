@@ -101,7 +101,7 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <div class="logo">🏥 Telemedicine</div>
+            <div class="logo">[TELEMEDICINE] Telemedicine</div>
             <div class="subtitle">RSUD dr. R. Soedarsono</div>
         </div>
 

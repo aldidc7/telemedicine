@@ -166,6 +166,28 @@ class Dokter extends Model
         return $this->hasMany(Rating::class, 'dokter_id');
     }
 
+    /**
+     * Relasi ke model DoctorVerification (Dokter punya verification records)
+     * Untuk track status verifikasi oleh admin
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function verificationRecords()
+    {
+        return $this->hasMany(DoctorVerification::class, 'doctor_id', 'user_id');
+    }
+
+    /**
+     * Relasi ke model DoctorCredential (Dokter punya credentials)
+     * Untuk track SIP, STR, KTP, Ijazah credentials
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function credentials()
+    {
+        return $this->hasMany(DoctorCredential::class, 'doctor_id', 'user_id');
+    }
+
     // ============ SCOPES (FILTER QUERY) ============
 
     /**
@@ -376,7 +398,7 @@ class Dokter extends Model
     /**
      * Approve documents and activate doctor
      */
-    public function approveDocuments(string $notes = null): void
+    public function approveDocuments(?string $notes = null): void
     {
         $this->document_status = 'APPROVED';
         $this->document_verified_at = now();

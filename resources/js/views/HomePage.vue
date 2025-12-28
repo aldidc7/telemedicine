@@ -134,44 +134,7 @@
       </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-gray-900 text-gray-400 py-12 mt-20">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid md:grid-cols-4 gap-8 mb-8">
-          <div>
-            <h3 class="text-white font-bold text-lg mb-4">Telemedicine</h3>
-            <p class="text-sm">Platform kesehatan digital terpercaya untuk konsultasi dengan dokter profesional</p>
-          </div>
-          <div>
-            <h4 class="text-white font-bold mb-4">Produk</h4>
-            <ul class="space-y-2 text-sm">
-              <li><a href="#" class="hover:text-white transition">Untuk Pasien</a></li>
-              <li><a href="#" class="hover:text-white transition">Untuk Dokter</a></li>
-              <li><a href="#" class="hover:text-white transition">Fitur</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 class="text-white font-bold mb-4">Perusahaan</h4>
-            <ul class="space-y-2 text-sm">
-              <li><a href="#" class="hover:text-white transition">Tentang Kami</a></li>
-              <li><a href="#" class="hover:text-white transition">Blog</a></li>
-              <li><a href="#" class="hover:text-white transition">Karir</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 class="text-white font-bold mb-4">Legal</h4>
-            <ul class="space-y-2 text-sm">
-              <li><a href="#" class="hover:text-white transition">Privasi</a></li>
-              <li><a href="#" class="hover:text-white transition">Terms</a></li>
-              <li><a href="#" class="hover:text-white transition">Kontak</a></li>
-            </ul>
-          </div>
-        </div>
-        <div class="border-t border-gray-800 pt-8 text-center text-sm">
-          <p>&copy; 2025 Telemedicine. Semua hak dilindungi.</p>
-        </div>
-      </div>
-    </footer>
+
   </div>
 </template>
 

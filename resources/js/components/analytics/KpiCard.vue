@@ -16,14 +16,17 @@
           'bg-red-100': color === 'red',
         }
       ]">
-        {{ icon }}
+        <i v-if="isIconClass" :class="['fas', ...iconClass, getColorClass()]"></i>
+        <span v-else>{{ icon }}</span>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-defineProps({
+import { computed } from 'vue'
+
+const props = defineProps({
   label: {
     type: String,
     required: true
@@ -41,4 +44,25 @@ defineProps({
     default: 'blue'
   }
 })
+
+const isIconClass = computed(() => {
+  return props.icon.startsWith('fa-')
+})
+
+const iconClass = computed(() => {
+  if (!isIconClass.value) return []
+  return props.icon.split(' ').filter(cls => cls.startsWith('fa-'))
+})
+
+const getColorClass = () => {
+  const colorMap = {
+    blue: 'text-blue-600',
+    green: 'text-green-600',
+    purple: 'text-purple-600',
+    emerald: 'text-emerald-600',
+    orange: 'text-orange-600',
+    red: 'text-red-600',
+  }
+  return colorMap[props.color] || colorMap.blue
+}
 </script>

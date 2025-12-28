@@ -1,4 +1,4 @@
-<!-- 📁 resources/js/views/pasien/ProfilePage.vue -->
+<!-- [PROFILE] resources/js/views/pasien/ProfilePage.vue -->
 <template>
   <div class="min-h-screen bg-linear-to-b from-gray-50 to-gray-100 pb-12">
     <!-- Hero Section -->

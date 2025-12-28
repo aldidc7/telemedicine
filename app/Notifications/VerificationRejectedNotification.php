@@ -36,7 +36,7 @@ class VerificationRejectedNotification extends Notification implements ShouldQue
             ->line('Unfortunately, we were unable to verify your documents at this time.')
             ->line('')
             ->line('**Reason for Rejection:**')
-            ->line($this->verification->rejection_reason ?? 'Please contact support for details.')
+            ->line($this->verification->notes ?? 'Please contact support for details.')
             ->line('')
             ->line('**What to do next:**')
             ->line('• Review the rejection reason carefully')
@@ -53,9 +53,9 @@ class VerificationRejectedNotification extends Notification implements ShouldQue
             'type' => 'verification_rejected',
             'verification_id' => $this->verification->id,
             'title' => 'Doctor Verification Rejected',
-            'message' => 'Your doctor verification was rejected. Reason: ' . ($this->verification->rejection_reason ?? 'N/A'),
-            'rejection_reason' => $this->verification->rejection_reason,
-            'rejected_at' => $this->verification->rejected_at,
+            'message' => 'Your doctor verification was rejected. Reason: ' . ($this->verification->notes ?? 'N/A'),
+            'rejection_reason' => $this->verification->notes,
+            'rejected_at' => now(),
         ];
     }
 }

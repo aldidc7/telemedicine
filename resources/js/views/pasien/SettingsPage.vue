@@ -1,4 +1,4 @@
-<!-- 📁 resources/js/views/pasien/SettingsPage.vue -->
+<!-- [SETTINGS] resources/js/views/pasien/SettingsPage.vue -->
 <template>
   <div class="min-h-screen bg-linear-to-br from-slate-50 via-white to-slate-100">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

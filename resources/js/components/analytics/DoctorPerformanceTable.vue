@@ -4,12 +4,12 @@
       <table class="w-full">
         <thead class="bg-gray-50 border-b border-gray-200">
           <tr>
-            <th class="px-6 py-3 text-left text-sm font-bold text-gray-900">Doctor Name</th>
-            <th class="px-6 py-3 text-left text-sm font-bold text-gray-900">Specialist</th>
-            <th class="px-6 py-3 text-left text-sm font-bold text-gray-900">Consultations</th>
-            <th class="px-6 py-3 text-left text-sm font-bold text-gray-900">Avg Rating</th>
-            <th class="px-6 py-3 text-left text-sm font-bold text-gray-900">Response Time</th>
-            <th class="px-6 py-3 text-left text-sm font-bold text-gray-900">Completion</th>
+            <th class="px-6 py-3 text-left text-sm font-bold text-gray-900">Nama Dokter</th>
+            <th class="px-6 py-3 text-left text-sm font-bold text-gray-900">Spesialis</th>
+            <th class="px-6 py-3 text-left text-sm font-bold text-gray-900">Konsultasi</th>
+            <th class="px-6 py-3 text-left text-sm font-bold text-gray-900">Rating Rata-rata</th>
+            <th class="px-6 py-3 text-left text-sm font-bold text-gray-900">Waktu Respon</th>
+            <th class="px-6 py-3 text-left text-sm font-bold text-gray-900">Penyelesaian</th>
             <th class="px-6 py-3 text-left text-sm font-bold text-gray-900">Status</th>
           </tr>
         </thead>
@@ -26,7 +26,7 @@
             <td class="px-6 py-4">
               <div class="flex items-center gap-1">
                 <span class="font-bold text-yellow-600">{{ doctor.avg_rating }}</span>
-                <span class="text-sm text-gray-600">{{ doctor.rating_count }} ratings</span>
+                <span class="text-sm text-gray-600">{{ doctor.rating_count }} penilaian</span>
               </div>
             </td>
             <td class="px-6 py-4 text-gray-600">{{ doctor.avg_response_time_minutes }}m</td>
@@ -48,7 +48,7 @@
                   ? 'bg-green-100 text-green-800' 
                   : 'bg-red-100 text-red-800'
               ]">
-                {{ doctor.status }}
+                {{ doctor.status === 'Available' ? 'Tersedia' : 'Tidak Tersedia' }}
               </span>
             </td>
           </tr>

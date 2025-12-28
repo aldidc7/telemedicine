@@ -1,4 +1,4 @@
-<!-- 📁 resources/js/views/pasien/ChatPage.vue -->
+<!-- [CHAT] resources/js/views/pasien/ChatPage.vue -->
 <template>
   <div class="bg-linear-to-br from-slate-50 to-white h-screen flex flex-col rounded-2xl overflow-hidden shadow-lg">
     <!-- Header with Doctor Info -->

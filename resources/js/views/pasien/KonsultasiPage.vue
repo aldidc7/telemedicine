@@ -1,4 +1,4 @@
-<!-- 📁 resources/js/views/pasien/KonsultasiPage.vue -->
+<!-- [KONSULTASI] resources/js/views/pasien/KonsultasiPage.vue -->
 <template>
   <div class="min-h-screen bg-gray-50">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -158,7 +158,7 @@
                   k.tipe_layanan === 'chat' ? 'bg-purple-100 text-purple-700' :
                   'bg-green-100 text-green-700'
                 ]">
-                  {{ k.tipe_layanan === 'video' ? '📹' : k.tipe_layanan === 'chat' ? '💬' : '📞' }}
+                  {{ k.tipe_layanan === 'video' ? '[VIDEO]' : k.tipe_layanan === 'chat' ? '[CHAT]' : '[PHONE]' }}
                 </span>
 
                 <span :class="['text-xs px-2.5 py-1 rounded-full font-bold',

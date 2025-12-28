@@ -17,7 +17,7 @@
     <nav class="sticky top-0 bg-white shadow-sm z-40">
         <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
             <a href="/" class="text-xl font-bold text-indigo-600">
-                🏥 Telemedicine
+                [TELEMEDICINE] Telemedicine
             </a>
             <a href="/" class="text-slate-600 hover:text-slate-900">
                 ← Kembali
@@ -28,7 +28,7 @@
     <!-- Header -->
     <div class="bg-linear-to-b from-indigo-600 to-indigo-700 text-white py-16">
         <div class="max-w-4xl mx-auto px-4 text-center">
-            <h1 class="text-4xl font-black mb-4">📋 Kebijakan Privasi</h1>
+            <h1 class="text-4xl font-black mb-4">[PRIVACY] Kebijakan Privasi</h1>
             <p class="text-indigo-100 text-lg">
                 Kami berkomitmen melindungi privasi dan data medis Anda
             </p>
@@ -41,7 +41,7 @@
     <!-- Table of Contents -->
     <div class="max-w-4xl mx-auto px-4 py-8">
         <div class="bg-white rounded-lg shadow p-6 mb-8">
-            <h2 class="text-xl font-bold text-slate-900 mb-4">📑 Daftar Isi</h2>
+            <h2 class="text-xl font-bold text-slate-900 mb-4">[CONTENTS] Daftar Isi</h2>
             <ol class="space-y-2 text-slate-700">
                 <li><a href="#pendahuluan" class="text-indigo-600 hover:underline">1. Pendahuluan</a></li>
                 <li><a href="#data-yang-dikumpulkan" class="text-indigo-600 hover:underline">2. Data yang Dikumpulkan</a></li>
@@ -61,7 +61,7 @@
     <div class="max-w-4xl mx-auto px-4 pb-16">
         <!-- 1. Pendahuluan -->
         <section id="pendahuluan" class="bg-white rounded-lg shadow p-8 mb-6">
-            <h2 class="text-2xl font-bold text-slate-900 mb-4">1. 🎯 Pendahuluan</h2>
+            <h2 class="text-2xl font-bold text-slate-900 mb-4">1. [INTRO] Pendahuluan</h2>
             <p class="text-slate-700 leading-relaxed mb-4">
                 Selamat datang di aplikasi Telemedicine kami. Kami mengerti bahwa privasi Anda sangat penting, terutama 
                 dalam hal informasi kesehatan. Kebijakan Privasi ini menjelaskan bagaimana kami mengumpulkan, menggunakan, 
@@ -75,11 +75,11 @@
 
         <!-- 2. Data yang Dikumpulkan -->
         <section id="data-yang-dikumpulkan" class="bg-white rounded-lg shadow p-8 mb-6">
-            <h2 class="text-2xl font-bold text-slate-900 mb-4">2. 📊 Data yang Dikumpulkan</h2>
+            <h2 class="text-2xl font-bold text-slate-900 mb-4">2. [DATA] Data yang Dikumpulkan</h2>
             
             <div class="space-y-4">
                 <div class="border-l-4 border-indigo-600 pl-4">
-                    <h3 class="font-semibold text-slate-900 mb-2">📝 Data Pribadi</h3>
+                    <h3 class="font-semibold text-slate-900 mb-2">[PERSONAL] Data Pribadi</h3>
                     <ul class="text-slate-700 space-y-1">
                         <li>• Nama lengkap</li>
                         <li>• Email address</li>
@@ -91,7 +91,7 @@
                 </div>
 
                 <div class="border-l-4 border-red-600 pl-4">
-                    <h3 class="font-semibold text-slate-900 mb-2">🏥 Data Medis (PHI - Protected Health Information)</h3>
+                    <h3 class="font-semibold text-slate-900 mb-2">[MEDICAL] Data Medis (PHI - Protected Health Information)</h3>
                     <ul class="text-slate-700 space-y-1">
                         <li>• Keluhan atau gejala</li>
                         <li>• Riwayat kesehatan</li>
@@ -103,7 +103,7 @@
                 </div>
 
                 <div class="border-l-4 border-slate-400 pl-4">
-                    <h3 class="font-semibold text-slate-900 mb-2">🖥️ Data Teknis</h3>
+                    <h3 class="font-semibold text-slate-900 mb-2">[TECH] Data Teknis</h3>
                     <ul class="text-slate-700 space-y-1">
                         <li>• IP address</li>
                         <li>• Jenis browser dan device</li>
@@ -124,41 +124,41 @@
 
         <!-- 3. Penggunaan Data -->
         <section id="penggunaan-data" class="bg-white rounded-lg shadow p-8 mb-6">
-            <h2 class="text-2xl font-bold text-slate-900 mb-4">3. ✅ Penggunaan Data</h2>
+            <h2 class="text-2xl font-bold text-slate-900 mb-4">3. [USE] Penggunaan Data</h2>
             
             <div class="bg-green-50 border-l-4 border-green-600 p-4 mb-4">
-                <h3 class="font-semibold text-green-900 mb-2">✓ Kami MENGGUNAKAN data untuk:</h3>
+                <h3 class="font-semibold text-green-900 mb-2">[YES] Kami MENGGUNAKAN data untuk:</h3>
                 <ul class="text-green-800 space-y-1">
-                    <li>✓ Memberikan layanan telemedicine yang aman dan berkualitas</li>
-                    <li>✓ Diagnosis, perawatan, dan follow-up medis</li>
-                    <li>✓ Manajemen rekam medis elektronik</li>
-                    <li>✓ Pemrosesan pembayaran dan asuransi kesehatan</li>
-                    <li>✓ Kepatuhan dengan regulasi kesehatan</li>
-                    <li>✓ Peningkatan layanan dengan data yang di-anonimkan</li>
-                    <li>✓ Notifikasi penting tentang kesehatan Anda</li>
-                    <li>✓ Research dan statistics (dengan anonimisasi)</li>
+                    <li>[YES] Memberikan layanan telemedicine yang aman dan berkualitas</li>
+                    <li>[YES] Diagnosis, perawatan, dan follow-up medis</li>
+                    <li>[YES] Manajemen rekam medis elektronik</li>
+                    <li>[YES] Pemrosesan pembayaran dan asuransi kesehatan</li>
+                    <li>[YES] Kepatuhan dengan regulasi kesehatan</li>
+                    <li>[YES] Peningkatan layanan dengan data yang di-anonimkan</li>
+                    <li>[YES] Notifikasi penting tentang kesehatan Anda</li>
+                    <li>[YES] Research dan statistics (dengan anonimisasi)</li>
                 </ul>
             </div>
 
             <div class="bg-red-50 border-l-4 border-red-600 p-4">
-                <h3 class="font-semibold text-red-900 mb-2">✗ Kami TIDAK PERNAH:</h3>
+                <h3 class="font-semibold text-red-900 mb-2">[NO] Kami TIDAK PERNAH:</h3>
                 <ul class="text-red-800 space-y-1">
-                    <li>✗ Menjual data Anda kepada pihak ketiga komersial</li>
-                    <li>✗ Menggunakan data medis untuk marketing atau advertising</li>
-                    <li>✗ Membagikan data Anda dengan pihak yang tidak berwenang</li>
-                    <li>✗ Menggunakan data tanpa izin atau persetujuan Anda</li>
-                    <li>✗ Menyimpan data lebih lama dari yang diperlukan</li>
+                    <li>[NO] Menjual data Anda kepada pihak ketiga komersial</li>
+                    <li>[NO] Menggunakan data medis untuk marketing atau advertising</li>
+                    <li>[NO] Membagikan data Anda dengan pihak yang tidak berwenang</li>
+                    <li>[NO] Menggunakan data tanpa izin atau persetujuan Anda</li>
+                    <li>[NO] Menyimpan data lebih lama dari yang diperlukan</li>
                 </ul>
             </div>
         </section>
 
         <!-- 4. Keamanan Data -->
         <section id="keamanan-data" class="bg-white rounded-lg shadow p-8 mb-6">
-            <h2 class="text-2xl font-bold text-slate-900 mb-4">4. 🔒 Keamanan Data</h2>
+            <h2 class="text-2xl font-bold text-slate-900 mb-4">4. [SECURITY] Keamanan Data</h2>
             
             <div class="space-y-4">
                 <div class="flex gap-4">
-                    <div class="text-3xl shrink-0">🔐</div>
+                    <div class="text-3xl shrink-0">[ENC]</div>
                     <div>
                         <h3 class="font-semibold text-slate-900">Enkripsi Transmisi</h3>
                         <p class="text-slate-700">Semua data dikirim menggunakan HTTPS/TLS 1.2+ encryption. 
@@ -167,7 +167,7 @@
                 </div>
 
                 <div class="flex gap-4">
-                    <div class="text-3xl shrink-0">💾</div>
+                    <div class="text-3xl shrink-0">[DB]</div>
                     <div>
                         <h3 class="font-semibold text-slate-900">Enkripsi Database</h3>
                         <p class="text-slate-700">Data medis dienkripsi di database menggunakan AES-256 encryption. 
@@ -176,7 +176,7 @@
                 </div>
 
                 <div class="flex gap-4">
-                    <div class="text-3xl shrink-0">🔑</div>
+                    <div class="text-3xl shrink-0">[KEY]</div>
                     <div>
                         <h3 class="font-semibold text-slate-900">Access Control</h3>
                         <p class="text-slate-700">Role-based access control (RBAC) memastikan hanya staff yang 
@@ -185,7 +185,7 @@
                 </div>
 
                 <div class="flex gap-4">
-                    <div class="text-3xl shrink-0">📋</div>
+                    <div class="text-3xl shrink-0">[LOG]</div>
                     <div>
                         <h3 class="font-semibold text-slate-900">Audit Logging</h3>
                         <p class="text-slate-700">Setiap akses ke data Anda dicatat (immutable logs). Anda dapat 
@@ -194,7 +194,7 @@
                 </div>
 
                 <div class="flex gap-4">
-                    <div class="text-3xl shrink-0">💼</div>
+                    <div class="text-3xl shrink-0">[BACKUP]</div>
                     <div>
                         <h3 class="font-semibold text-slate-900">Backup & Disaster Recovery</h3>
                         <p class="text-slate-700">Data di-backup secara regular dan disimpan aman di multiple locations. 
@@ -245,7 +245,7 @@
 
         <!-- 6. Penyimpanan Data -->
         <section id="penyimpanan-data" class="bg-white rounded-lg shadow p-8 mb-6">
-            <h2 class="text-2xl font-bold text-slate-900 mb-4">6. 📅 Penyimpanan Data</h2>
+            <h2 class="text-2xl font-bold text-slate-900 mb-4">6. [RETENTION] Penyimpanan Data</h2>
             
             <table class="w-full text-sm">
                 <thead>
@@ -286,7 +286,7 @@
 
             <div class="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
                 <p class="text-green-900 text-sm">
-                    <strong>✓ SOFT-DELETE POLICY:</strong> Ketika data dihapus, kami menggunakan "soft-delete" - 
+                    <strong>[SOFTDELETE] SOFT-DELETE POLICY:</strong> Ketika data dihapus, kami menggunakan "soft-delete" - 
                     data tetap ada di database (aman dari kehilangan) tapi tidak bisa diakses user normal. 
                     Ini adalah best practice telemedicine untuk compliance & disaster recovery.
                 </p>
@@ -295,7 +295,7 @@
 
         <!-- 7. Pihak Ketiga -->
         <section id="pihak-ketiga" class="bg-white rounded-lg shadow p-8 mb-6">
-            <h2 class="text-2xl font-bold text-slate-900 mb-4">7. 🤝 Pihak Ketiga</h2>
+            <h2 class="text-2xl font-bold text-slate-900 mb-4">7. [THIRD-PARTY] Pihak Ketiga</h2>
             
             <p class="text-slate-700 mb-4">
                 Data Anda mungkin dibagikan dengan pihak ketiga dalam situasi berikut:
@@ -303,31 +303,31 @@
 
             <div class="space-y-3">
                 <div class="p-4 border border-slate-200 rounded-lg">
-                    <h3 class="font-semibold text-slate-900">🏥 Penyedia Kesehatan</h3>
+                    <h3 class="font-semibold text-slate-900">[PROVIDER] Penyedia Kesehatan</h3>
                     <p class="text-slate-700 text-sm">Dokter, rumah sakit, atau klinik yang terlibat dalam perawatan Anda. 
                     Semua harus menandatangani Data Processing Agreement (DPA).</p>
                 </div>
 
                 <div class="p-4 border border-slate-200 rounded-lg">
-                    <h3 class="font-semibold text-slate-900">💊 Apotek & Lab</h3>
+                    <h3 class="font-semibold text-slate-900">[PHARMACY] Apotek & Lab</h3>
                     <p class="text-slate-700 text-sm">Untuk memproses resep atau hasil lab. Data dibatasi hanya apa yang 
                     relevan untuk transaksi tersebut.</p>
                 </div>
 
                 <div class="p-4 border border-slate-200 rounded-lg">
-                    <h3 class="font-semibold text-slate-900">🏢 Asuransi Kesehatan (BPJS/Private)</h3>
+                    <h3 class="font-semibold text-slate-900">[INSURANCE] Asuransi Kesehatan (BPJS/Private)</h3>
                     <p class="text-slate-700 text-sm">Untuk klaim dan billing. Hanya dengan izin eksplisit Anda dan 
                     sesuai dengan kontrak asuransi Anda.</p>
                 </div>
 
                 <div class="p-4 border border-slate-200 rounded-lg">
-                    <h3 class="font-semibold text-slate-900">🖥️ Service Providers</h3>
+                    <h3 class="font-semibold text-slate-900">[VENDOR] Service Providers</h3>
                     <p class="text-slate-700 text-sm">Cloud hosting, email service, payment gateway. Semua di-vet untuk 
                     keamanan dan compliance. Lihat "Data Handler Transparency" untuk daftar lengkap.</p>
                 </div>
 
                 <div class="p-4 border border-slate-200 rounded-lg">
-                    <h3 class="font-semibold text-slate-900">⚖️ Hukum & Regulasi</h3>
+                    <h3 class="font-semibold text-slate-900">[LEGAL] Hukum & Regulasi</h3>
                     <p class="text-slate-700 text-sm">Jika diminta oleh hukum, subpoena, atau otoritas kesehatan. 
                     Kami akan memberitahu Anda kecuali dilarang oleh hukum.</p>
                 </div>
@@ -335,7 +335,7 @@
 
             <div class="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
                 <p class="text-amber-900 text-sm">
-                    <strong>⚠️ PENTING:</strong> Semua pihak ketiga yang menerima data Anda harus mematuhi 
+                    <strong>[IMPORTANT]</strong> Semua pihak ketiga yang menerima data Anda harus mematuhi 
                     standar keamanan yang sama dan menandatangani Data Processing Agreement (DPA).
                 </p>
             </div>
@@ -343,7 +343,7 @@
 
         <!-- 8. Telemedicine -->
         <section id="telemedicine" class="bg-white rounded-lg shadow p-8 mb-6">
-            <h2 class="text-2xl font-bold text-slate-900 mb-4">8. 💻 Informasi Khusus Telemedicine</h2>
+            <h2 class="text-2xl font-bold text-slate-900 mb-4">8. [TELEMEDICINE-INFO] Informasi Khusus Telemedicine</h2>
             
             <div class="space-y-4">
                 <div class="p-4 bg-blue-50 border-l-4 border-blue-600">
@@ -410,25 +410,25 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                 <div class="p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
-                    <h3 class="font-semibold text-indigo-900 mb-2">📧 Email Support</h3>
+                    <h3 class="font-semibold text-indigo-900 mb-2">[EMAIL] Email Support</h3>
                     <p class="text-indigo-800">privacy@telemedicine.com</p>
                     <p class="text-indigo-700 text-sm mt-1">Response time: 24-48 jam</p>
                 </div>
 
                 <div class="p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
-                    <h3 class="font-semibold text-indigo-900 mb-2">📱 WhatsApp Support</h3>
+                    <h3 class="font-semibold text-indigo-900 mb-2">[WHATSAPP] WhatsApp Support</h3>
                     <p class="text-indigo-800">+62 812-3456-7890</p>
                     <p class="text-indigo-700 text-sm mt-1">Jam kerja: Senin-Jumat 08:00-17:00 WIB</p>
                 </div>
 
                 <div class="p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
-                    <h3 class="font-semibold text-indigo-900 mb-2">🏢 Alamat Kantor</h3>
+                    <h3 class="font-semibold text-indigo-900 mb-2">[OFFICE] Alamat Kantor</h3>
                     <p class="text-indigo-800">Telemedicine Indonesia</p>
                     <p class="text-indigo-700 text-sm">Jakarta, Indonesia</p>
                 </div>
 
                 <div class="p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
-                    <h3 class="font-semibold text-indigo-900 mb-2">⚖️ Data Protection Officer</h3>
+                    <h3 class="font-semibold text-indigo-900 mb-2">[DPO] Data Protection Officer</h3>
                     <p class="text-indigo-800">dpo@telemedicine.com</p>
                     <p class="text-indigo-700 text-sm">Untuk compliance & regulatory issues</p>
                 </div>
@@ -439,7 +439,7 @@
         <div class="text-center mt-8 p-4 bg-slate-100 rounded-lg text-slate-700">
             <p class="text-sm">
                 Kebijakan Privasi ini berlaku efektif sejak Desember 20, 2025.<br/>
-                Terima kasih telah mempercayai kami untuk kesehatan Anda. 🏥❤️
+                Terima kasih telah mempercayai kami untuk kesehatan Anda. [TRUST]
             </p>
         </div>
     </div>

@@ -43,6 +43,9 @@
         <RouterView />
       </div>
     </main>
+
+    <!-- Footer -->
+    <Footer v-if="authStore.initialized" />
   </div>
 </template>
 
@@ -57,6 +60,7 @@ import RealtimeNotifications from '@/components/RealtimeNotifications.vue'
 import ConsentDialog from '@/components/ConsentDialog.vue'
 import ProfileCompletionModal from '@/components/ProfileCompletionModal.vue'
 import LogoutModal from '@/components/LogoutModal.vue'
+import Footer from '@/components/Footer.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()

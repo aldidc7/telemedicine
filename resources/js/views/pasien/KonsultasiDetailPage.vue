@@ -1,4 +1,4 @@
-<!-- 📁 resources/js/views/pasien/KonsultasiDetailPage.vue -->
+<!-- [KONSULTASI-DETAIL] resources/js/views/pasien/KonsultasiDetailPage.vue -->
 <template>
   <div class="min-h-screen bg-linear-to-br from-slate-50 via-white to-slate-100">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -44,7 +44,7 @@
                     <span>{{ konsultasi.dokter?.is_available || konsultasi.dokter?.tersedia ? 'Online' : 'Offline' }}</span>
                   </div>
                   <div class="flex flex-wrap gap-2 mt-4">
-                    <span class="text-xs px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full font-semibold">⭐ Spesialis</span>
+                    <span class="text-xs px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full font-semibold">[SPECIALIST] Spesialis</span>
                     <span class="text-xs px-3 py-1 bg-green-100 text-green-700 rounded-full font-semibold">✓ Terverifikasi</span>
                   </div>
                 </div>
@@ -55,9 +55,9 @@
                 konsultasi.status === 'pending' ? 'bg-amber-100 text-amber-700' :
                 'bg-red-100 text-red-700'
               ]">
-                {{ konsultasi.status === 'closed' ? '✓ Selesai' : 
-                   konsultasi.status === 'active' ? '⚡ Aktif' :
-                   konsultasi.status === 'pending' ? '⏱ Menunggu' : '✕ Ditolak' }}
+                {{ konsultasi.status === 'closed' ? '[COMPLETE] Selesai' : 
+                   konsultasi.status === 'active' ? '[ACTIVE] Aktif' :
+                   konsultasi.status === 'pending' ? '[WAITING] Menunggu' : '[REJECTED] Ditolak' }}
               </span>
             </div>
 
@@ -66,8 +66,8 @@
               <div class="bg-white bg-opacity-70 backdrop-blur-sm rounded-2xl p-5 border border-indigo-100 hover:shadow-md transition">
                 <p class="text-gray-600 font-bold text-xs uppercase tracking-widest">Jenis Layanan</p>
                 <p class="text-gray-900 font-bold text-lg mt-3">
-                  {{ konsultasi.tipe_layanan === 'video' ? '📹 Video Call' : 
-                     konsultasi.tipe_layanan === 'chat' ? '💬 Chat Text' : '📞 Telepon' }}
+                  {{ konsultasi.tipe_layanan === 'video' ? '[VIDEO] Video Call' : 
+                     konsultasi.tipe_layanan === 'chat' ? '[CHAT] Chat Text' : '[PHONE] Telepon' }}
                 </p>
               </div>
               <div class="bg-white bg-opacity-70 backdrop-blur-sm rounded-2xl p-5 border border-indigo-100 hover:shadow-md transition">
@@ -113,7 +113,7 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
             </svg>
-            <span>💬 Buka Chat Konsultasi</span>
+            <span>[CHAT] Buka Chat Konsultasi</span>
           </router-link>
           <router-link
             to="/konsultasi"

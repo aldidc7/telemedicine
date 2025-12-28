@@ -47,17 +47,19 @@
             <button
               @click="refreshAnalytics"
               :disabled="updateStatus === 'updating'"
-              class="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-bold py-2 px-4 rounded-xl transition"
+              class="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-bold py-2 px-4 rounded-xl transition flex items-center gap-2"
             >
-              {{ updateStatus === 'updating' ? '⏳' : '🔄' }} Perbarui
+              <i :class="['fas', updateStatus === 'updating' ? 'fa-spinner animate-spin' : 'fa-arrow-rotate-right']"></i>
+              Perbarui
             </button>
           </div>
         </div>
         <div class="flex items-center justify-between">
           <p class="text-gray-600">Wawasan real-time dan metrik kinerja</p>
           <!-- Status Indicator -->
-          <div v-if="updateStatus === 'error'" class="text-sm text-red-600 font-medium">
-            ⚠️ Pembaruan terakhir gagal - mencoba ulang...
+          <div v-if="updateStatus === 'error'" class="text-sm text-red-600 font-medium flex items-center gap-2">
+            <i class="fas fa-triangle-exclamation"></i>
+            Pembaruan terakhir gagal - mencoba ulang...
           </div>
           <div v-else-if="autoRefreshEnabled" class="flex items-center gap-2 text-sm text-gray-500">
             <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
@@ -91,25 +93,25 @@
             <KpiCard
               label="Total Konsultasi"
               :value="consultationMetrics.total"
-              icon="🔵"
+              icon="fa-circle-dot"
               color="blue"
             />
             <KpiCard
               label="Sesi Aktif"
               :value="consultationMetrics.active"
-              icon="🟢"
+              icon="fa-circle-check"
               color="green"
             />
             <KpiCard
               label="Selesai"
               :value="consultationMetrics.completed"
-              icon="✓"
+              icon="fa-check"
               color="emerald"
             />
             <KpiCard
               label="Tingkat Penyelesaian"
               :value="`${(consultationMetrics.completion_rate || 0).toFixed(1)}%`"
-              icon="📈"
+              icon="fa-chart-line"
               color="purple"
             />
           </div>
@@ -178,20 +180,20 @@
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             <KpiCard
               label="Total Pendapatan"
-              :value="`$${((revenueData.total_revenue || 0) / 1000).toFixed(1)}k`"
-              icon="💵"
+              :value="`Rp${((revenueData.total_revenue || 0) / 1000).toFixed(1)}k`"
+              icon="fa-money-bill"
               color="green"
             />
             <KpiCard
               label="Pendapatan Dibayar"
-              :value="`$${((revenueData.paid_revenue || 0) / 1000).toFixed(1)}k`"
-              icon="✓"
+              :value="`Rp${((revenueData.paid_revenue || 0) / 1000).toFixed(1)}k`"
+              icon="fa-check"
               color="emerald"
             />
             <KpiCard
               label="Tingkat Pembayaran"
               :value="`${(revenueData.payment_completion_rate || 0).toFixed(1)}%`"
-              icon="📊"
+              icon="fa-chart-pie"
               color="blue"
             />
           </div>
@@ -213,8 +215,8 @@
                   <tr v-for="doctor in revenueByDoctor" :key="doctor.doctor_id" class="hover:bg-gray-50 transition">
                     <td class="px-6 py-4 font-medium text-gray-900">{{ doctor.doctor_name }}</td>
                     <td class="px-6 py-4 text-gray-600">{{ doctor.consultations }}</td>
-                    <td class="px-6 py-4 font-bold text-green-600">${{ (doctor.total_revenue || 0).toFixed(2) }}</td>
-                    <td class="px-6 py-4 text-gray-600">${{ (doctor.avg_per_consultation || 0).toFixed(2) }}</td>
+                    <td class="px-6 py-4 font-bold text-green-600">Rp{{ (doctor.total_revenue || 0).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.') }}</td>
+                    <td class="px-6 py-4 text-gray-600">Rp{{ (doctor.avg_per_consultation || 0).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.') }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -271,7 +273,7 @@
                   <h4 class="font-bold text-green-900 mb-3">Pendapatan</h4>
                   <div class="space-y-2 text-sm text-green-800">
                     <p v-for="day in dateRangeData.revenue" :key="day.date">
-                      <span class="font-semibold">{{ day.date }}:</span> ${{ (day.total || 0).toFixed(2) }} ({{ day.count }} konsultasi)
+                      <span class="font-semibold">{{ day.date }}:</span> Rp{{ (day.total || 0).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.') }} ({{ day.count }} konsultasi)
                     </p>
                   </div>
                 </div>

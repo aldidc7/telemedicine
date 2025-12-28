@@ -17,11 +17,11 @@ class CleanupExpiredFiles extends Command
 
     public function handle(): int
     {
-        $this->info('🧹 Memulai cleanup file yang sudah expired...');
+        $this->info('[CLEANUP] Starting cleanup of expired files...');
 
         $dryRun = $this->option('dry-run');
         if ($dryRun) {
-            $this->warn('⚠️  MODE DRY-RUN: File tidak akan dihapus, hanya ditampilkan');
+            $this->warn('[WARNING] DRY-RUN MODE: Files will not be deleted, only displayed');
         }
 
         try {

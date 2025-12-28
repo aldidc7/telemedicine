@@ -1,4 +1,4 @@
-<!-- 📁 resources/js/views/pasien/DashboardPage.vue -->
+<!-- [DASHBOARD] resources/js/views/pasien/DashboardPage.vue -->
 <template>
   <div class="min-h-screen bg-linear-to-br from-slate-50 via-white to-slate-100 pb-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

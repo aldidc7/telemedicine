@@ -1,10 +1,10 @@
-<!-- 📁 resources/js/views/pasien/RatingReviewPage.vue -->
+<!-- [RATING-REVIEW] resources/js/views/pasien/RatingReviewPage.vue -->
 <template>
   <div class="min-h-screen bg-linear-to-br from-slate-50 to-white py-8 px-4 sm:px-6 lg:px-8">
     <div class="max-w-4xl mx-auto">
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-3xl font-bold text-slate-900 mb-2">⭐ Rating & Review</h1>
+        <h1 class="text-3xl font-bold text-slate-900 mb-2">[RATING] Rating & Review</h1>
         <p class="text-slate-600">Lihat dan berikan penilaian untuk dokter yang telah Anda konsultasi</p>
       </div>
 
@@ -60,7 +60,7 @@
                   Spesialisasi: {{ rating.dokter?.spesialisasi || '-' }}
                 </p>
                 <p class="text-xs text-slate-500 mt-1">
-                  📅 {{ formatDate(rating.created_at) }}
+                  [DATE] {{ formatDate(rating.created_at) }}
                 </p>
               </div>
 
@@ -68,7 +68,7 @@
               <div class="flex items-center gap-2">
                 <div class="flex gap-1">
                   <span v-for="star in 5" :key="star" class="text-xl">
-                    {{ star <= rating.nilai ? '⭐' : '☆' }}
+                    {{ star <= rating.nilai ? '[STAR]' : '[ ]' }}
                   </span>
                 </div>
                 <span class="font-bold text-lg text-amber-500">{{ rating.nilai }}/5</span>
@@ -177,7 +177,7 @@
             <div class="flex items-center gap-2 mb-4">
               <div class="flex gap-0.5">
                 <span v-for="star in 5" :key="star" class="text-lg">
-                  {{ star <= Math.round(doctor.average_rating || 0) ? '⭐' : '☆' }}
+                  {{ star <= Math.round(doctor.average_rating || 0) ? '[STAR]' : '[ ]' }}
                 </span>
               </div>
               <span class="text-xs text-slate-600">({{ doctor.rating_count || 0 }} reviews)</span>
@@ -188,7 +188,7 @@
               @click="chatDoctor(doctor)"
               class="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-medium"
             >
-              💬 Mulai Konsultasi
+              [CHAT] Mulai Konsultasi
             </button>
           </div>
         </div>
@@ -218,7 +218,7 @@
               star <= editForm.nilai ? 'text-amber-400' : 'text-slate-300'
             ]"
           >
-            ⭐
+            [STAR]
           </button>
         </div>
 

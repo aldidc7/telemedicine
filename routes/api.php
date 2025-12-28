@@ -229,23 +229,37 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
             Route::delete('/doctors/availability/{id}', [AvailabilityController::class, 'deleteAvailability']);
         });
 
-        // ========== TWO-STAGE DOCTOR REGISTRATION ENDPOINTS (PHASE 7) ==========
+        // ========== DOCTOR REGISTRATION - ADMIN VERIFIED (SECURE) ==========
         /**
-         * Two-Stage Doctor Registration
-         * POST /api/v1/dokter/register - Stage 1: Basic registration
-         * POST /api/v1/dokter/verification/documents - Stage 2: Upload documents
-         * POST /api/v1/dokter/profile/complete - Stage 3: Complete profile
-         * POST /api/v1/dokter/compliance/accept - Stage 4: Accept compliance
-         * GET /api/v1/dokter/registration/status - Get registration status
+         * Simple Doctor Registration (Doctor self-service)
+         * POST /api/v1/dokter/register - Register with basic info only (email+password)
+         * GET /api/v1/dokter/registration/status - Check registration status
+         * 
+         * Admin-Controlled Verification (Prevents dokter palsu)
+         * GET /api/v1/admin/dokter/pending-verification - List pending doctors
+         * GET /api/v1/admin/dokter/{id}/verification-detail - Get verification detail
+         * POST /api/v1/admin/dokter/{id}/upload-documents - Admin uploads docs
+         * POST /api/v1/admin/dokter/{id}/set-profile - Admin sets profile data
+         * POST /api/v1/admin/dokter/{id}/approve - Admin approves doctor
+         * POST /api/v1/admin/dokter/{id}/reject - Admin rejects doctor
          */
         Route::post('/dokter/register', [DoctorRegistrationController::class, 'register']);
 
         Route::middleware('auth:sanctum')->group(function () {
-            Route::post('/dokter/verification/documents', [DoctorRegistrationController::class, 'uploadDocuments']);
-            Route::post('/dokter/profile/complete', [DoctorRegistrationController::class, 'completeProfile']);
-            Route::post('/dokter/compliance/accept', [DoctorRegistrationController::class, 'acceptCompliance']);
             Route::get('/dokter/registration/status', [DoctorRegistrationController::class, 'getStatus']);
         });
+
+        // Admin verification routes
+        Route::middleware(['auth:sanctum', \App\Http\Middleware\EnsureAdminRole::class])
+            ->prefix('admin')
+            ->group(function () {
+                Route::get('/dokter/pending-verification', [DoctorRegistrationController::class, 'getPendingForVerification']);
+                Route::get('/dokter/{id}/verification-detail', [DoctorRegistrationController::class, 'getVerificationDetail']);
+                Route::post('/dokter/{id}/upload-documents', [DoctorRegistrationController::class, 'uploadDocumentsForDoctor']);
+                Route::post('/dokter/{id}/set-profile', [DoctorRegistrationController::class, 'setDoctorProfileData']);
+                Route::post('/dokter/{id}/approve', [DoctorRegistrationController::class, 'approveDoctorRegistration']);
+                Route::post('/dokter/{id}/reject', [DoctorRegistrationController::class, 'rejectDoctorRegistration']);
+            });
 
         // ========== KKI CREDENTIAL VERIFICATION ENDPOINTS ==========
         /**
