@@ -36,6 +36,139 @@ use Illuminate\Support\Str;
  * @author Aplikasi Telemedicine RSUD dr. R. Soedarsono
  * @version 2.0
  */
+/**
+ * @OA\Tag(
+ *     name="Authentication",
+ *     description="User authentication endpoints - Register, Login, Logout, Token Refresh"
+ * )
+ * 
+ * @OA\Post(
+ *     path="/auth/register",
+ *     operationId="registerUser",
+ *     tags={"Authentication"},
+ *     summary="Register user baru",
+ *     description="Registrasi user baru sebagai pasien atau dokter dengan validasi lengkap",
+ *     @OA\RequestBody(
+ *         required=true,
+ *         description="User registration data",
+ *         @OA\JsonContent(
+ *             required={"email","password","password_confirmation","name","role"},
+ *             @OA\Property(property="email", type="string", format="email", example="user@example.com"),
+ *             @OA\Property(property="password", type="string", format="password", minLength=8, example="SecurePass123!"),
+ *             @OA\Property(property="password_confirmation", type="string", format="password", example="SecurePass123!"),
+ *             @OA\Property(property="name", type="string", example="John Doe"),
+ *             @OA\Property(property="role", type="string", enum={"pasien","dokter"}, example="pasien"),
+ *             @OA\Property(property="phone", type="string", example="08123456789")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=201,
+ *         description="User berhasil didaftarkan",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="success", type="boolean", example=true),
+ *             @OA\Property(property="message", type="string", example="User berhasil terdaftar"),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="object",
+ *                 @OA\Property(property="id", type="integer", example=1),
+ *                 @OA\Property(property="email", type="string", format="email", example="user@example.com"),
+ *                 @OA\Property(property="name", type="string", example="John Doe"),
+ *                 @OA\Property(property="role", type="string", example="pasien"),
+ *                 @OA\Property(property="phone", type="string", example="08123456789"),
+ *                 @OA\Property(property="token", type="string", example="eyJ0eXAiOiJKV1QiLCJhbGc..."),
+ *                 @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-15T10:30:00Z")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Bad Request - Request format tidak valid",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="success", type="boolean", example=false),
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="object",
+ *                 @OA\Property(property="code", type="string", example="BAD_REQUEST"),
+ *                 @OA\Property(property="message", type="string", example="Request format tidak valid"),
+ *                 @OA\Property(
+ *                     property="details",
+ *                     type="object",
+ *                     @OA\Property(property="info", type="string", example="Invalid JSON format atau missing required fields")
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=422,
+ *         description="Validation Error - Data tidak valid",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="success", type="boolean", example=false),
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="object",
+ *                 @OA\Property(property="code", type="string", example="VALIDATION_ERROR"),
+ *                 @OA\Property(property="message", type="string", example="Validation failed"),
+ *                 @OA\Property(
+ *                     property="details",
+ *                     type="object",
+ *                     @OA\Property(
+ *                         property="validation_errors",
+ *                         type="object",
+ *                         @OA\Property(property="email", type="array", @OA\Items(type="string", example="Email sudah terdaftar")),
+ *                         @OA\Property(property="password", type="array", @OA\Items(type="string", example="Password minimal 8 karakter")),
+ *                         @OA\Property(property="password_confirmation", type="array", @OA\Items(type="string", example="Password tidak sesuai")),
+ *                         @OA\Property(property="name", type="array", @OA\Items(type="string", example="Nama wajib diisi")),
+ *                         @OA\Property(property="role", type="array", @OA\Items(type="string", example="Role hanya boleh pasien atau dokter"))
+ *                     )
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=429,
+ *         description="Too Many Requests - Rate limit exceeded",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="success", type="boolean", example=false),
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="object",
+ *                 @OA\Property(property="code", type="string", example="TOO_MANY_REQUESTS"),
+ *                 @OA\Property(property="message", type="string", example="Terlalu banyak upaya registrasi. Silakan coba lagi nanti."),
+ *                 @OA\Property(
+ *                     property="details",
+ *                     type="object",
+ *                     @OA\Property(property="retry_after", type="integer", example=900),
+ *                     @OA\Property(property="info", type="string", example="Rate limit 3 registrasi per email per 15 menit")
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Internal Server Error",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="success", type="boolean", example=false),
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="object",
+ *                 @OA\Property(property="code", type="string", example="INTERNAL_SERVER_ERROR"),
+ *                 @OA\Property(property="message", type="string", example="Terjadi kesalahan pada server"),
+ *                 @OA\Property(
+ *                     property="details",
+ *                     type="object",
+ *                     @OA\Property(property="request_id", type="string", example="req_12345678"),
+ *                     @OA\Property(property="info", type="string", example="Silakan hubungi support dengan request_id")
+ *                 )
+ *             )
+ *         )
+ *     )
+ * )
+ */
 class AuthController extends Controller
 {
     use ApiResponse;
@@ -46,6 +179,9 @@ class AuthController extends Controller
 
     /**
      * Register user baru (Pasien atau Dokter)
+     * 
+     * @param RegisterRequest $request
+     * @return \Illuminate\Http\JsonResponse
      */
     public function register(RegisterRequest $request)
     {
@@ -72,7 +208,167 @@ class AuthController extends Controller
     }
 
     /**
-     * Login user dengan email dan password
+     * @OA\Post(
+     *     path="/auth/login",
+     *     operationId="loginUser",
+     *     tags={"Authentication"},
+     *     summary="Login user",
+     *     description="Authenticate user dengan email dan password, return JWT token",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="User login credentials",
+     *         @OA\JsonContent(
+     *             required={"email","password"},
+     *             @OA\Property(property="email", type="string", format="email", example="user@example.com"),
+     *             @OA\Property(property="password", type="string", format="password", example="SecurePass123!")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Login successful",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Login berhasil"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="token", type="string", example="eyJ0eXAiOiJKV1QiLCJhbGc..."),
+     *                 @OA\Property(property="token_type", type="string", example="Bearer"),
+     *                 @OA\Property(property="expires_in", type="integer", example=86400),
+     *                 @OA\Property(
+     *                     property="user",
+     *                     type="object",
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="email", type="string", format="email", example="user@example.com"),
+     *                     @OA\Property(property="name", type="string", example="John Doe"),
+     *                     @OA\Property(property="role", type="string", example="pasien"),
+     *                     @OA\Property(property="phone", type="string", example="08123456789"),
+     *                     @OA\Property(property="avatar_url", type="string", format="uri", example="https://...")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad Request",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(
+     *                 property="error",
+     *                 type="object",
+     *                 @OA\Property(property="code", type="string", example="BAD_REQUEST"),
+     *                 @OA\Property(property="message", type="string", example="Email dan password harus diisi"),
+     *                 @OA\Property(property="details", type="object", example={})
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized - Invalid credentials",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(
+     *                 property="error",
+     *                 type="object",
+     *                 @OA\Property(property="code", type="string", example="UNAUTHORIZED"),
+     *                 @OA\Property(property="message", type="string", example="Email atau password salah"),
+     *                 @OA\Property(
+     *                     property="details",
+     *                     type="object",
+     *                     @OA\Property(property="info", type="string", example="Pastikan email dan password benar"),
+     *                     @OA\Property(property="remaining_attempts", type="integer", example=2)
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden - Email not verified",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(
+     *                 property="error",
+     *                 type="object",
+     *                 @OA\Property(property="code", type="string", example="EMAIL_NOT_VERIFIED"),
+     *                 @OA\Property(property="message", type="string", example="Email belum diverifikasi. Silakan cek email Anda untuk link verifikasi."),
+     *                 @OA\Property(
+     *                     property="details",
+     *                     type="object",
+     *                     @OA\Property(property="error_code", type="string", example="EMAIL_NOT_VERIFIED")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation Error",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(
+     *                 property="error",
+     *                 type="object",
+     *                 @OA\Property(property="code", type="string", example="VALIDATION_ERROR"),
+     *                 @OA\Property(property="message", type="string", example="Validation failed"),
+     *                 @OA\Property(
+     *                     property="details",
+     *                     type="object",
+     *                     @OA\Property(
+     *                         property="validation_errors",
+     *                         type="object",
+     *                         @OA\Property(property="email", type="array", @OA\Items(type="string", example="Format email tidak valid")),
+     *                         @OA\Property(property="password", type="array", @OA\Items(type="string", example="Password harus diisi"))
+     *                     )
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=429,
+     *         description="Too Many Requests - Rate limit exceeded",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(
+     *                 property="error",
+     *                 type="object",
+     *                 @OA\Property(property="code", type="string", example="TOO_MANY_REQUESTS"),
+     *                 @OA\Property(property="message", type="string", example="Terlalu banyak upaya login. Silakan coba lagi dalam 15 menit."),
+     *                 @OA\Property(
+     *                     property="details",
+     *                     type="object",
+     *                     @OA\Property(property="retry_after", type="integer", example=900),
+     *                     @OA\Property(property="remaining", type="integer", example=0),
+     *                     @OA\Property(property="info", type="string", example="Rate limit 5 percobaan per IP per 15 menit")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(
+     *                 property="error",
+     *                 type="object",
+     *                 @OA\Property(property="code", type="string", example="INTERNAL_SERVER_ERROR"),
+     *                 @OA\Property(property="message", type="string", example="Terjadi kesalahan pada server"),
+     *                 @OA\Property(
+     *                     property="details",
+     *                     type="object",
+     *                     @OA\Property(property="request_id", type="string", example="req_87654321"),
+     *                     @OA\Property(property="timestamp", type="string", format="date-time", example="2024-01-15T10:30:00Z")
+     *                 )
+     *             )
+     *         )
+     *     )
+     * )
      */
     public function login(LoginRequest $request)
     {
@@ -128,22 +424,93 @@ class AuthController extends Controller
     }
 
     /**
-     * Ambil data profil user yang sedang login
-     * 
-     * Fungsi ini mengembalikan detail user termasuk role-specific data.
-     * Untuk pasien: Include data pasien (NIK, TTL, alamat, dll)
-     * Untuk dokter: Include data dokter (spesialisasi, lisensi, status)
-     * 
-     * GET /api/v1/auth/me
-     * 
-     * Header Required:
-     * - Authorization: Bearer {token}
-     * 
-     * @param Request $request - HTTP request (authenticated)
-     * @return \Illuminate\Http\JsonResponse
-     */
-    /**
-     * Get current user profile
+     * @OA\Get(
+     *     path="/auth/me",
+     *     operationId="getCurrentUser",
+     *     tags={"Authentication"},
+     *     summary="Get current authenticated user",
+     *     description="Get profil user yang sedang login menggunakan JWT token",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successfully retrieved current user",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="User profile retrieved"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="email", type="string", format="email", example="user@example.com"),
+     *                 @OA\Property(property="name", type="string", example="John Doe"),
+     *                 @OA\Property(property="role", type="string", example="pasien"),
+     *                 @OA\Property(property="phone", type="string", example="08123456789"),
+     *                 @OA\Property(property="avatar_url", type="string", format="uri", example="https://example.com/avatar.jpg"),
+     *                 @OA\Property(property="email_verified_at", type="string", format="date-time", example="2024-01-10T15:30:00Z"),
+     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-10T10:00:00Z")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized - Invalid or missing token",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(
+     *                 property="error",
+     *                 type="object",
+     *                 @OA\Property(property="code", type="string", example="UNAUTHORIZED"),
+     *                 @OA\Property(property="message", type="string", example="Token tidak valid atau expired"),
+     *                 @OA\Property(
+     *                     property="details",
+     *                     type="object",
+     *                     @OA\Property(property="info", type="string", example="Silakan login kembali untuk mendapatkan token baru")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden - Insufficient permissions",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(
+     *                 property="error",
+     *                 type="object",
+     *                 @OA\Property(property="code", type="string", example="FORBIDDEN"),
+     *                 @OA\Property(property="message", type="string", example="Anda tidak memiliki akses ke resource ini"),
+     *                 @OA\Property(
+     *                     property="details",
+     *                     type="object",
+     *                     @OA\Property(property="error_code", type="string", example="INSUFFICIENT_PERMISSIONS")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(
+     *                 property="error",
+     *                 type="object",
+     *                 @OA\Property(property="code", type="string", example="INTERNAL_SERVER_ERROR"),
+     *                 @OA\Property(property="message", type="string", example="Terjadi kesalahan pada server"),
+     *                 @OA\Property(
+     *                     property="details",
+     *                     type="object",
+     *                     @OA\Property(property="request_id", type="string", example="req_87654321"),
+     *                     @OA\Property(property="timestamp", type="string", format="date-time", example="2024-01-15T10:30:00Z")
+     *                 )
+     *             )
+     *         )
+     *     )
+     * )
      */
     public function me(Request $request)
     {
@@ -191,9 +558,69 @@ class AuthController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     /**
-     * Refresh JWT token
-     * 
-     * POST /api/v1/auth/refresh
+     * @OA\Post(
+     *     path="/auth/refresh",
+     *     operationId="refreshToken",
+     *     tags={"Authentication"},
+     *     summary="Refresh JWT token",
+     *     description="Dapatkan token JWT baru sebelum token lama expire",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Token successfully refreshed",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Token berhasil diperbarui"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="token", type="string", example="eyJ0eXAiOiJKV1QiLCJhbGc..."),
+     *                 @OA\Property(property="token_type", type="string", example="Bearer"),
+     *                 @OA\Property(property="expires_in", type="integer", example=86400)
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized - Invalid or missing token",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(
+     *                 property="error",
+     *                 type="object",
+     *                 @OA\Property(property="code", type="string", example="UNAUTHORIZED"),
+     *                 @OA\Property(property="message", type="string", example="Token tidak valid atau expired"),
+     *                 @OA\Property(
+     *                     property="details",
+     *                     type="object",
+     *                     @OA\Property(property="info", type="string", example="Silakan login kembali untuk mendapatkan token baru")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(
+     *                 property="error",
+     *                 type="object",
+     *                 @OA\Property(property="code", type="string", example="INTERNAL_SERVER_ERROR"),
+     *                 @OA\Property(property="message", type="string", example="Terjadi kesalahan pada server"),
+     *                 @OA\Property(
+     *                     property="details",
+     *                     type="object",
+     *                     @OA\Property(property="request_id", type="string", example="req_87654321"),
+     *                     @OA\Property(property="timestamp", type="string", format="date-time", example="2024-01-15T10:30:00Z")
+     *                 )
+     *             )
+     *         )
+     *     )
+     * )
      */
     public function refreshToken(Request $request)
     {
@@ -212,9 +639,63 @@ class AuthController extends Controller
     }
 
     /**
-     * Logout user dan invalidate token
-     * 
-     * POST /api/v1/auth/logout
+     * @OA\Post(
+     *     path="/auth/logout",
+     *     operationId="logoutUser",
+     *     tags={"Authentication"},
+     *     summary="Logout user",
+     *     description="Logout user dan invalidate JWT token yang sedang digunakan",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successfully logged out",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Logout berhasil"),
+     *             @OA\Property(property="data", type="object", example={})
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized - Invalid or missing token",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(
+     *                 property="error",
+     *                 type="object",
+     *                 @OA\Property(property="code", type="string", example="UNAUTHORIZED"),
+     *                 @OA\Property(property="message", type="string", example="Token tidak valid atau expired"),
+     *                 @OA\Property(
+     *                     property="details",
+     *                     type="object",
+     *                     @OA\Property(property="info", type="string", example="Silakan login kembali")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal Server Error",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(
+     *                 property="error",
+     *                 type="object",
+     *                 @OA\Property(property="code", type="string", example="INTERNAL_SERVER_ERROR"),
+     *                 @OA\Property(property="message", type="string", example="Terjadi kesalahan pada server"),
+     *                 @OA\Property(
+     *                     property="details",
+     *                     type="object",
+     *                     @OA\Property(property="request_id", type="string", example="req_87654321"),
+     *                     @OA\Property(property="timestamp", type="string", format="date-time", example="2024-01-15T10:30:00Z")
+     *                 )
+     *             )
+     *         )
+     *     )
+     * )
      */
     public function logout(Request $request)
     {
