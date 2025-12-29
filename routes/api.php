@@ -901,7 +901,7 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
          * POST /api/v1/compliance/export - Export compliance report for auditors
          * POST /api/v1/compliance/clear-cache - Clear compliance cache
          */
-        Route::prefix('compliance')->group(function () {
+        Route::prefix('compliance')->middleware('can:view-analytics')->group(function () {
             Route::get('/dashboard', [\App\Http\Controllers\Api\Analytics\ComplianceController::class, 'dashboard']);
             Route::get('/audit-logs', [\App\Http\Controllers\Api\Analytics\ComplianceController::class, 'auditLogs']);
             Route::get('/credentials', [\App\Http\Controllers\Api\Analytics\ComplianceController::class, 'credentials']);
