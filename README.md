@@ -55,6 +55,17 @@ Pasien dapat dengan mudah mencari dokter, membuat janji, dan berkonsultasi secar
 - [Rekam Medis] Upload & kelola dokumen medis, resep, hasil lab
 - [Rating & Review] Berikan rating dokter setelah konsultasi
 - [Mobile-Friendly] Akses dari smartphone, tablet, atau desktop
+- [Password Reset] Reset password via Email atau WhatsApp OTP (kode 6-digit)
+
+### Keamanan & Authentication
+Sistem autentikasi modern dengan multiple recovery methods:
+
+- [Email & Password] Registration & login dengan email verification
+- [WhatsApp OTP] Password reset via WhatsApp OTP dengan Twilio integration
+- [Token-based Auth] Secure JWT tokens dengan Sanctum, auto-refresh capability
+- [Rate Limiting] Anti-brute force, limit login/forgot password attempts
+- [Session Management] Multi-session tracking, logout semua devices
+- [2FA Ready] Architecture mendukung future 2FA implementation
 
 ### Portal Dokter
 Dokter dapat mengelola jadwal, pasien, dan melacak performa mereka:
@@ -317,7 +328,9 @@ API Docs:     http://localhost:8000/api/docs (Swagger/OpenAPI)
 | POST | `/auth/login` | Login & dapatkan token |
 | POST | `/auth/logout` | Logout & invalidate token |
 | POST | `/auth/refresh` | Refresh token yang expired |
-| POST | `/auth/forgot-password` | Request password reset |
+| POST | `/auth/forgot-password` | Request password reset (Email/WhatsApp) |
+| POST | `/auth/verify-otp` | Verify OTP code untuk WhatsApp reset |
+| POST | `/auth/resend-otp` | Resend OTP code (dengan rate limiting) |
 | POST | `/auth/reset-password` | Reset password dengan token |
 | GET | `/auth/verify-email/{token}` | Verifikasi email address |
 | POST | `/auth/resend-verification` | Kirim ulang verification email |
@@ -844,7 +857,10 @@ Production Ready:        Yes
 - [COMPLETE] Enkripsi data sensitif (PHI)
 - [COMPLETE] HTTPS/TLS 1.2+ untuk semua komunikasi
 - [COMPLETE] Session timeout (30 minutes)
-- [COMPLETE] Password reset email dengan secure token
+- [COMPLETE] Password reset via Email dengan secure token
+- [COMPLETE] Password reset via WhatsApp OTP (Twilio integrated)
+- [COMPLETE] OTP verification dengan rate limiting & expiry
+- [COMPLETE] Phone number privacy masking untuk UX dan security
 
 ### Compliance & Audit Features
 - Activity Logging - Semua user actions dicatat

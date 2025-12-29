@@ -46,6 +46,12 @@ const routes = [
     meta: { requiresGuest: true }
   },
   {
+    path: '/verify-otp',
+    name: 'verify-otp',
+    component: () => import('@/views/auth/VerifyOtpPage.vue'),
+    meta: { requiresGuest: true }
+  },
+  {
     path: '/reset-password',
     name: 'reset-password',
     component: () => import('@/views/auth/ResetPasswordPage.vue'),
@@ -60,6 +66,16 @@ const routes = [
     path: '/privacy',
     name: 'privacy',
     component: () => import('@/views/pages/PrivacyPage.vue')
+  },
+  {
+    path: '/cookie-policy',
+    name: 'cookie-policy',
+    component: () => import('@/views/pages/CookiePolicyPage.vue')
+  },
+  {
+    path: '/compliance',
+    name: 'compliance',
+    component: () => import('@/views/pages/CompliancePage.vue')
   },
   {
     path: '/about',

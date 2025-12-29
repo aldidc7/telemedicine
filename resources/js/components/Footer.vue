@@ -5,14 +5,10 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
         <!-- Company Info -->
         <div class="space-y-4">
-          <h3 class="text-white font-bold text-lg mb-4">🏥 Telemedicine</h3>
+          <h3 class="text-white font-bold text-lg mb-4">[HOSPITAL] Telemedicine</h3>
           <p class="text-sm text-gray-400">
             Platform kesehatan digital yang menghubungkan pasien dengan dokter berpengalaman untuk konsultasi online kapan saja, di mana saja.
           </p>
-          <div class="flex gap-4 pt-4">
-            <span class="text-xs text-indigo-400">✓ Konsultasi 24/7</span>
-            <span class="text-xs text-indigo-400">✓ Dokter Terverifikasi</span>
-          </div>
         </div>
 
         <!-- Untuk Pasien -->
@@ -62,26 +58,26 @@
         <!-- Legal & Dukungan -->
         <div class="space-y-4">
           <h3 class="text-white font-bold text-lg">Legal</h3>
-          <ul class="space-y-2 text-sm">
+          <ul class="space-y-3 text-sm">
             <li>
-              <router-link to="/terms" class="text-gray-400 hover:text-white transition">
+              <router-link to="/terms" class="inline-flex items-center text-gray-400 hover:text-white hover:underline transition">
                 Syarat & Ketentuan
               </router-link>
             </li>
             <li>
-              <router-link to="/privacy" class="text-gray-400 hover:text-white transition">
+              <router-link to="/privacy" class="inline-flex items-center text-gray-400 hover:text-white hover:underline transition">
                 Kebijakan Privasi
               </router-link>
             </li>
             <li>
-              <a href="#" class="text-gray-400 hover:text-white transition">
+              <router-link to="/cookie-policy" class="inline-flex items-center text-gray-400 hover:text-white hover:underline transition">
                 Kebijakan Cookie
-              </a>
+              </router-link>
             </li>
             <li>
-              <a href="#" class="text-gray-400 hover:text-white transition">
+              <router-link to="/compliance" class="inline-flex items-center text-gray-400 hover:text-white hover:underline transition">
                 Compliance
-              </a>
+              </router-link>
             </li>
           </ul>
         </div>
@@ -130,10 +126,10 @@
       <div class="border-t border-gray-700 mt-12 pt-8">
         <!-- Bottom Footer -->
         <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
-          <p>&copy; {{ currentYear }} Platform Telemedicine. Kesehatan Anda adalah prioritas kami ❤️</p>
+          <p>&copy; {{ currentYear }} Platform Telemedicine. Kesehatan Anda adalah prioritas kami</p>
           <div class="flex gap-6 mt-4 md:mt-0">
-            <span class="text-xs text-indigo-400">✓ Data Terenkripsi</span>
-            <span class="text-xs text-indigo-400">✓ Keamanan HIPAA</span>
+            <span class="text-xs text-indigo-400">[CHECK] Data Terenkripsi</span>
+            <span class="text-xs text-indigo-400">[CHECK] Keamanan HIPAA</span>
           </div>
         </div>
       </div>

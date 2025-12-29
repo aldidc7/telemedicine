@@ -1,10 +1,10 @@
-<!-- [RATING-REVIEW] resources/js/views/pasien/RatingReviewPage.vue -->
+<!-- resources/js/views/pasien/RatingReviewPage.vue -->
 <template>
   <div class="min-h-screen bg-linear-to-br from-slate-50 to-white py-8 px-4 sm:px-6 lg:px-8">
     <div class="max-w-4xl mx-auto">
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-3xl font-bold text-slate-900 mb-2">[RATING] Rating & Review</h1>
+        <h1 class="text-3xl font-bold text-slate-900 mb-2">Rating & Review</h1>
         <p class="text-slate-600">Lihat dan berikan penilaian untuk dokter yang telah Anda konsultasi</p>
       </div>
 
@@ -19,7 +19,7 @@
               : 'border-transparent text-slate-600 hover:text-slate-900'
           ]"
         >
-          👁️ Rating Saya ({{ ratingList.length }})
+          Rating Saya ({{ ratingList.length }})
         </button>
         <button
           @click="activeTab = 'dokter'"
@@ -30,7 +30,7 @@
               : 'border-transparent text-slate-600 hover:text-slate-900'
           ]"
         >
-          👨‍⚕️ Rating Dokter
+          Rating Dokter
         </button>
       </div>
 
@@ -60,7 +60,7 @@
                   Spesialisasi: {{ rating.dokter?.spesialisasi || '-' }}
                 </p>
                 <p class="text-xs text-slate-500 mt-1">
-                  [DATE] {{ formatDate(rating.created_at) }}
+                  {{ formatDate(rating.created_at) }}
                 </p>
               </div>
 
@@ -68,7 +68,7 @@
               <div class="flex items-center gap-2">
                 <div class="flex gap-1">
                   <span v-for="star in 5" :key="star" class="text-xl">
-                    {{ star <= rating.nilai ? '[STAR]' : '[ ]' }}
+                    {{ star <= rating.nilai ? '★' : '☆' }}
                   </span>
                 </div>
                 <span class="font-bold text-lg text-amber-500">{{ rating.nilai }}/5</span>
@@ -86,13 +86,13 @@
                 @click="editRating(rating)"
                 class="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100 transition"
               >
-                ✏️ Edit
+                Edit
               </button>
               <button
                 @click="deleteRating(rating.id)"
                 class="px-3 py-1 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition"
               >
-                🗑️ Hapus
+                Hapus
               </button>
             </div>
           </div>

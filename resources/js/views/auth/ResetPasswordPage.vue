@@ -141,11 +141,11 @@ const form = ref({
 })
 
 onMounted(() => {
-  // Get token dari URL query param
-  token.value = route.query.token || ''
+  // Get token dari URL query param (email method) atau sessionStorage (WhatsApp method)
+  token.value = route.query.token || sessionStorage.getItem('reset_token') || ''
   
   if (!token.value) {
-    error.value = 'Token reset password tidak valid atau sudah kadaluarsa'
+    error.value = 'Token reset password tidak valid atau sudah kadaluarsa. Silakan minta ulang.'
   }
 })
 

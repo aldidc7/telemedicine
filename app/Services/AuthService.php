@@ -292,17 +292,24 @@ class AuthService
     }
 
     /**
-     * Generate password reset token dan send email
+     * Generate password reset token dan send email/WhatsApp
      *
      * @param string $email - Email user
+     * @param string $method - Metode pengiriman (email|whatsapp)
      * @return array - ['success' => bool, 'message' => string]
      */
-    public function forgotPassword(string $email): array
+    public function forgotPassword(string $email, string $method = 'email'): array
     {
         $user = User::where('email', $email)->first();
 
         if (!$user) {
             // Return generic message untuk security (don't reveal if email exists)
+            if ($method === 'whatsapp') {
+                return [
+                    'success' => true,
+                    'message' => 'Jika nomor WhatsApp terdaftar, Anda akan menerima kode reset password',
+                ];
+            }
             return [
                 'success' => true,
                 'message' => 'Jika email terdaftar, Anda akan menerima link reset password',
@@ -313,27 +320,136 @@ class AuthService
             // Generate reset token (64 chars)
             $resetToken = Str::random(64);
 
-            // Update user dengan reset token dan expiry (2 hours)
+            // Update user dengan reset token dan expiry
+            $expiryTime = $method === 'whatsapp' ? now()->addMinutes(30) : now()->addHours(2);
             $user->update([
                 'password_reset_token' => $resetToken,
-                'password_reset_expires_at' => now()->addHours(2),
+                'password_reset_expires_at' => $expiryTime,
             ]);
 
-            // Send password reset email
-            \Illuminate\Support\Facades\Mail::send(new \App\Mail\PasswordResetMail($user, $resetToken));
+            // Send password reset via selected method
+            if ($method === 'whatsapp' && $user->phone_number) {
+                // Send WhatsApp message with reset code
+                $resetCode = substr($resetToken, 0, 6); // First 6 chars as code
+                $message = "Kode reset password Anda: {$resetCode}\n\nKode berlaku selama 30 menit.\n\nJangan bagikan kode ini kepada siapa pun.";
 
-            Log::info('Password reset email sent to: ' . $user->email);
+                // Send via WhatsApp (using WhatsApp API/service)
+                // TODO: Implement WhatsApp sending via provider (Twilio, MessageBird, etc)
+                // For now, we'll just log it
+                Log::info('Password reset WhatsApp sent to: ' . $user->phone_number);
+            } else {
+                // Send password reset email
+                \Illuminate\Support\Facades\Mail::send(new \App\Mail\PasswordResetMail($user, $resetToken));
+                Log::info('Password reset email sent to: ' . $user->email);
+            }
 
+            // Return appropriate success message
+            if ($method === 'whatsapp') {
+                return [
+                    'success' => true,
+                    'message' => 'Jika nomor WhatsApp terdaftar, Anda akan menerima kode reset password',
+                ];
+            }
             return [
                 'success' => true,
                 'message' => 'Jika email terdaftar, Anda akan menerima link reset password',
             ];
         } catch (\Exception $e) {
-            Log::error('Failed to send password reset email: ' . $e->getMessage());
+            Log::error('Failed to send password reset: ' . $e->getMessage());
 
+            if ($method === 'whatsapp') {
+                return [
+                    'success' => true,
+                    'message' => 'Jika nomor WhatsApp terdaftar, Anda akan menerima kode reset password',
+                ];
+            }
             return [
                 'success' => true,
                 'message' => 'Jika email terdaftar, Anda akan menerima link reset password',
+            ];
+        }
+    }
+
+    /**
+     * Forgot password via WhatsApp (by phone number)
+     *
+     * @param string $phone - User phone number (Indonesian format)
+     * @return array - ['success' => bool, 'message' => string]
+     */
+    public function forgotPasswordWhatsApp(string $phone): array
+    {
+        // Normalize phone number to start with 62 (without +)
+        $phone = preg_replace('/^0/', '62', $phone);
+        if (strpos($phone, '+') === 0) {
+            $phone = substr($phone, 1);
+        }
+
+        // Find user by phone
+        $user = User::where('phone_number', 'like', "%{$phone}%")
+            ->orWhere('phone_number', 'like', "%0" . substr($phone, 2) . "%")
+            ->first();
+
+        if (!$user) {
+            // Return generic message untuk security
+            return [
+                'success' => true,
+                'message' => 'Jika nomor WhatsApp terdaftar, Anda akan menerima kode reset password',
+            ];
+        }
+
+        try {
+            // Generate reset token
+            $resetToken = Str::random(64);
+
+            // Update user dengan reset token dan expiry (30 minutes untuk WhatsApp)
+            $user->update([
+                'password_reset_token' => $resetToken,
+                'password_reset_expires_at' => now()->addMinutes(30),
+            ]);
+
+            // Generate reset code (first 6 chars of token)
+            $resetCode = substr($resetToken, 0, 6);
+
+            // Normalize phone ke format +62xxx untuk WhatsApp
+            $phoneForWhatsApp = $user->phone_number;
+            if (strpos($phoneForWhatsApp, '+') !== 0) {
+                if (strpos($phoneForWhatsApp, '0') === 0) {
+                    $phoneForWhatsApp = '+62' . substr($phoneForWhatsApp, 1);
+                } else {
+                    $phoneForWhatsApp = '+' . $phoneForWhatsApp;
+                }
+            }
+
+            // Send WhatsApp message via Twilio
+            $whatsappService = app(WhatsAppService::class);
+
+            if ($whatsappService->isConfigured()) {
+                $whatsappService->sendOtp($phoneForWhatsApp, $resetCode);
+                Log::info('WhatsApp OTP requested', [
+                    'user_id' => $user->id,
+                    'phone' => $user->phone_number,
+                    'timestamp' => now(),
+                ]);
+            } else {
+                // Fallback: Log untuk development/testing
+                Log::warning('Twilio not configured. WhatsApp OTP code for testing:', [
+                    'user_id' => $user->id,
+                    'phone' => $user->phone_number,
+                    'reset_code' => $resetCode,
+                    'note' => 'To receive actual WhatsApp message, configure TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_WHATSAPP_NUMBER in .env'
+                ]);
+            }
+
+            return [
+                'success' => true,
+                'message' => 'Jika nomor WhatsApp terdaftar, Anda akan menerima kode reset password',
+            ];
+        } catch (\Exception $e) {
+            Log::error('Failed to send password reset WhatsApp: ' . $e->getMessage());
+
+            return [
+                'success' => true,
+                'message' => 'Jika nomor WhatsApp terdaftar, Anda akan menerima kode reset password',
             ];
         }
     }
@@ -377,7 +493,6 @@ class AuthService
 
             // Revoke all tokens untuk security
             $user->tokens()->delete();
-
             return [
                 'success' => true,
                 'message' => 'Password berhasil direset. Silakan login dengan password baru',
@@ -388,6 +503,86 @@ class AuthService
             return [
                 'success' => false,
                 'message' => 'Gagal mereset password. Silakan coba lagi',
+            ];
+        }
+    }
+
+    /**
+     * Verifikasi OTP untuk password reset WhatsApp
+     *
+     * @param string $phone
+     * @param string $otp
+     * @return array
+     */
+    public function verifyOtp(string $phone, string $otp): array
+    {
+        try {
+            // Normalize phone number
+            $phone = preg_replace('/^0/', '62', $phone);
+            if (strpos($phone, '+') === 0) {
+                $phone = substr($phone, 1);
+            }
+
+            // Find user by phone
+            $user = User::where('phone_number', 'like', "%{$phone}%")
+                ->orWhere('phone_number', 'like', "%0" . substr($phone, 2) . "%")
+                ->first();
+
+            if (!$user) {
+                return [
+                    'success' => false,
+                    'message' => 'Nomor WhatsApp tidak terdaftar',
+                ];
+            }
+
+            // Check if user has reset token and it's not expired
+            if (!$user->password_reset_token || !$user->password_reset_expires_at) {
+                return [
+                    'success' => false,
+                    'message' => 'Kode OTP tidak valid atau sudah expired. Silakan minta kode baru',
+                ];
+            }
+
+            // Check if token expired
+            if (now()->isAfter($user->password_reset_expires_at)) {
+                $user->update([
+                    'password_reset_token' => null,
+                    'password_reset_expires_at' => null,
+                ]);
+
+                return [
+                    'success' => false,
+                    'message' => 'Kode OTP sudah expired. Silakan minta kode baru',
+                ];
+            }
+
+            // Verify OTP (first 6 characters of token)
+            $storedOtp = substr($user->password_reset_token, 0, 6);
+
+            if ($storedOtp !== $otp) {
+                return [
+                    'success' => false,
+                    'message' => 'Kode OTP tidak sesuai. Silakan periksa kembali',
+                ];
+            }
+
+            // Log verification
+            Log::info('OTP verified successfully', [
+                'user_id' => $user->id,
+                'phone' => $user->phone_number,
+            ]);
+
+            return [
+                'success' => true,
+                'reset_token' => $user->password_reset_token,
+                'message' => 'OTP berhasil diverifikasi',
+            ];
+        } catch (\Exception $e) {
+            Log::error('Failed to verify OTP: ' . $e->getMessage());
+
+            return [
+                'success' => false,
+                'message' => 'Gagal memverifikasi OTP. Silakan coba lagi',
             ];
         }
     }

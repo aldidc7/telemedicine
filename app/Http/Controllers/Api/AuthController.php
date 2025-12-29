@@ -257,13 +257,25 @@ class AuthController extends Controller
      */
     public function forgotPassword(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-        ]);
+        // Validate berdasarkan method
+        $method = $request->method ?? 'email';
+
+        if ($method === 'whatsapp') {
+            $request->validate([
+                'phone' => ['required', 'regex:/^(\+62|0)[0-9]{9,12}$/'],
+                'method' => 'sometimes|in:email,whatsapp',
+            ]);
+            $identifier = $request->phone;
+        } else {
+            $request->validate([
+                'email' => 'required|email',
+                'method' => 'sometimes|in:email,whatsapp',
+            ]);
+            $identifier = $request->email;
+        }
 
         // Rate limiting check
-        $email = $request->email;
-        $key = "forgot-password:{$email}";
+        $key = "forgot-password:{$identifier}";
 
         if (RateLimitService::isLimited($key, RateLimitService::FORGOT_PASSWORD_MAX_ATTEMPTS, RateLimitService::FORGOT_PASSWORD_DECAY_MINUTES)) {
             return $this->validationErrorResponse('Terlalu banyak upaya reset password. Silakan coba lagi nanti.', 429, [
@@ -272,7 +284,12 @@ class AuthController extends Controller
         }
 
         RateLimitService::increment($key, RateLimitService::FORGOT_PASSWORD_DECAY_MINUTES);
-        $result = $this->authService->forgotPassword($request->email);
+
+        if ($method === 'whatsapp') {
+            $result = $this->authService->forgotPasswordWhatsApp($request->phone);
+        } else {
+            $result = $this->authService->forgotPassword($request->email, 'email');
+        }
 
         return $this->successResponse(null, $result['message']);
     }
@@ -480,5 +497,215 @@ class AuthController extends Controller
             'accepted_consents' => [$consentType],
             'message' => 'Terima kasih telah menerima consent'
         ], 'Consent berhasil diterima');
+    }
+
+    /**
+     * Verifikasi OTP untuk password reset via WhatsApp
+     * 
+     * POST /api/v1/auth/verify-otp
+     * 
+     * Request body:
+     * {
+     *   "phone": "+628888881234",
+     *   "otp": "123456"
+     * }
+     */
+    public function verifyOtp(Request $request)
+    {
+        // Validate input
+        $request->validate([
+            'phone' => ['required', 'regex:/^(\+62|0)[0-9]{9,12}$/'],
+            'otp' => 'required|string|size:6|regex:/^\d{6}$/',
+        ]);
+
+        $phone = $request->phone;
+        $otp = $request->otp;
+
+        // Rate limiting check
+        $key = "verify-otp:{$phone}";
+
+        if (RateLimitService::isLimited($key, RateLimitService::VERIFY_OTP_MAX_ATTEMPTS, RateLimitService::VERIFY_OTP_DECAY_MINUTES)) {
+            return $this->validationErrorResponse('Terlalu banyak upaya verifikasi OTP. Silakan coba lagi nanti.', 429, [
+                'retry_after' => RateLimitService::VERIFY_OTP_DECAY_MINUTES * 60,
+            ]);
+        }
+
+        RateLimitService::increment($key, RateLimitService::VERIFY_OTP_DECAY_MINUTES);
+
+        // Call service to verify OTP
+        $result = $this->authService->verifyOtp($phone, $otp);
+
+        if (!$result['success']) {
+            return $this->validationErrorResponse($result['message'], 422);
+        }
+
+        return $this->successResponse([
+            'reset_token' => $result['reset_token'] ?? null,
+            'message' => 'OTP berhasil diverifikasi'
+        ], 'OTP berhasil diverifikasi');
+    }
+
+    /**
+     * Kirim ulang OTP untuk password reset via WhatsApp
+     * 
+     * POST /api/v1/auth/resend-otp
+     * 
+     * Request body:
+     * {
+     *   "phone": "+628888881234"
+     * }
+     */
+    public function resendOtp(Request $request)
+    {
+        // Validate input
+        $request->validate([
+            'phone' => ['required', 'regex:/^(\+62|0)[0-9]{9,12}$/'],
+        ]);
+
+        $phone = $request->phone;
+
+        // Rate limiting check
+        $key = "resend-otp:{$phone}";
+
+        if (RateLimitService::isLimited($key, RateLimitService::RESEND_OTP_MAX_ATTEMPTS, RateLimitService::RESEND_OTP_DECAY_MINUTES)) {
+            return $this->validationErrorResponse('Terlalu banyak permintaan resend OTP. Silakan coba lagi nanti.', 429, [
+                'retry_after' => RateLimitService::RESEND_OTP_DECAY_MINUTES * 60,
+            ]);
+        }
+
+        RateLimitService::increment($key, RateLimitService::RESEND_OTP_DECAY_MINUTES);
+
+        // Call service to resend OTP
+        $result = $this->authService->forgotPasswordWhatsApp($phone);
+
+        return $this->successResponse(null, 'Kode OTP telah dikirim ulang');
+    }
+
+    /**
+     * Debug endpoint - Get OTP code for testing
+     * FOR DEVELOPMENT/TESTING ONLY
+     * 
+     * GET /api/v1/auth/debug/get-otp?phone=08888881234
+     */
+    public function debugGetOtp(Request $request)
+    {
+        // Only allow in development environment
+        if (config('app.env') === 'production') {
+            return $this->validationErrorResponse('Endpoint tidak tersedia di production', 403);
+        }
+
+        $request->validate([
+            'phone' => ['required', 'regex:/^(\+62|0)[0-9]{9,12}$/'],
+        ]);
+
+        $phone = $request->phone;
+
+        // Normalize phone number
+        $phone = preg_replace('/^0/', '62', $phone);
+        if (strpos($phone, '+') === 0) {
+            $phone = substr($phone, 1);
+        }
+
+        // Find user by phone
+        $user = User::where('phone_number', 'like', "%{$phone}%")
+            ->orWhere('phone_number', 'like', "%0" . substr($phone, 2) . "%")
+            ->first();
+
+        if (!$user || !$user->password_reset_token) {
+            return $this->errorResponse('Tidak ada OTP untuk nomor ini atau belum request reset password', 404);
+        }
+
+        // Check if token expired
+        if (now()->isAfter($user->password_reset_expires_at)) {
+            return $this->errorResponse('OTP sudah expired', 410);
+        }
+
+        $otp = substr($user->password_reset_token, 0, 6);
+        $expiresAt = $user->password_reset_expires_at;
+        $timeRemaining = now()->diffInSeconds($expiresAt, false);
+
+        return $this->successResponse([
+            'phone' => $user->phone_number,
+            'otp' => $otp,
+            'expires_at' => $expiresAt,
+            'time_remaining_seconds' => max(0, $timeRemaining),
+            'reset_token' => $user->password_reset_token,
+        ], 'OTP debug info (development only)');
+    }
+
+    /**
+     * Test Twilio WhatsApp Configuration
+     * FOR DEVELOPMENT ONLY
+     * 
+     * GET /api/v1/auth/test/twilio-status
+     */
+    public function testTwilioStatus()
+    {
+        // Only allow in development environment
+        if (config('app.env') === 'production') {
+            return $this->validationErrorResponse('Endpoint tidak tersedia di production', 403);
+        }
+
+        $whatsappService = app(\App\Services\WhatsAppService::class);
+        $status = $whatsappService->getStatus();
+
+        return $this->successResponse($status, 'Twilio WhatsApp configuration status');
+    }
+
+    /**
+     * Send Test WhatsApp Message
+     * FOR DEVELOPMENT ONLY
+     * 
+     * POST /api/v1/auth/test/send-whatsapp
+     * 
+     * Request body:
+     * {
+     *   "phone": "+62888881234",
+     *   "message": "Test message"
+     * }
+     */
+    public function testSendWhatsApp(Request $request)
+    {
+        // Only allow in development environment
+        if (config('app.env') === 'production') {
+            return $this->validationErrorResponse('Endpoint tidak tersedia di production', 403);
+        }
+
+        $request->validate([
+            'phone' => ['required', 'regex:/^(\+62|0)[0-9]{9,12}$/'],
+            'message' => 'sometimes|string|max:1000',
+        ]);
+
+        $phone = $request->phone;
+        $message = $request->message ?? 'Test WhatsApp message dari Telemedicine API';
+
+        // Normalize phone ke format +62xxx
+        if (strpos($phone, '0') === 0) {
+            $phone = '+62' . substr($phone, 1);
+        } elseif (strpos($phone, '+') !== 0) {
+            $phone = '+' . $phone;
+        }
+
+        try {
+            $whatsappService = app(\App\Services\WhatsAppService::class);
+
+            if (!$whatsappService->isConfigured()) {
+                return $this->errorResponse('Twilio WhatsApp belum dikonfigurasi. Lihat TWILIO_SETUP_GUIDE.md', 400);
+            }
+
+            $sent = $whatsappService->sendOtp($phone, 'TEST');
+
+            if ($sent) {
+                return $this->successResponse([
+                    'phone' => $phone,
+                    'status' => 'sent',
+                    'message' => 'Test WhatsApp message sedang dikirim. Cek WhatsApp Anda dalam 1-2 detik.'
+                ], 'Test message sent successfully');
+            } else {
+                return $this->errorResponse('Gagal mengirim test WhatsApp message. Cek logs untuk detail.', 400);
+            }
+        } catch (\Exception $e) {
+            return $this->errorResponse('Error: ' . $e->getMessage(), 400);
+        }
     }
 }

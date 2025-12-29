@@ -64,6 +64,8 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
      * POST /api/v1/auth/resend-verification - Resend verification email
      * POST /api/v1/auth/forgot-password - Request reset password
      * POST /api/v1/auth/reset-password - Reset password dengan token
+     * POST /api/v1/auth/verify-otp - Verify OTP untuk WhatsApp password reset
+     * POST /api/v1/auth/resend-otp - Resend OTP untuk WhatsApp password reset
      */
     Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/login', [AuthController::class, 'login']);
@@ -72,6 +74,13 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
     Route::post('/auth/resend-verification', [AuthController::class, 'resendVerification']);
     Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
+    Route::post('/auth/verify-otp', [AuthController::class, 'verifyOtp']);
+    Route::post('/auth/resend-otp', [AuthController::class, 'resendOtp']);
+
+    // Debug endpoints (development only)
+    Route::get('/auth/debug/get-otp', [AuthController::class, 'debugGetOtp']);
+    Route::get('/auth/test/twilio-status', [AuthController::class, 'testTwilioStatus']);
+    Route::post('/auth/test/send-whatsapp', [AuthController::class, 'testSendWhatsApp']);
 
     // ============ PROTECTED ROUTES (Sanctum Auth) ============
     Route::middleware('auth:sanctum')->group(function () {

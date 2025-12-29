@@ -35,6 +35,15 @@ export const authApi = {
     return client.post('/auth/reset-password', payload)
   },
 
+  // OTP Verification - WhatsApp Password Reset
+  verifyOtp(payload) {
+    return client.post('/auth/verify-otp', payload)
+  },
+
+  resendOtp(payload) {
+    return client.post('/auth/resend-otp', payload)
+  },
+
   // Session Management - Issue #6
   getSessions() {
     return client.get('/sessions')

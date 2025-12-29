@@ -106,13 +106,21 @@
           <div class="flex-1 border-t border-gray-200"></div>
         </div>
 
-        <!-- Register Link -->
-        <p class="text-center text-gray-600 text-sm">
-          Belum punya akun?
-          <RouterLink to="/register" class="text-indigo-600 font-bold hover:text-indigo-700 transition">
-            Daftar sekarang
-          </RouterLink>
-        </p>
+        <!-- Register Link & Forgot Password -->
+        <div class="flex flex-col gap-3">
+          <p class="text-center text-gray-600 text-sm">
+            Belum punya akun?
+            <RouterLink to="/register" class="text-indigo-600 font-bold hover:text-indigo-700 transition">
+              Daftar sekarang
+            </RouterLink>
+          </p>
+          <p class="text-center text-gray-600 text-sm">
+            Lupa password?
+            <RouterLink to="/forgot-password" class="text-amber-600 font-bold hover:text-amber-700 transition">
+              Atur ulang password
+            </RouterLink>
+          </p>
+        </div>
 
         <!-- Back Home -->
         <router-link

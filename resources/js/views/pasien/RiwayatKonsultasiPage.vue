@@ -1,10 +1,10 @@
-<!-- [HISTORY] resources/js/views/pasien/RiwayatKonsultasiPage.vue -->
+<!-- resources/js/views/pasien/RiwayatKonsultasiPage.vue -->
 <template>
   <div class="min-h-screen bg-linear-to-br from-slate-50 to-white py-8 px-4 sm:px-6 lg:px-8">
     <div class="max-w-6xl mx-auto">
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-3xl font-bold text-slate-900 mb-2">[HISTORY] Riwayat Konsultasi</h1>
+        <h1 class="text-3xl font-bold text-slate-900 mb-2">Riwayat Konsultasi</h1>
         <p class="text-slate-600">Kelola dan lihat semua konsultasi Anda dengan dokter</p>
       </div>
 
@@ -83,7 +83,7 @@
                     <span class="font-medium">Keluhan:</span> {{ konsultasi.jenis_keluhan || '-' }}
                   </p>
                   <p class="text-xs text-slate-500 mt-1">
-                    [DATE] {{ formatDate(konsultasi.created_at) }}
+                    {{ formatDate(konsultasi.created_at) }}
                   </p>
                 </div>
               </div>
@@ -124,7 +124,7 @@
                   class="px-3 py-1 bg-green-50 text-green-600 rounded-lg text-sm font-medium hover:bg-green-100 transition"
                   title="Chat dengan Dokter"
                 >
-                  [CHAT] Chat
+                  Chat
                 </button>
 
                 <!-- Rating (if completed) -->
@@ -134,7 +134,7 @@
                   class="px-3 py-1 bg-amber-50 text-amber-600 rounded-lg text-sm font-medium hover:bg-amber-100 transition"
                   title="Berikan Rating"
                 >
-                  [RATING] Rating
+                  Rating
                 </button>
 
                 <!-- View Rating (if already rated) -->
@@ -144,7 +144,7 @@
                   class="px-3 py-1 bg-amber-100 text-amber-700 rounded-lg text-sm font-medium cursor-default"
                   title="Rating Sudah Diberikan"
                 >
-                  [RATING] {{ konsultasi.rating.nilai }}/5
+                  {{ konsultasi.rating.nilai }}/5
                 </button>
               </div>
             </div>
