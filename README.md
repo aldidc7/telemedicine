@@ -252,40 +252,78 @@ php artisan queue:work
 
 ## Penggunaan
 
-### Akses Aplikasi
+### ⚠️ Penting: Setup Test Data Terlebih Dahulu
 
-| Role | URL | Username | Password |
-|------|-----|----------|----------|
-| **Pasien** | http://localhost:5173 | pasien@test.com | password123 |
-| **Dokter** | http://localhost:5173 | dokter@test.com | password123 |
-| **Admin** | http://localhost:5173 | admin@test.com | password123 |
+Sebelum login, pastikan Anda sudah menjalankan seeder untuk membuat test data:
 
-### First-Time Setup
+```bash
+# Jalankan migrations + seeding
+php artisan migrate:fresh --seed
+
+# Atau hanya seeding (jika database sudah ada)
+php artisan db:seed
+```
+
+### Test Credentials (Setelah Seeding)
+
+| Role | URL | Email | Password |
+|------|-----|-------|----------|
+| **Pasien** | http://localhost:5173 | ahmad.zaki@email.com | password123 |
+| **Pasien 2** | http://localhost:5173 | siti.aminah@email.com | password123 |
+| **Dokter** | http://localhost:5173 | drsuryanto@email.com | password123 |
+| **Admin** | http://localhost:5173 | admin@telemedicine | Rsud123! |
+
+**❌ TIDAK VALID:** pasien@test.com, dokter@test.com, admin@test.com *(Deprecated - gunakan credentials di atas)*
+
+### Alternatif: Register Akun Baru
+
+Jika Anda ingin membuat akun sendiri:
 
 1. **Buka aplikasi** di http://localhost:5173
-2. **Register akun baru** sebagai pasien atau dokter
-3. **Verifikasi email** Anda
-4. **Login** dengan credentials
-5. **Lengkapi profil** sesuai role Anda
-6. **Mulai konsultasi!**
+2. **Click "Register"** atau "Daftar"
+3. **Pilih role**: Pasien atau Dokter
+4. **Isi form** dengan data Anda
+5. **Verify email** (check email atau lihat console output)
+6. **Login** dengan akun yang baru dibuat
+7. **Lengkapi profil** sesuai role
+8. **Mulai konsultasi!**
+
+### First-Time Setup (Jika Registrasi Sendiri)
+
+1. **Buka aplikasi** di http://localhost:5173
+2. **Klik Register/Daftar**
+3. **Pilih role** (Pasien atau Dokter)
+4. **Isi form**:
+   - Nama lengkap
+   - Email
+   - Password (min 8 karakter)
+   - No. Telepon (opsional)
+   - Tanggal lahir
+   - Gender
+5. **Submit form**
+6. **Verifikasi email**:
+   - Check email Anda
+   - Atau lihat console Laravel untuk verification link
+7. **Login** dengan email & password baru
+8. **Selesai!**
 
 ### Workflow Umum
 
 **Pasien:**
 ```
-Daftar → Verifikasi Email → Cari Dokter → Buat Janji → 
+Register/Login → Cari Dokter → Buat Janji → 
 Chat dengan Dokter → Beri Rating → Kelola Rekam Medis
 ```
 
 **Dokter:**
 ```
-Daftar → Verifikasi Kredensial → Setup Jadwal → 
-Menerima Pasien → Konsultasi → Lihat Pendapatan
+Register → Upload Kredensial → Setup Jadwal → 
+Tunggu Verifikasi Admin → Menerima Pasien → Konsultasi
 ```
 
 **Admin:**
 ```
-Login → Monitor Analytics → Verifikasi Dokter Baru → 
+Login → Monitor Analytics → Verifikasi Dokter → 
 Review Finansial → Check Compliance → Manage Users
 ```
 
