@@ -1,12 +1,10 @@
 <?php
 
 /** @noinspection PhpUndefinedClassInspection */
-/** @noinspection PhpUndefinedNamespaceInspection */
 
 namespace App\Services\PDF;
 
 use App\Models\Prescription;
-/** @noinspection PhpUndefinedNamespaceInspection */
 use Barryvdh\DomPDF\Facade\Pdf as DomPDF;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Mail;

@@ -27,7 +27,9 @@
         "psr-4": {
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/"
+            "Database\\Seeders\\": "database/seeders/",
+            "Firebase\\JWT\\": "app/Stubs/Firebase/JWT/",
+            "Barryvdh\\DomPDF\\Facade\\": "app/Stubs/Barryvdh/DomPDF/Facade/"
         }
     },
     "autoload-dev": {

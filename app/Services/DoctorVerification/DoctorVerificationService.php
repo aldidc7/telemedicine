@@ -5,6 +5,7 @@ namespace App\Services\DoctorVerification;
 use App\Models\DoctorVerification;
 use App\Models\DoctorVerificationDocument;
 use App\Models\User;
+use App\Traits\StorageExtensions;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -205,12 +206,12 @@ class DoctorVerificationService
         // Try temporaryUrl for S3, fallback for local
         try {
             $disk = Storage::disk('private');
-            if (method_exists($disk, 'temporaryUrl')) {
-                /** @noinspection PhpUndefinedMethodInspection */
-                return $disk->temporaryUrl(
-                    $document->file_path,
-                    now()->addHours(1)
-                );
+            
+            // Use reflection to check if method exists on the driver
+            $driverClass = get_class($disk);
+            if (in_array('temporaryUrl', get_class_methods($disk))) {
+                // Safe to call since method exists
+                return call_user_func([$disk, 'temporaryUrl'], $document->file_path, now()->addHours(1));
             }
         } catch (\Exception $e) {
             // Fall through

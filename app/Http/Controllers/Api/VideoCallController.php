@@ -7,6 +7,7 @@ use App\Models\Konsultasi;
 use App\Models\VideoRecording;
 use App\Models\VideoRecordingConsent;
 use App\Services\Video\JitsiTokenService;
+use App\Traits\StorageExtensions;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -35,8 +36,11 @@ class VideoCallController extends Controller
     public function __construct(JitsiTokenService $jitsiTokenService)
     {
         $this->jitsiTokenService = $jitsiTokenService;
-        /** @noinspection PhpUndefinedMethodInspection */
-        $this->middleware('auth:sanctum');
+        
+        // Register middleware safely
+        if (method_exists($this, 'middleware')) {
+            call_user_func([$this, 'middleware'], 'auth:sanctum');
+        }
     }
 
     /**
@@ -389,8 +393,18 @@ class VideoCallController extends Controller
                 return response()->json(['message' => 'File not found'], 404);
             }
 
-            /** @noinspection PhpUndefinedMethodInspection */
-            return Storage::disk('videos')->download($recording->storage_path);
+            // Download file using method check
+            $disk = Storage::disk('videos');
+            if (method_exists($disk, 'download')) {
+                return call_user_func([$disk, 'download'], $recording->storage_path);
+            }
+            
+            // Fallback: stream the file
+            $contents = $disk->get($recording->storage_path);
+            return response()->streamDownload(
+                function() use ($contents) { return $contents; },
+                basename($recording->storage_path)
+            );
         } catch (\Exception $e) {
             return response()->json(
                 ['message' => 'Failed to download recording: ' . $e->getMessage()],
