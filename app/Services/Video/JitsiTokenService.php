@@ -3,11 +3,14 @@
 /** 
  * @noinspection PhpUndefinedClassInspection
  * @noinspection PhpUnused
+ * @noinspection PhpUndefinedNamespaceInspection
  */
 
 namespace App\Services\Video;
 
+/** @noinspection PhpUndefinedNamespaceInspection */
 use Firebase\JWT\JWT;
+/** @noinspection PhpUndefinedNamespaceInspection */
 use Firebase\JWT\Key as JWTKey;
 use Exception;
 

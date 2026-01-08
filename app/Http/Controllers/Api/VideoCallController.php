@@ -35,6 +35,7 @@ class VideoCallController extends Controller
     public function __construct(JitsiTokenService $jitsiTokenService)
     {
         $this->jitsiTokenService = $jitsiTokenService;
+        /** @noinspection PhpUndefinedMethodInspection */
         $this->middleware('auth:sanctum');
     }
 
@@ -388,6 +389,7 @@ class VideoCallController extends Controller
                 return response()->json(['message' => 'File not found'], 404);
             }
 
+            /** @noinspection PhpUndefinedMethodInspection */
             return Storage::disk('videos')->download($recording->storage_path);
         } catch (\Exception $e) {
             return response()->json(

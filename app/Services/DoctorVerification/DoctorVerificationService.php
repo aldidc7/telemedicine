@@ -206,6 +206,7 @@ class DoctorVerificationService
         try {
             $disk = Storage::disk('private');
             if (method_exists($disk, 'temporaryUrl')) {
+                /** @noinspection PhpUndefinedMethodInspection */
                 return $disk->temporaryUrl(
                     $document->file_path,
                     now()->addHours(1)

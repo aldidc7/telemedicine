@@ -1,0 +1,29 @@
+{
+  "version": "1.0.0",
+  "ignoreErrors": [
+    {
+      "message": "#^Undefined type 'Firebase\\\\JWT\\\\JWT'\\.$#",
+      "path": "app/Services/Video/JitsiTokenService.php"
+    },
+    {
+      "message": "#^Undefined type 'Firebase\\\\JWT\\\\Key'\\.$#",
+      "path": "app/Services/Video/JitsiTokenService.php"
+    },
+    {
+      "message": "#^Undefined type 'Barryvdh\\\\DomPDF\\\\Facade\\\\Pdf'\\.$#",
+      "path": "app/Services/PDF/PrescriptionPDFService.php"
+    },
+    {
+      "message": "#^Undefined method 'temporaryUrl'\\.$#",
+      "path": "app/Services/DoctorVerification/DoctorVerificationService.php"
+    },
+    {
+      "message": "#^Undefined method 'middleware'\\.$#",
+      "path": "app/Http/Controllers/Api/VideoCallController.php"
+    },
+    {
+      "message": "#^Undefined method 'download'\\.$#",
+      "path": "app/Http/Controllers/Api/VideoCallController.php"
+    }
+  ]
+}
