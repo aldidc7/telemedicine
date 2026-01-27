@@ -2,130 +2,171 @@
 <template>
   <div>
     <!-- Header -->
-    <div class="mb-10">
-      <div class="flex items-center gap-3 mb-2">
-        <svg class="w-11 h-11 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
+    <div class="mb-6">
+      <div class="flex items-center gap-2 mb-1">
+        <svg class="w-8 h-8 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
           <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5-7l3.6-4.8 1.2 1.6H21V5h-4.4l-1.2 1.6L9 1 3 9.5 9 18l1.4-1.9-3.4-4.6z"/>
         </svg>
-        <h1 class="text-4xl font-bold text-gray-900">Log Aktivitas Sistem</h1>
+        <h1 class="text-2xl font-bold text-gray-900">Log Aktivitas Sistem</h1>
       </div>
-      <p class="text-gray-600">Pantau semua aktivitas dan perubahan dalam sistem</p>
+      <p class="text-sm text-gray-600 ml-10">Pantau semua aktivitas dan perubahan dalam sistem</p>
     </div>
 
-    <!-- Filter -->
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8 hover:shadow-lg transition">
-      <div class="flex flex-col md:flex-row gap-4">
-        <input
-          v-model="filterUser"
-          type="text"
-          placeholder="Cari nama pengguna atau aksi..."
-          class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-indigo-500 transition text-gray-700"
-          @keyup.enter="loadLogs"
-        />
-        <select
-          v-model="filterAction"
-          class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-indigo-500 transition text-gray-700"
-        >
-          <option value="">Semua Aksi</option>
-          <option value="login">Login</option>
-          <option value="logout">Logout</option>
-          <option value="create">Create</option>
-          <option value="update">Update</option>
-          <option value="delete">Delete</option>
-        </select>
+    <!-- Filter Panel (Always Visible) -->
+    <div class="bg-white rounded-lg border border-gray-200 p-4 mb-6 shadow-sm">
+      <div class="flex flex-col lg:flex-row gap-4 items-end">
+        <!-- Period Select -->
+        <div class="shrink-0 min-w-max">
+          <label class="block text-xs font-semibold text-gray-700 mb-2">Periode</label>
+          <select
+            v-model="filterDateDays"
+            class="px-4 py-2.5 text-sm border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition bg-white cursor-pointer hover:border-gray-300 appearance-none pr-8 bg-no-repeat"
+            style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%236b7280%22 stroke-width=%222%22><polyline points=%226 9 12 15 18 9%22></polyline></svg>'); background-position: right 0.5rem center; background-size: 1.25rem;"
+            @change="loadLogs"
+          >
+            <option value="1">Last 24h</option>
+            <option value="7">Last 7 days</option>
+            <option value="30">Last 30 days</option>
+            <option value="999">All Time</option>
+          </select>
+        </div>
+
+        <!-- Action Select -->
+        <div class="shrink-0 min-w-max">
+          <label class="block text-xs font-semibold text-gray-700 mb-2">Tipe Aksi</label>
+          <select
+            v-model="filterAction"
+            class="px-4 py-2.5 text-sm border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition bg-white cursor-pointer hover:border-gray-300 appearance-none pr-8 bg-no-repeat"
+            style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%236b7280%22 stroke-width=%222%22><polyline points=%226 9 12 15 18 9%22></polyline></svg>'); background-position: right 0.5rem center; background-size: 1.25rem;"
+            @change="loadLogs"
+          >
+            <option value="">Semua Aksi</option>
+            <option value="login">🔐 Login</option>
+            <option value="logout">🚪 Logout</option>
+            <option value="create">✨ Create</option>
+            <option value="update">📝 Update</option>
+            <option value="delete">🗑️ Delete</option>
+          </select>
+        </div>
+
+        <!-- From Date -->
+        <div class="shrink-0">
+          <label class="block text-xs font-semibold text-gray-700 mb-2">Start Date</label>
+          <input
+            v-model="filterDateFrom"
+            type="date"
+            class="px-4 py-2.5 text-sm border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition bg-white cursor-pointer hover:border-gray-300"
+            @change="loadLogs"
+          />
+        </div>
+
+        <!-- To Date -->
+        <div class="shrink-0">
+          <label class="block text-xs font-semibold text-gray-700 mb-2">End Date</label>
+          <input
+            v-model="filterDateTo"
+            type="date"
+            class="px-4 py-2.5 text-sm border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition bg-white cursor-pointer hover:border-gray-300"
+            @change="loadLogs"
+          />
+        </div>
+
+        <!-- Search Box -->
+        <div class="flex-1 min-w-[200px]">
+          <label class="block text-xs font-semibold text-gray-700 mb-2">Search</label>
+          <input
+            v-model="filterSearch"
+            type="text"
+            placeholder="User / Deskripsi..."
+            class="w-full px-4 py-2.5 text-sm border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition bg-white hover:border-gray-300"
+            @keyup.enter="loadLogs"
+          />
+        </div>
+
+        <!-- Clear Button -->
         <button
-          @click="loadLogs"
-          class="px-8 py-3 bg-linear-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition font-semibold flex items-center gap-2"
+          v-if="hasActiveFilters()"
+          @click="clearAllFilters"
+          class="shrink-0 px-5 py-2.5 text-sm font-semibold text-indigo-600 bg-indigo-50 border-2 border-indigo-200 rounded-lg hover:bg-indigo-100 transition"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-          </svg>
-          Filter
+          Clear
         </button>
       </div>
     </div>
 
     <!-- Loading -->
-    <div v-if="loading" class="text-center py-12">
+    <div v-if="loading" class="text-center py-8">
       <LoadingSpinner :isLoading="loading" message="Memuat log aktivitas..." />
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="logs.length === 0" class="text-center py-16">
-      <div class="flex justify-center mb-4">
-        <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div v-else-if="logs.length === 0" class="text-center py-12">
+      <div class="flex justify-center mb-3">
+        <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
       </div>
-      <h3 class="text-xl font-semibold text-gray-900 mb-2">Tidak Ada Log</h3>
-      <p class="text-gray-600">Belum ada aktivitas tercatat</p>
+      <h3 class="text-lg font-semibold text-gray-900 mb-1">Tidak Ada Log</h3>
+      <p class="text-sm text-gray-600">Belum ada aktivitas yang sesuai dengan filter</p>
     </div>
 
-    <!-- Timeline -->
-    <div v-else class="space-y-4">
-      <div
-        v-for="log in logs"
-        :key="log.id"
-        class="bg-white rounded-2xl shadow-sm border-l-4 border-indigo-600 p-8 hover:shadow-lg transition"
-      >
-        <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-4">
-          <div>
-            <div class="flex items-center gap-3 mb-2">
-              <div class="w-8 h-8 rounded-full flex items-center justify-center" :class="{
-                'bg-blue-100': log.action === 'login',
-                'bg-red-100': log.action === 'logout',
-                'bg-green-100': log.action === 'create',
-                'bg-yellow-100': log.action === 'update',
-                'bg-purple-100': log.action === 'delete',
-                'bg-gray-100': !['login', 'logout', 'create', 'update', 'delete'].includes(log.action)
-              }">
-                <svg v-if="log.action === 'login'" class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h12.5M11 3H7a2 2 0 00-2 2v14a2 2 0 002 2h4" />
-                </svg>
-                <svg v-else-if="log.action === 'logout'" class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                <svg v-else-if="log.action === 'create'" class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                <svg v-else-if="log.action === 'update'" class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                <svg v-else-if="log.action === 'delete'" class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3H4v2h16V7h-3z" />
-                </svg>
-                <svg v-else class="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="1" />
-                </svg>
-              </div>
-              <h3 class="font-bold text-lg text-gray-900 uppercase tracking-wide">{{ log.action }}</h3>
+    <!-- Table View -->
+    <div v-else class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+      <!-- Desktop View - Table -->
+      <div class="hidden md:block overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700">Waktu</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700">User</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700">Aksi</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700">Deskripsi</th>
+              <th class="px-4 py-3 text-center font-semibold text-gray-700">Detail</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr v-for="log in logs" :key="log.id" class="hover:bg-gray-50 transition">
+              <td class="px-4 py-3 text-gray-600 whitespace-nowrap">{{ formatDate(log.created_at) }}</td>
+              <td class="px-4 py-3">
+                <p class="font-medium text-gray-900">{{ log.user?.name || '-' }}</p>
+              </td>
+              <td class="px-4 py-3">
+                <span :class="getActionBadgeClass(log.action)" class="px-2 py-1 rounded-full text-xs font-semibold">
+                  {{ log.action.toUpperCase() }}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-gray-700 max-w-xs truncate">{{ log.description || '-' }}</td>
+              <td class="px-4 py-3 text-center">
+                <details v-if="log.data" class="inline">
+                  <summary class="cursor-pointer text-indigo-600 hover:underline text-xs font-semibold">Lihat</summary>
+                  <div class="absolute bg-gray-900 text-gray-100 rounded-lg p-3 mt-1 z-10 max-w-md">
+                    <pre class="text-xs overflow-x-auto font-mono">{{ JSON.stringify(log.data, null, 2) }}</pre>
+                  </div>
+                </details>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Mobile View - Cards -->
+      <div class="md:hidden space-y-2 p-4">
+        <div v-for="log in logs" :key="log.id" class="border border-gray-200 rounded-lg p-3 space-y-2">
+          <div class="flex justify-between items-start gap-2">
+            <div>
+              <p class="font-semibold text-gray-900 text-sm">{{ log.user?.name || 'Unknown' }}</p>
+              <p class="text-xs text-gray-500">{{ formatDate(log.created_at) }}</p>
             </div>
-            <p class="text-indigo-600 font-semibold flex items-center gap-2">
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
-              </svg>
-              {{ log.user?.name || 'Unknown User' }}
-            </p>
+            <span :class="getActionBadgeClass(log.action)" class="px-2 py-1 rounded-full text-xs font-semibold whitespace-nowrap">
+              {{ log.action.toUpperCase() }}
+            </span>
           </div>
-          <span v-if="log.created_at" class="text-sm text-gray-500 bg-gray-100 px-4 py-2 rounded-lg whitespace-nowrap flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 1.5m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            {{ formatDate(log.created_at) }}
-          </span>
+          <p class="text-xs text-gray-700">{{ log.description || '-' }}</p>
+          <details v-if="log.data" class="text-xs">
+            <summary class="cursor-pointer text-indigo-600 hover:underline font-semibold">Lihat Detail</summary>
+            <pre class="mt-2 p-2 bg-gray-900 text-gray-100 rounded text-xs overflow-x-auto font-mono">{{ JSON.stringify(log.data, null, 2) }}</pre>
+          </details>
         </div>
-
-        <p class="text-gray-700 mb-4 bg-blue-50 border-l-2 border-blue-500 px-4 py-3 rounded">{{ log.description }}</p>
-
-        <details v-if="log.data" class="text-sm">
-          <summary class="cursor-pointer text-indigo-600 hover:underline font-semibold flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            Lihat Detail Data
-          </summary>
-          <pre class="mt-3 p-4 bg-gray-900 text-gray-100 rounded-lg text-xs overflow-x-auto font-mono">{{ JSON.stringify(log.data, null, 2) }}</pre>
-        </details>
       </div>
     </div>
   </div>
@@ -135,11 +176,13 @@
 import { ref, onMounted } from 'vue'
 import { adminAPI } from '@/api/admin'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
-import EmptyState from '@/components/EmptyState.vue'
 
 const loading = ref(false)
-const filterUser = ref('')
+const filterSearch = ref('')
 const filterAction = ref('')
+const filterDateFrom = ref('')
+const filterDateTo = ref('')
+const filterDateDays = ref('7')
 const logs = ref([])
 
 const formatDate = (dateString) => {
@@ -157,16 +200,56 @@ const formatDate = (dateString) => {
   }
 }
 
-onMounted(() => {
+const getActionBadgeClass = (action) => {
+  const baseClass = 'inline-block'
+  switch (action.toLowerCase()) {
+    case 'login':
+      return `${baseClass} bg-blue-100 text-blue-800`
+    case 'logout':
+      return `${baseClass} bg-red-100 text-red-800`
+    case 'create':
+      return `${baseClass} bg-green-100 text-green-800`
+    case 'update':
+      return `${baseClass} bg-yellow-100 text-yellow-800`
+    case 'delete':
+      return `${baseClass} bg-purple-100 text-purple-800`
+    default:
+      return `${baseClass} bg-gray-100 text-gray-800`
+  }
+}
+
+const hasActiveFilters = () => {
+  return filterSearch.value || filterAction.value || filterDateFrom.value || filterDateTo.value || filterDateDays.value !== '7'
+}
+
+const getActiveFilterCount = () => {
+  let count = 0
+  if (filterSearch.value) count++
+  if (filterAction.value) count++
+  if (filterDateFrom.value) count++
+  if (filterDateTo.value) count++
+  if (filterDateDays.value !== '7') count++
+  return count
+}
+
+const clearAllFilters = () => {
+  filterSearch.value = ''
+  filterAction.value = ''
+  filterDateFrom.value = ''
+  filterDateTo.value = ''
+  filterDateDays.value = '7'
   loadLogs()
-})
+}
 
 const loadLogs = async () => {
   loading.value = true
   try {
     const response = await adminAPI.getLogs({
-      user: filterUser.value || undefined,
-      action: filterAction.value || undefined
+      user: filterSearch.value ? filterSearch.value : undefined,
+      action: filterAction.value || undefined,
+      date_from: filterDateFrom.value || undefined,
+      date_to: filterDateTo.value || undefined,
+      days: !filterDateFrom.value && !filterDateTo.value ? filterDateDays.value : undefined
     })
     logs.value = response.data.data
   } catch (error) {
@@ -175,4 +258,8 @@ const loadLogs = async () => {
     loading.value = false
   }
 }
+
+onMounted(() => {
+  loadLogs()
+})
 </script>

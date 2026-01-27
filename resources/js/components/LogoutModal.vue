@@ -1,7 +1,11 @@
 <template>
-  <!-- Logout Confirmation Modal -->
-  <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+  <!-- Logout Confirmation Modal with Blurred Background -->
+  <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center">
+    <!-- Blurred Background -->
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="handleCancel"></div>
+    
+    <!-- Modal Content -->
+    <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
       <!-- Header -->
       <div class="bg-linear-to-r from-red-600 to-pink-600 text-white p-6">
         <h2 class="text-2xl font-bold flex items-center gap-3">

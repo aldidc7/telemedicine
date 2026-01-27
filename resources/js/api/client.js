@@ -42,8 +42,8 @@ client.interceptors.response.use(
     return response
   },
   error => {
-    // Handle authentication errors
-    if (error.response?.status === 401) {
+    // Handle authentication errors - tapi jangan redirect dari login endpoint
+    if (error.response?.status === 401 && !error.config?.url?.includes('/auth/login')) {
       const authStore = useAuthStore()
       authStore.logout()
       window.location.href = '/login'

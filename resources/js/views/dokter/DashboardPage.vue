@@ -14,8 +14,8 @@
         </div>
       </div>
 
-      <!-- Tabs Navigation - Simplified -->
-      <div class="sticky top-16 bg-white z-40 border-b border-gray-200 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3">
+      <!-- Tabs Navigation - Fixed -->
+      <div class="bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-3">
         <div class="flex gap-6">
           <button
             @click="activeTab = 'overview'"
@@ -289,12 +289,39 @@
 </template>
 
 <script setup>
+
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useDokterAvailability } from '@/stores/dokterAvailability'
 import { dokterAPI } from '@/api/dokter'
 import { konsultasiAPI } from '@/api/konsultasi'
+
+const verificationStatus = ref('') // '', 'pending', 'verified'
+const loadingVerification = ref(true)
+
+async function checkVerification() {
+  loadingVerification.value = true
+  try {
+    const res = await fetch('/api/v1/doctor/verification/status', {
+      headers: { 'Accept': 'application/json' }
+    })
+    const data = await res.json()
+    if (data.success) {
+      if (data.data.is_fully_verified || data.data.overall_status === 'approved') {
+        verificationStatus.value = 'verified'
+      } else {
+        verificationStatus.value = 'pending'
+      }
+    } else {
+      verificationStatus.value = ''
+    }
+  } catch (e) {
+    verificationStatus.value = ''
+  } finally {
+    loadingVerification.value = false
+  }
+}
 
 const authStore = useAuthStore()
 const dokterAvailabilityStore = useDokterAvailability()
@@ -310,7 +337,15 @@ const profile = ref({
 })
 
 
+
 onMounted(async () => {
+  await checkVerification()
+  if (verificationStatus.value !== 'verified') {
+    // Redirect ke halaman verifikasi jika belum diverifikasi
+    const router = useRouter()
+    router.replace({ name: 'dokter-verifikasi' })
+    return
+  }
   // Load data immediately if dokter ID is already available
   if (authStore.user?.dokter?.id) {
     await loadData()

@@ -38,6 +38,17 @@
 
 ---
 
+
+## ✨ Update Terbaru (Jan 2026)
+
+- UI tab settings dokter kini modern dan konsisten dengan dashboard (tab bar solid, border bawah, tidak mengambang)
+- Icon utama halaman settings dokter di-upgrade ke Heroicons Cog6Tooth (outline)
+- Semua error utama (PHP, autoloading, Tailwind) sudah diperbaiki
+- UI/UX lebih konsisten dan siap produksi
+- Tips: Setelah update UI, jalankan `npm run build` untuk melihat perubahan
+
+---
+
 ## Pengenalan
 
 **Platform Telemedicine Indonesia** adalah aplikasi web modern yang menghubungkan pasien dengan dokter untuk konsultasi kesehatan secara online. Sistem ini dirancang khusus untuk memenuhi kebutuhan layanan telemedicine di Indonesia dengan fitur-fitur lengkap mulai dari konsultasi real-time, manajemen rekam medis digital, hingga analytics komprehensif untuk administration.
@@ -272,8 +283,6 @@ php artisan db:seed
 | **Pasien 2** | http://localhost:5173 | siti.aminah@email.com | password123 |
 | **Dokter** | http://localhost:5173 | drsuryanto@email.com | password123 |
 | **Admin** | http://localhost:5173 | admin@telemedicine | Rsud123! |
-
-**❌ TIDAK VALID:** pasien@test.com, dokter@test.com, admin@test.com *(Deprecated - gunakan credentials di atas)*
 
 ### Alternatif: Register Akun Baru
 

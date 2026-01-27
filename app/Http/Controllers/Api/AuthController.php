@@ -388,20 +388,45 @@ class AuthController extends Controller
         // Validation happens automatically in LoginRequest
         $data = $request->validated();
 
-        $result = $this->authService->login(
-            $data['email'],
-            $data['password']
-        );
+        try {
+            $result = $this->authService->login(
+                $data['email'],
+                $data['password']
+            );
 
-        if (!$result) {
+            // Reset rate limit on successful login
+            RateLimitService::reset($key);
+
+            return $this->successResponse(
+                $result,
+                'Login berhasil'
+            );
+        } catch (\Exception $e) {
             // Increment rate limit on failed attempt
             RateLimitService::increment($key, RateLimitService::LOGIN_DECAY_MINUTES);
-
             $remaining = RateLimitService::remaining($key, RateLimitService::LOGIN_MAX_ATTEMPTS, RateLimitService::LOGIN_DECAY_MINUTES);
 
-            // Check if it's email verification issue
-            $user = User::where('email', $data['email'])->first();
-            if ($user && ($user->role === 'dokter' || $user->role === 'admin') && !$user->email_verified_at) {
+            // Handle different login failure types
+            $errorType = $e->getMessage();
+            
+            if ($errorType === 'USER_NOT_FOUND') {
+                return $this->unauthorizedResponse(
+                    'Email atau NIK yang Anda masukkan tidak ditemukan dalam sistem. Silakan daftar terlebih dahulu.',
+                    401,
+                    ['error_code' => 'USER_NOT_FOUND', 'remaining_attempts' => $remaining]
+                );
+            } elseif ($errorType === 'WRONG_PASSWORD') {
+                return $this->unauthorizedResponse(
+                    'Password yang Anda masukkan salah. Silakan coba lagi atau gunakan fitur "Lupa Password".',
+                    401,
+                    ['error_code' => 'WRONG_PASSWORD', 'remaining_attempts' => $remaining]
+                );
+            } elseif ($errorType === 'USER_INACTIVE') {
+                return $this->forbiddenResponse(
+                    'Akun Anda sedang tidak aktif. Silakan hubungi admin untuk mengaktifkan kembali.',
+                    ['error_code' => 'USER_INACTIVE']
+                );
+            } elseif ($errorType === 'EMAIL_NOT_VERIFIED') {
                 return $this->validationErrorResponse(
                     'Email belum diverifikasi. Silakan cek email Anda untuk link verifikasi.',
                     403,
@@ -409,18 +434,11 @@ class AuthController extends Controller
                 );
             }
 
-            return $this->unauthorizedResponse('Email atau password salah', null, [
+            // Default error (should not reach here)
+            return $this->unauthorizedResponse('Login gagal. Silakan coba lagi.', 401, [
                 'remaining_attempts' => $remaining,
             ]);
         }
-
-        // Reset rate limit on successful login
-        RateLimitService::reset($key);
-
-        return $this->successResponse(
-            $result,
-            'Login berhasil'
-        );
     }
 
     /**

@@ -19,6 +19,28 @@
           <div class="flex items-start justify-between">
             <div class="flex-1">
               <p class="text-red-700 text-sm font-medium">{{ error }}</p>
+              <div v-if="error.includes('tidak ditemukan')" class="text-red-600 text-xs mt-3 space-y-1">
+                <p><strong>Solusi:</strong></p>
+                <ul class="list-disc list-inside space-y-1">
+                  <li>Pastikan email atau NIK Anda benar</li>
+                  <li>Belum memiliki akun? <RouterLink to="/register" class="text-indigo-600 font-semibold hover:text-indigo-700">Daftar sekarang</RouterLink></li>
+                </ul>
+              </div>
+              <div v-else-if="error.includes('Password')" class="text-red-600 text-xs mt-3 space-y-1">
+                <p><strong>Tips:</strong></p>
+                <ul class="list-disc list-inside space-y-1">
+                  <li>Pastikan caps lock tidak aktif</li>
+                  <li>Gunakan tombol "Lupa password" jika Anda lupa password</li>
+                </ul>
+              </div>
+              <div v-else-if="error.includes('tidak sesuai')" class="text-red-600 text-xs mt-3 space-y-1">
+                <p><strong>Tips:</strong></p>
+                <ul class="list-disc list-inside space-y-1">
+                  <li>Pastikan email/NIK dan password Anda benar</li>
+                  <li>Gunakan tombol "Lupa password" jika Anda lupa password</li>
+                  <li>Pasien bisa login dengan email atau NIK (16 digit)</li>
+                </ul>
+              </div>
               <p v-if="emailNotVerified" class="text-red-600 text-xs mt-2">
                 Email Anda belum diverifikasi. Silakan cek inbox email Anda untuk link verifikasi.
               </p>
@@ -164,8 +186,7 @@ const handleLogin = async () => {
     // Login berhasil, verifikasi status
     userEmail.value = form.value.identifier
     
-    // Backend sudah validate email_verified_at, jadi tidak perlu check di sini
-    // Check if consent is required
+    // Tidak perlu cek verifikasi email, langsung lanjut
     if (authStore.consentRequired && authStore.user?.role !== 'admin') {
       await router.push('/konsultasi/informed-consent')
       return
@@ -173,11 +194,17 @@ const handleLogin = async () => {
     
     // Redirect berdasarkan role (hanya jika login benar-benar berhasil)
     if (authStore.isDokter) {
-      await router.push('/dokter/dashboard')
+      // Cek data penting dokter
+      const dokter = authStore.user?.dokter || authStore.user?.doctor || {};
+      if (!dokter.specialization || !dokter.license_number) {
+        await router.push('/dokter/profile');
+      } else {
+        await router.push('/dokter/dashboard');
+      }
     } else if (authStore.isAdmin) {
-      await router.push('/admin/dashboard')
+      await router.push('/admin/dashboard');
     } else {
-      await router.push('/dashboard')
+      await router.push('/dashboard');
     }
   } catch (err) {
     // Pastikan loading state di-set false di sini untuk catch block
@@ -196,12 +223,12 @@ const handleLogin = async () => {
     })
 
     // Handle specific error codes/status
-    if (errorCode === 'EMAIL_NOT_VERIFIED' || errorMessageStr.includes('Email')) {
-      emailNotVerified.value = true
-      error.value = '📧 Email belum diverifikasi. Silakan cek email Anda untuk link verifikasi.'
-      userEmail.value = form.value.identifier
+    if (status === 401 && errorCode === 'USER_NOT_FOUND') {
+      error.value = '❌ Email atau NIK yang Anda masukkan tidak ditemukan dalam sistem. Silakan daftar terlebih dahulu.'
+    } else if (status === 401 && errorCode === 'WRONG_PASSWORD') {
+      error.value = '🔐 Password yang Anda masukkan salah. Silakan coba lagi atau gunakan fitur "Lupa Password".'
     } else if (status === 401) {
-      error.value = '❌ Email atau password salah. Silakan coba lagi.'
+      error.value = '❌ Email atau password tidak sesuai. Silakan coba lagi.'
     } else if (status === 429) {
       error.value = '⏳ Terlalu banyak percobaan login. Silakan coba lagi dalam 15 menit.'
     } else if (status === 422) {
@@ -225,10 +252,5 @@ const handleLogin = async () => {
   }
 }
 
-const redirectToEmailVerification = () => {
-  router.push({
-    name: 'verify-email',
-    query: { email: userEmail.value }
-  })
-}
+
 </script>

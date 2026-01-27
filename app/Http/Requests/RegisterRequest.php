@@ -16,7 +16,7 @@ class RegisterRequest extends ApiRequest
             'email' => 'required|email|unique:users,email|max:255',
             'password' => 'required|string|min:8|max:255|confirmed|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/',
             'password_confirmation' => 'required|string|min:8|max:255',
-            'phone' => 'nullable|string|max:20',
+            'no_telepon' => 'required|string|max:20',
             'role' => 'required|in:pasien,dokter',
         ];
 
@@ -25,11 +25,8 @@ class RegisterRequest extends ApiRequest
             $rules['nik'] = 'required|string|size:16|regex:/^\d{16}$/';
         }
 
-        // Validasi khusus untuk dokter
-        if ($this->input('role') === 'dokter') {
-            $rules['sip'] = 'required|string|max:255|unique:doctors,license_number';
-            $rules['specialization'] = 'required|string|in:Umum,Anak,Kandungan,Jantung,Mata,THT';
-        }
+        // Untuk dokter, hanya perlu nama, email, password, no telepon
+        // Spesialisasi dan SIP diisi saat profile completion
 
         return $rules;
     }
@@ -41,11 +38,9 @@ class RegisterRequest extends ApiRequest
             'email' => 'Email',
             'password' => 'Password',
             'password_confirmation' => 'Konfirmasi Password',
-            'phone' => 'Nomor Telepon',
+            'no_telepon' => 'Nomor Telepon',
             'role' => 'Tipe Akun',
             'nik' => 'NIK',
-            'sip' => 'Nomor SIP',
-            'specialization' => 'Spesialisasi',
         ];
     }
 
@@ -56,10 +51,6 @@ class RegisterRequest extends ApiRequest
             'nik.required' => 'NIK wajib diisi',
             'nik.size' => 'NIK harus 16 digit',
             'nik.regex' => 'NIK harus berupa angka',
-            'sip.required' => 'Nomor SIP wajib diisi',
-            'sip.unique' => 'Nomor SIP sudah terdaftar',
-            'specialization.required' => 'Spesialisasi wajib dipilih',
-            'specialization.in' => 'Spesialisasi tidak valid',
         ];
     }
 }

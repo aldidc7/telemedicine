@@ -97,17 +97,7 @@
             ></textarea>
           </div>
 
-          <!-- SIP/Spesialisasi (Dokter) -->
-          <div v-if="userType === 'dokter'">
-            <label class="block text-sm font-semibold text-gray-900 mb-2">Nomor SIP (Surat Ijin Praktik)</label>
-            <input
-              v-model="form.sip"
-              type="text"
-              required
-              class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition bg-gray-50 hover:bg-white"
-              placeholder="Masukkan nomor SIP"
-            />
-          </div>
+
 
           <!-- Spesialisasi (Optional - akan diisi di profile nanti) -->
           <!-- Spesialisasi field removed from registration, will be filled in profile edit -->
@@ -256,7 +246,7 @@ const form = ref({
   name: '',
   email: '',
   nik: '',
-  sip: '',
+  // sip: '',
   phone: '',
   tanggal_lahir: '',
   jenis_kelamin: '',
@@ -318,13 +308,7 @@ const handleRegister = async () => {
     }
   }
 
-  // Validate dokter SIP only (spesialisasi bisa diisi nanti)
-  if (userType.value === 'dokter') {
-    if (!form.value.sip || form.value.sip.trim() === '') {
-      error.value = 'Nomor SIP harus diisi'
-      return
-    }
-  }
+
 
   if (!form.value.agree) {
     error.value = 'Anda harus menyetujui syarat & ketentuan'
@@ -349,7 +333,6 @@ const handleRegister = async () => {
       payload.alamat = form.value.alamat
       payload.role = 'pasien'
     } else {
-      payload.sip = form.value.sip
       // spesialisasi akan diisi nanti di profile edit, tidak perlu saat register
       payload.role = 'dokter'
     }

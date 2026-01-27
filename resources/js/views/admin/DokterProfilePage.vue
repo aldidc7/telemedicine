@@ -24,12 +24,6 @@
     <!-- Error State -->
     <div v-else-if="errorMessage" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <ErrorAlert :message="errorMessage" />
-      <button
-        @click="goBack"
-        class="mt-4 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition"
-      >
-        Kembali ke Daftar
-      </button>
     </div>
 
     <!-- Content -->
@@ -149,24 +143,16 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="bg-gray-50 border-t border-gray-200 px-6 py-4 flex gap-3 justify-between">
+        <div class="bg-gray-50 border-t border-gray-200 px-6 py-4 flex gap-3 justify-end">
           <button
-            @click="goBack"
-            class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition"
+            @click="goToEdit"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2"
           >
-            Kembali
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Edit Profil
           </button>
-          <div class="flex gap-3">
-            <button
-              @click="goToEdit"
-              class="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-              Edit Profil
-            </button>
-          </div>
         </div>
       </div>
 

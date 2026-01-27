@@ -24,12 +24,6 @@
     <!-- Error State -->
     <div v-else-if="errorMessage" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <ErrorAlert :message="errorMessage" />
-      <button
-        @click="goBack"
-        class="mt-4 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition"
-      >
-        Kembali ke Daftar
-      </button>
     </div>
 
     <!-- Content -->

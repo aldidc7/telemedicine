@@ -39,8 +39,9 @@ class DoctorRegistrationService
             // Create doctor profile (pending admin verification)
             $doctor = Dokter::create([
                 'user_id' => $user->id,
-                'specialization' => 'Menunggu Verifikasi Admin', // Placeholder
-                'license_number' => 'TEMP_' . now()->timestamp,
+                'specialization' => 'Umum', // Default value, can be updated later
+                'license_number' => '-', // Default value, can be updated later
+                'phone_number' => $data['phone'] ?? '',
                 'is_available' => false, // Cannot accept patients yet
                 'max_concurrent_consultations' => 5,
                 'is_verified' => false,

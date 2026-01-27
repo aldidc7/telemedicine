@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 /**
  * ============================================
@@ -68,14 +69,14 @@ class AdminController extends Controller
             }
 
             // Use aggregation queries to reduce database hits from 15+ to 3-4
-            $stats = \DB::table('patients')->selectRaw('count(*) as total')->first();
+            $stats = DB::table('patients')->selectRaw('count(*) as total')->first();
             $totalPasien = $stats?->total ?? 0;
 
-            $stats = \DB::table('doctors')->selectRaw('count(*) as total')->first();
+            $stats = DB::table('doctors')->selectRaw('count(*) as total')->first();
             $totalDokter = $stats?->total ?? 0;
 
             // Aggregate all Konsultasi counts in one query
-            $konsultasiStats = \DB::table('consultations')
+            $konsultasiStats = DB::table('consultations')
                 ->selectRaw("
                     count(*) as total,
                     sum(case when status = 'active' then 1 else 0 end) as aktif,
@@ -91,14 +92,14 @@ class AdminController extends Controller
             $konsultasiSelesai = $konsultasiStats?->selesai ?? 0;
             $konsultasiBatalkan = $konsultasiStats?->batalkan ?? 0;
 
-            $stats = \DB::table('admins')->selectRaw('count(*) as total')->first();
+            $stats = DB::table('admins')->selectRaw('count(*) as total')->first();
             $totalAdmin = $stats?->total ?? 0;
 
             // ===== MONTHLY STATS =====
             $bulanIni = now()->month;
             $tahunIni = now()->year;
 
-            $monthlyStats = \DB::table('consultations')
+            $monthlyStats = DB::table('consultations')
                 ->selectRaw("
                     sum(case when cast(strftime('%m', created_at) as integer) = ? and cast(strftime('%Y', created_at) as integer) = ? then 1 else 0 end) as bulanIni,
                     sum(case when status = 'closed' and cast(strftime('%m', end_time) as integer) = ? and cast(strftime('%Y', end_time) as integer) = ? then 1 else 0 end) as selesaibulanini
@@ -109,14 +110,14 @@ class AdminController extends Controller
             $konsultasiBulanIni = $monthlyStats?->bulanini ?? 0;
             $konsultasiSelesaiBulanIni = $monthlyStats?->selesaibulanini ?? 0;
 
-            $pasienStats = \DB::table('patients')
+            $pasienStats = DB::table('patients')
                 ->whereRaw("cast(strftime('%m', created_at) as integer) = ?", [$bulanIni])
                 ->whereRaw("cast(strftime('%Y', created_at) as integer) = ?", [$tahunIni])
                 ->count();
             $pasienBaru = $pasienStats;
 
             // ===== DOCTOR AVAILABILITY =====
-            $dokterStats = \DB::table('doctors')
+            $dokterStats = DB::table('doctors')
                 ->selectRaw("
                     sum(case when is_available = true then 1 else 0 end) as tersedia,
                     sum(case when is_available = false then 1 else 0 end) as tidaktersedia
@@ -127,7 +128,7 @@ class AdminController extends Controller
             $dokterTidakTersedia = $dokterStats?->tidakttersedia ?? 0;
 
             // ===== USER ACTIVITY =====
-            $userStats = \DB::table('users')
+            $userStats = DB::table('users')
                 ->selectRaw("
                     sum(case when is_active = true then 1 else 0 end) as aktif,
                     sum(case when is_active = false then 1 else 0 end) as nonaktif
@@ -163,7 +164,7 @@ class AdminController extends Controller
                     })
                     ->toArray();
             } catch (\Exception $e) {
-                \Log::error('Error calculating consultation by specialty: ' . $e->getMessage());
+                Log::error('Error calculating consultation by specialty: ' . $e->getMessage());
                 $konsultasiPerSpesialisasi = [];
             }
 
@@ -186,7 +187,7 @@ class AdminController extends Controller
                     })
                     ->toArray();
             } catch (\Exception $e) {
-                \Log::error('Error fetching recent consultations: ' . $e->getMessage());
+                Log::error('Error fetching recent consultations: ' . $e->getMessage());
                 $konsultasiTerbaru = [];
             }
 
@@ -209,7 +210,7 @@ class AdminController extends Controller
                     })
                     ->toArray();
             } catch (\Exception $e) {
-                \Log::error('Error fetching activity logs: ' . $e->getMessage());
+                Log::error('Error fetching activity logs: ' . $e->getMessage());
                 $aktivitasTerbaru = [];
             }
 
@@ -219,7 +220,7 @@ class AdminController extends Controller
             try {
                 $totalRekamMedis = \App\Models\RekamMedis::count();
             } catch (\Exception $e) {
-                \Log::error('Error counting medical records: ' . $e->getMessage());
+                Log::error('Error counting medical records: ' . $e->getMessage());
             }
             $totalActivityLogs = ActivityLog::count();
 
@@ -287,7 +288,7 @@ class AdminController extends Controller
                 ],
             ], 200);
         } catch (\Exception $e) {
-            \Log::error('Dashboard error: ' . $e->getMessage(), [
+            Log::error('Dashboard error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
@@ -797,9 +798,10 @@ class AdminController extends Controller
      * GET /api/v1/admin/log-aktivitas
      * 
      * Query Parameters:
-     * - user_id: Filter by user
-     * - aksi: Filter by action
-     * - tipe_model: Filter by model type
+     * - user: Filter by user name
+     * - action: Filter by action
+     * - date_from: Filter logs from this date (YYYY-MM-DD)
+     * - date_to: Filter logs until this date (YYYY-MM-DD)
      * - days: Last X days (default: 7)
      * - per_page: Jumlah data per halaman (default: 20)
      * - sort: Field untuk sorting (default: created_at)
@@ -821,9 +823,10 @@ class AdminController extends Controller
                 ], 403);
             }
 
-            $userId = $request->get('user_id');
-            $aksi = $request->get('aksi');
-            $tipeModel = $request->get('tipe_model');
+            $filterUser = $request->get('user');
+            $filterAction = $request->get('action');
+            $dateFrom = $request->get('date_from');
+            $dateTo = $request->get('date_to');
             $days = $request->get('days', 7);
             $perPage = $request->get('per_page', 20);
             $sort = $request->get('sort', 'created_at');
@@ -844,20 +847,34 @@ class AdminController extends Controller
             try {
                 $query->with('pengguna');
             } catch (\Exception $e) {
-                \Log::warning('Could not load pengguna relationship: ' . $e->getMessage());
+                Log::warning('Could not load pengguna relationship: ' . $e->getMessage());
             }
 
-            // Filters
-            if ($userId && is_numeric($userId)) {
-                $query->where('user_id', intval($userId));
+            // Filter by user name
+            if ($filterUser && !empty(trim($filterUser))) {
+                $query->whereHas('pengguna', function ($q) use ($filterUser) {
+                    $q->where('name', 'like', '%' . trim($filterUser) . '%');
+                });
             }
 
-            if ($aksi && !empty(trim($aksi))) {
-                $query->where('action', trim($aksi));
+            // Filter by action
+            if ($filterAction && !empty(trim($filterAction))) {
+                $query->where('action', trim($filterAction));
             }
 
-            // Date filter
-            $query->where('created_at', '>=', now()->subDays($days));
+            // Date range filter
+            if ($dateFrom) {
+                $query->where('created_at', '>=', $dateFrom . ' 00:00:00');
+            }
+            
+            if ($dateTo) {
+                $query->where('created_at', '<=', $dateTo . ' 23:59:59');
+            }
+
+            // Default to last X days if no date filter provided
+            if (!$dateFrom && !$dateTo) {
+                $query->where('created_at', '>=', now()->subDays($days));
+            }
 
             // Sort
             $query->orderBy($sort, $order);
@@ -872,9 +889,13 @@ class AdminController extends Controller
                 $mappedLogs[] = [
                     'id' => $log->id,
                     'user_id' => $log->user_id,
-                    'user' => $log->pengguna?->name ?? 'Unknown User',
+                    'user' => [
+                        'id' => $log->pengguna?->id,
+                        'name' => $log->pengguna?->name ?? 'Unknown User'
+                    ],
                     'action' => $log->action ?? '',
                     'description' => $log->description ?? '',
+                    'data' => $log->data ?? null,
                     'ip_address' => $log->ip_address ?? '',
                     'created_at' => $log->created_at?->toIso8601String() ?? null,
                 ];
@@ -892,7 +913,7 @@ class AdminController extends Controller
                 ],
             ], 200);
         } catch (\Exception $e) {
-            \Log::error('LogAktivitas error: ' . $e->getMessage(), [
+            Log::error('LogAktivitas error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
@@ -1239,7 +1260,7 @@ class AdminController extends Controller
                 'total' => $logs->total(),
             ], 200);
         } catch (\Exception $e) {
-            \Log::error('Error getting system logs: ' . $e->getMessage());
+            Log::error('Error getting system logs: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'pesan' => 'Error mengambil system logs',
@@ -1307,7 +1328,7 @@ class AdminController extends Controller
                 'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
-            \Log::error('Error updating user status: ' . $e->getMessage());
+            Log::error('Error updating user status: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'pesan' => 'Error mengubah status user',

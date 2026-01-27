@@ -1,4 +1,7 @@
+
 <?php
+use App\Http\Controllers\SimrsApi\SimrsPasienController;
+use App\Http\Controllers\Api\ConsultationChatController;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -33,8 +36,7 @@ use App\Http\Controllers\Api\ApiDocumentationController;
 use App\Http\Controllers\Api\AvailabilityController;
 use App\Http\Controllers\Api\DoctorCredentialVerificationController;
 use App\Http\Controllers\Api\DoctorRegistrationController;
-use App\Http\Controllers\Api\ConsultationChatController;
-use App\Http\Controllers\SimrsApi\SimrsPasienController;
+use App\Http\Controllers\Api\ProfileCompletionController;
 use App\Http\Controllers\SimrsApi\SimrsDokterController;
 use App\Http\Controllers\SimrsApi\SimrsRekamMedisController;
 use App\Http\Controllers\SimrsApi\SimrsKonsultasiSyncController;
@@ -91,6 +93,17 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
         Route::get('/auth/consent-status', [AuthController::class, 'getConsentStatus']);
         Route::post('/auth/accept-consent', [AuthController::class, 'acceptConsent']);
         Route::get('/auth/profile-completion', [AuthController::class, 'profileCompletion']);
+
+        // ========== DOCTOR PROFILE COMPLETION ENDPOINTS ==========
+        /**
+         * Doctor Profile Completion (Two-stage registration)
+         * GET /api/v1/doctor/profile-completion/status - Get profile completion status
+         * POST /api/v1/doctor/profile-completion/submit - Submit profile completion form
+         * GET /api/v1/doctor/profile-completion/remaining-days - Get grace period remaining days
+         */
+        Route::get('/doctor/profile-completion/status', [ProfileCompletionController::class, 'getStatus']);
+        Route::post('/doctor/profile-completion/submit', [ProfileCompletionController::class, 'submit']);
+        Route::get('/doctor/profile-completion/remaining-days', [ProfileCompletionController::class, 'getRemainingDays']);
 
         // ========== SESSION MANAGEMENT ENDPOINTS ==========
         /**
@@ -349,10 +362,10 @@ Route::prefix('v1')->middleware(['performance'])->group(function () {
         Route::get('/dokter/user/{user_id}', [DokterController::class, 'getByUserId']);
         Route::get('/dokter/{id}/detail', [DokterController::class, 'detail']);
         Route::get('/dokter/{id}', [DokterController::class, 'show']);
-        Route::put('/dokter/{id}', [DokterController::class, 'update']);
-        Route::delete('/dokter/{id}', [DokterController::class, 'destroy']);
-        Route::post('/dokter/{id}/sync-patient', [DokterController::class, 'syncToPatient']);
-        Route::put('/dokter/{id}/ketersediaan', [DokterController::class, 'updateKetersediaan']);
+        Route::put('/dokter/{id}', [DokterController::class, 'update'])->middleware('dokter.verified');
+        Route::delete('/dokter/{id}', [DokterController::class, 'destroy'])->middleware('dokter.verified');
+        Route::post('/dokter/{id}/sync-patient', [DokterController::class, 'syncToPatient'])->middleware('dokter.verified');
+        Route::put('/dokter/{id}/ketersediaan', [DokterController::class, 'updateKetersediaan'])->middleware('dokter.verified');
 
         // ========== DOCTOR ANALYTICS ENDPOINTS (Phase 6B) ==========
         /**

@@ -89,29 +89,35 @@ class AuthService
      *
      * @param string $email
      * @param string $password
-     * @return array|null
+     * @return array|null - returns null on failure, array on success
+     * Throws exception with error_type to differentiate login failures
      */
     public function login(string $email, string $password): ?array
     {
         $user = User::where('email', $email)->with(['dokter', 'pasien'])->first();
 
-        if (!$user || !Hash::check($password, $user->password)) {
-            // Log failed login attempt
+        // User tidak ditemukan
+        if (!$user) {
             ActivityLog::log(null, 'login_failed', 'Email: ' . $email);
-            return null;
+            throw new \Exception('USER_NOT_FOUND');
         }
 
-        // Check if user is active
+        // Password salah
+        if (!Hash::check($password, $user->password)) {
+            ActivityLog::log($user->id, 'login_failed', 'Wrong password');
+            throw new \Exception('WRONG_PASSWORD');
+        }
+
+        // User tidak aktif
         if (!$user->is_active) {
             ActivityLog::log($user->id, 'login_failed', 'User is inactive');
-            return null;
+            throw new \Exception('USER_INACTIVE');
         }
 
-        // Check email verification - MANDATORY for doctors only
-        // Admin doesn't need email verification
+        // Email belum diverifikasi (hanya untuk dokter)
         if ($user->role === 'dokter' && !$user->email_verified_at) {
             ActivityLog::log($user->id, 'login_failed', 'Email not verified');
-            return null; // Will return error with message in controller
+            throw new \Exception('EMAIL_NOT_VERIFIED');
         }
 
         // Update last login
