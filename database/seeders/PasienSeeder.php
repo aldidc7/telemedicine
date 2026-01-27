@@ -30,7 +30,7 @@ class PasienSeeder extends Seeder
             [
                 'name' => 'Ahmad Zaki',
                 'email' => 'ahmad.zaki@email.com',
-                'password' => Hash::make('password123'),
+                'password' => Hash::make('Password123!'),
                 'role' => 'pasien',
                 'is_active' => true,
                 'last_login_at' => now(),
@@ -49,7 +49,7 @@ class PasienSeeder extends Seeder
             [
                 'name' => 'Siti Aminah',
                 'email' => 'siti.aminah@email.com',
-                'password' => Hash::make('password123'),
+                'password' => Hash::make('Password123!'),
                 'role' => 'pasien',
                 'is_active' => true,
                 'last_login_at' => now(),
@@ -68,7 +68,7 @@ class PasienSeeder extends Seeder
             [
                 'name' => 'Raka Pratama',
                 'email' => 'raka.pratama@email.com',
-                'password' => Hash::make('password123'),
+                'password' => Hash::make('Password123!'),
                 'role' => 'pasien',
                 'is_active' => true,
                 'last_login_at' => now(),
@@ -87,7 +87,7 @@ class PasienSeeder extends Seeder
             [
                 'name' => 'Nur Hidayah',
                 'email' => 'nur.hidayah@email.com',
-                'password' => Hash::make('password123'),
+                'password' => Hash::make('Password123!'),
                 'role' => 'pasien',
                 'is_active' => true,
                 'last_login_at' => now(),

@@ -30,7 +30,7 @@ class DokterSeeder extends Seeder
             [
                 'name' => 'Dr. Setiawan Wijaya',
                 'email' => 'setiawan.wijaya@rsud.go.id',
-                'password' => Hash::make('password123'),
+                'password' => Hash::make('Password123!'),
                 'role' => 'dokter',
                 'is_active' => true,
                 'last_login_at' => now(),
@@ -45,7 +45,7 @@ class DokterSeeder extends Seeder
             [
                 'name' => 'Dr. Sinta Nurmalasari',
                 'email' => 'sinta.nurmalasari@rsud.go.id',
-                'password' => Hash::make('password123'),
+                'password' => Hash::make('Password123!'),
                 'role' => 'dokter',
                 'is_active' => true,
                 'last_login_at' => now(),
@@ -60,7 +60,7 @@ class DokterSeeder extends Seeder
             [
                 'name' => 'Dr. Bambang Irawan',
                 'email' => 'bambang.irawan@rsud.go.id',
-                'password' => Hash::make('password123'),
+                'password' => Hash::make('Password123!'),
                 'role' => 'dokter',
                 'is_active' => true,
                 'last_login_at' => now(),
