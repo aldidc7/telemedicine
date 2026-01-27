@@ -273,8 +273,6 @@ php artisan db:seed
 | **Dokter** | http://localhost:5173 | drsuryanto@email.com | password123 |
 | **Admin** | http://localhost:5173 | admin@telemedicine | Rsud123! |
 
-**❌ TIDAK VALID:** pasien@test.com, dokter@test.com, admin@test.com *(Deprecated - gunakan credentials di atas)*
-
 ### Alternatif: Register Akun Baru
 
 Jika Anda ingin membuat akun sendiri:
