@@ -279,9 +279,9 @@ php artisan db:seed
 
 | Role | URL | Email | Password |
 |------|-----|-------|----------|
-| **Pasien** | http://localhost:5173 | ahmad.zaki@email.com | password123 |
-| **Pasien 2** | http://localhost:5173 | siti.aminah@email.com | password123 |
-| **Dokter** | http://localhost:5173 | drsuryanto@email.com | password123 |
+| **Pasien** | http://localhost:5173 | ahmad.zaki@email.com | Password123! |
+| **Pasien 2** | http://localhost:5173 | siti.aminah@email.com | Password123! |
+| **Dokter** | http://localhost:5173 | drsuryanto@email.com | Password123! |
 | **Admin** | http://localhost:5173 | admin@telemedicine | Rsud123! |
 
 ### Alternatif: Register Akun Baru
