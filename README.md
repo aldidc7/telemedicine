@@ -219,8 +219,25 @@ php artisan jwt:secret  # jika menggunakan JWT
 # Jalankan migrations (membuat tabel)
 php artisan migrate
 
-# (Opsional) Jalankan seeders (menambahkan sample data)
+# Jalankan Seeder Dokter (Dummy Data)
+
+Seeder dokter akan membuat 3 akun dokter dummy:
+
+| Nama                  | Email                        | Password      |
+|-----------------------|------------------------------|---------------|
+| Dr. Setiawan Wijaya   | setiawan.wijaya@rsud.go.id   | Password123!  |
+| Dr. Sinta Nurmalasari | sinta.nurmalasari@rsud.go.id | Password123!  |
+| Dr. Bambang Irawan    | bambang.irawan@rsud.go.id    | Password123!  |
+
+Jalankan dengan:
+```bash
+php artisan db:seed --class=DokterSeeder
+```
+
+Atau untuk seeding semua data:
+```bash
 php artisan db:seed
+```
 
 # Untuk development, jalankan keduanya:
 php artisan migrate:fresh --seed
@@ -281,7 +298,9 @@ php artisan db:seed
 |------|-----|-------|----------|
 | **Pasien** | http://localhost:5173 | ahmad.zaki@email.com | Password123! |
 | **Pasien 2** | http://localhost:5173 | siti.aminah@email.com | Password123! |
-| **Dokter** | http://localhost:5173 | drsuryanto@email.com | Password123! |
+| **Dokter** | http://localhost:5173 | setiawan.wijaya@rsud.go.id | Password123! |
+| **Dokter 2** | http://localhost:5173 | sinta.nurmalasari@rsud.go.id | Password123! |
+| **Dokter 3** | http://localhost:5173 | bambang.irawan@rsud.go.id | Password123! |
 | **Admin** | http://localhost:5173 | admin@telemedicine | Rsud123! |
 
 ### Alternatif: Register Akun Baru
